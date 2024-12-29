@@ -1,14 +1,13 @@
 {
-  "name": "predictiongame",
+  "name": "rorty",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "env-cmd -f ./env/.env craco start",
-    "build": "env-cmd -f ./env/.env.production craco build",
-    "test": "craco test",
-    "format": "prettier --write src/**/*.ts{,x}",
-    "lint": "tsc --noEmit && eslint src/**/*.ts{,x}",
-    "eject": "react-scripts eject"
+    "start": "serve -s build",
+    "build": "react-scripts build",
+    "dev": "react-scripts start",
+    "eject": "react-scripts eject",
+    "lint": "eslint . --fix"
   },
   "engines": {
     "node": "v20.10.0",
@@ -36,7 +35,6 @@
     "@chakra-ui/icons": "^2.1.0",
     "@chakra-ui/react": "^2.8.0",
     "@coinbase/onchainkit": "^0.35.5",
-    "@craco/craco": "^7.1.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@rainbow-me/rainbowkit": "^2.2.0",
