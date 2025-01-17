@@ -1,0 +1,8 @@
+body {
+    background-color: #020909;
+    z-index: -3;
+    background-image: url('/background1.png'),url('/background2.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
