@@ -1,4 +1,5 @@
 import { createSystem, defaultBaseConfig, defaultConfig, defaultSystem, defineConfig, defineRecipe, mergeConfigs } from '@chakra-ui/react';
+import deepmerge from 'deepmerge';
 
 const buttonRecipe = defineRecipe({
     base: {
@@ -10,13 +11,20 @@ const buttonRecipe = defineRecipe({
         fontWeight: 700,
         fontSize: "16px",
         lineHeight: "24px",
+    },
+    variants: {
+        social: {
+            true: {
+                background: "#042911"
+            }
+        }
     }
 })
 
 const textRecipe = defineRecipe({
     base: {
         color: "#AFDC29"
-    }
+    },
 })
 
 const customConfig = defineConfig({
@@ -28,4 +36,5 @@ const customConfig = defineConfig({
     }
 })
 
-export const system = createSystem(defaultConfig, customConfig);
+const config = deepmerge(defaultConfig, customConfig)
+export const system = createSystem(config);
