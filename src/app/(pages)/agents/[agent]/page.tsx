@@ -7,6 +7,7 @@ import NextImage from "next/image"
 import AgentCard from "@/app/components/ui/agent/AgentCard";
 import AgentChat from "@/app/components/ui/agent/AgentChat";
 import AgentGraph from "@/app/components/ui/agent/AgentGraph";
+import { AgentDMChatAdapter } from "@/app/lib/chat";
 
 function ActiveEllipse() {
     return (
@@ -109,13 +110,11 @@ export default function AgentLayout({
                         </Grid>
                         <Text position="absolute" right="0" left="0" marginInline="auto" width="fit-content" top="50%" >Coming soon...</Text>
                     </Box>
-                    <AgentChat agent={activeAgent} />
+                    <Box width="320px">
+                        <AgentChat adapter={new AgentDMChatAdapter(activeAgent)} />
+                    </Box>
                 </Flex>
             }
         </div>
     )
 }
-
-// background: linear-gradient(0deg, #020909, #020909),
-// radial-gradient(446% 189.36% at 53.02% -48.52%, rgba(175, 220, 41, 0.13) 0%, rgba(0, 0, 0, 0) 100%) /* warning: gradient uses a rotation that is not supported by CSS and may not behave as expected */,
-// linear-gradient(0deg, rgba(175, 220, 41, 0.04), rgba(175, 220, 41, 0.04));
