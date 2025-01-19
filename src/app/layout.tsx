@@ -4,7 +4,7 @@ import "@fontsource/jetbrains-mono";
 import { ChakraProvider } from "@chakra-ui/react";
 import NavBar from './components/ui/NavBar';
 import TopBar from './components/ui/TopBar';
-import "./global.module.css";
+import "./global.css";
 import { system } from './components/theme';
 
 export default function RootLayout({
