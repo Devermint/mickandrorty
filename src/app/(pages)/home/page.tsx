@@ -4,7 +4,6 @@ import { Container, Text, Flex, Box } from '@chakra-ui/react';
 import Underline from '@/app/components/ui/Underline';
 import { Agent } from '@/app/lib/agent';
 import { useState, useEffect } from 'react';
-import AgentCard from '@/app/components/ui/agent/AgentCard';
 import AgentCardInteractive from '@/app/components/ui/agent/AgentCardInteractive';
 
 export default function HomePage() {

@@ -5,7 +5,7 @@ export default function AgentGraph() {
     // TODO: Actual graph
     return (
         <Container height="100%" width="100%">
-            <Image asChild userSelect="none" draggable="false">
+            <Image asChild userSelect="none" draggable="false" alt="graph">
                 <NextImage src="/agents/graph.svg" alt="graph" fill={true} objectFit="contain" />
             </Image>
         </Container>

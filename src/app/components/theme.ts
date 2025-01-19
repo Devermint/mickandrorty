@@ -1,4 +1,4 @@
-import { createSystem, defaultBaseConfig, defaultConfig, defaultSystem, defineConfig, defineRecipe, mergeConfigs } from '@chakra-ui/react';
+import { createSystem, defaultConfig, defineConfig, defineRecipe } from '@chakra-ui/react';
 import deepmerge from 'deepmerge';
 
 const buttonRecipe = defineRecipe({

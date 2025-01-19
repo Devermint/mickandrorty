@@ -2,7 +2,7 @@
 
 import { Agent } from "@/app/lib/agent";
 import { ChatEntry } from "@/app/lib/chat";
-import { Box, Flex, IconButton, Image, Input, Spinner, Text } from "@chakra-ui/react";
+import { Box, Flex, Image, Input, Spinner, Text } from "@chakra-ui/react";
 import NextImage from "next/image";
 import React, { useState, useEffect } from "react";
 import ArrowIcon from "../../icons/arrow";
@@ -11,7 +11,7 @@ function AgentMessage({ agent, entry }: { agent: Agent, entry: ChatEntry }) {
     return (
         <Flex justify="space-between" gap="1rem" overflowX="hidden" justifyContent="center">
             <Box background="#1D3114" width="31px" height="31px" overflow="hidden" borderWidth="1px" borderRadius="50%" borderColor="#5A7219" >
-                <Image asChild>
+                <Image asChild alt="agent icon">
                     <NextImage src={agent.image} alt="agent icon" width="31" height="31" />
                 </Image>
             </Box>

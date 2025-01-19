@@ -6,7 +6,7 @@ import AgentCard from "./AgentCard";
 export default function AgentCardInteractive(agent: Agent) {
     const router = useRouter();
 
-    const handleOnClick = (e: any) => {
+    const handleOnClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         router.push(`/agents/${agent.id}`);
     }

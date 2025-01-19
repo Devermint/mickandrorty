@@ -8,10 +8,6 @@ import AgentCard from "@/app/components/ui/agent/AgentCard";
 import AgentChat from "@/app/components/ui/agent/AgentChat";
 import AgentGraph from "@/app/components/ui/agent/AgentGraph";
 
-// background: linear-gradient(0deg, #030B0A, #030B0A),
-// linear-gradient(132.4deg, rgba(84, 203, 104, 0) 14.89%, rgba(84, 185, 203, 0.1496) 73.86%),
-// radial-gradient(77.92% 112.25% at 50% 50%, rgba(82, 101, 26, 0.67) 0%, rgba(82, 101, 26, 0) 100%);
-
 function ActiveEllipse() {
     return (
         <Box marginTop="0.5rem">
@@ -29,7 +25,7 @@ function AgentMiniIcon({ agent, activeAgent }: { agent: Agent, activeAgent: numb
     return (
         <Box justifyItems="center">
             <Container borderWidth="1px" borderColor="#BDE546" borderRadius="12px" width="81px" height="60px" boxShadow="0px 0px 8.34px 0px #F9E0CC1A" background={backgroundColor} cursor="pointer" _hover={{ "transform": "scale(1.05)" }}>
-                <Image asChild draggable="false">
+                <Image asChild draggable="false" alt="agent">
                     <NextImage src={agent.image} alt="agent" fill={true} objectFit="contain" />
                 </Image>
 

@@ -53,11 +53,13 @@ export default function NavBar() {
     }
 
     useEffect(() => {
-        navButtons.forEach(button => {
-            button.active = button.page === pathname
-        })
+        setNavButtons(n => {
+            n.forEach(button => {
+                button.active = button.page === pathname
+            })
 
-        setNavButtons([...navButtons])
+            return [...n]
+        })
     }, [pathname])
 
     return (

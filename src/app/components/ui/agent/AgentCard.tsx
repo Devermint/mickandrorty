@@ -1,18 +1,14 @@
-import { Box, Button, Container, Flex, Grid, GridItem, IconButton, Image, Text } from "@chakra-ui/react";
+import { Container, Flex, Grid, GridItem, IconButton, Image, Text } from "@chakra-ui/react";
 import { Agent } from "@/app/lib/agent";
 import NextImage from "next/image";
 
-// background: linear-gradient(0deg, #040E0B, #040E0B),
-// radial-gradient(446% 189.36% at 53.02% -48.52%, rgba(175, 220, 41, 0.13) 0%, rgba(0, 0, 0, 0) 100%) /* warning: gradient uses a rotation that is not supported by CSS and may not behave as expected */;
-
-
 export default function AgentCard(agent: Agent) {
-    const handleTelegram = (e: any) => {
+    const handleTelegram = (e: React.MouseEvent) => {
         // TODO: Link
         e.stopPropagation();
     }
 
-    const handleX = (e: any) => {
+    const handleX = (e: React.MouseEvent) => {
         // TODO: Link
         e.stopPropagation();
     }
@@ -21,7 +17,7 @@ export default function AgentCard(agent: Agent) {
         <Container width="360px" height="508px" background="linear-gradient(0deg, #040E0B, #040E0B), radial-gradient(446% 189.36% at 53.02% -48.52%, rgba(175, 220, 41, 0.13) 0%, rgba(0, 0, 0, 0) 100%)" borderTopLeftRadius="100px" boxShadow="0px 0px 32px 0px #F9E0CC1A" padding="1.5rem" >
             {/* Image */}
             <Container border="1px solid #282626" borderTopLeftRadius="80px" overflow="hidden" position="relative" height="231px" background="linear-gradient(132.4deg, rgba(84, 203, 104, 0) 14.89%, rgba(84, 185, 203, 0.1496) 73.86%)">
-                <Image asChild draggable="false">
+                <Image asChild draggable="false" alt="agent photo">
                     <NextImage src={agent.image} alt="agent photo" fill={true} objectFit="contain" />
                 </Image>
             </Container>
