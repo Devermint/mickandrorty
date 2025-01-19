@@ -7,3 +7,16 @@ body {
     background-position: center;
     font-family: "JetBrains Mono";
 }
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111D0D;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #566E14;
+    border-radius: 16px;
+}
