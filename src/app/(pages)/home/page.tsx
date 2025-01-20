@@ -11,7 +11,6 @@ export default function HomePage() {
 
     useEffect(() => {
         fetch('/api/agents').then((response) => {
-            console.log(response);
             response.json().then((data) => {
                 setAgents(data)
             })

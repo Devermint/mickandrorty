@@ -3,7 +3,7 @@ import { Agent } from "./agent";
 export type ChatEntry = {
     sender: string;
     message: string;
-    alignment: "left" | "right";
+    alignment: "left" | "right" | "error";
 }
 
 export type GroupChatEntry = {
@@ -19,10 +19,27 @@ export interface ChatAdapter {
     sendChatMessage: (message: string) => Promise<Response>;
 }
 
-export class AgentDMChatAdapter implements ChatAdapter {
+class BaseChatAdapter {
+    userId: string;
+    roomId: string;
+
+    constructor() {
+        this.userId = this.generateId(12);
+        this.roomId = this.generateId(12);
+    }
+
+    private generateId(size: Number) {
+        return [...Array(size)]
+            .map(() => Math.floor(Math.random() * 36).toString(36))
+            .join("");
+    }
+}
+
+export class AgentDMChatAdapter extends BaseChatAdapter implements ChatAdapter {
     private agent: Agent;
 
     constructor(agent: Agent) {
+        super();
         this.agent = agent;
     }
 
@@ -41,17 +58,18 @@ export class AgentDMChatAdapter implements ChatAdapter {
     }
 
     async sendChatMessage(message: string) {
-        return fetch(`/api/chats/${this.agent.id}`, {
+        return fetch(`/api/chats/text`, {
             method: "POST",
-            body: JSON.stringify({ message }),
+            body: JSON.stringify({agent: this.agent.id,  message: message, userId: this.userId, roomId: this.roomId}),
         });
     }
 }
 
-export class GroupChatAdapter implements ChatAdapter {
+export class GroupChatAdapter extends BaseChatAdapter implements ChatAdapter {
     private group: GroupChatEntry;
 
     constructor(group: GroupChatEntry) {
+        super();
         this.group = group;
     }
 
@@ -69,10 +87,10 @@ export class GroupChatAdapter implements ChatAdapter {
             .then((data) => data as ChatEntry[]);
     }
 
-    async sendChatMessage(message: string) {
-        return fetch(`/api/chats/group/${this.group.id}`, {
+    async sendChatMessage(message: string) : Promise<Response> {
+        return fetch(`/api/chats/group`, {
             method: "POST",
-            body: JSON.stringify({ message }),
+            body: JSON.stringify({ group: this.group.id, message: message, userId: this.userId, roomId: this.roomId }),
         });
     }
 }

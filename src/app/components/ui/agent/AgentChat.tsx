@@ -5,6 +5,7 @@ import { Box, Flex, Image, Input, Spinner, Text } from "@chakra-ui/react";
 import NextImage from "next/image";
 import React, { useState, useEffect } from "react";
 import ArrowIcon from "../../icons/arrow";
+import DotsLoader from "../loader/DotsLoader";
 
 function AgentMessage({ adapter, entry }: { adapter: ChatAdapter, entry: ChatEntry }) {
     return (
@@ -36,17 +37,40 @@ function PersonMessage({ entry }: { entry: ChatEntry }) {
     )
 }
 
+function ErrorMessage({ entry }: { entry: ChatEntry }) {
+    return (
+        <Flex justify="flex-end" gap="0.25rem" overflowX="hidden" direction="column" alignItems="center">
+            <Box borderRadius="11px" opacity="30%" width="90%" background="#DC2929" padding="0.5rem" borderWidth="3px" borderColor="#DC2929">
+                <Text fontWeight="400" fontSize="14px" lineHeight="21px" color="#040E0B">{entry.message}</Text>
+            </Box>
+        </Flex>
+    )
+}
+
 function ChatMessage({ adapter, entry }: { adapter: ChatAdapter, entry: ChatEntry }) {
     return (
         <div>
-            {entry.alignment === "right" ? <PersonMessage entry={entry} /> : <AgentMessage adapter={adapter} entry={entry} />}
+            {
+                entry.alignment === "right" && <PersonMessage entry={entry} />
+                ||
+                entry.alignment === "left" && <AgentMessage adapter={adapter} entry={entry} />
+                ||
+                entry.alignment === "error" && <ErrorMessage entry={entry} />
+            }
         </div>
     )
 }
 
-function ResponseWaiter() {
+function ResponseWaiter({adapter} : {adapter: ChatAdapter}) {
     return (
-       <Spinner />
+        <Flex gap="1rem" overflowX="hidden" justifyContent="flex-start">
+            <Box background="#1D3114" width="31px" height="31px" overflow="hidden" borderWidth="1px" borderRadius="50%" borderColor="#5A7219" >
+                <Image asChild alt="agent icon">
+                    <NextImage src={adapter.getImage()} alt="agent icon" width="31" height="31" />
+                </Image>
+            </Box>
+            <DotsLoader />
+        </Flex>
     )
 }
 
@@ -79,17 +103,66 @@ export default function AgentChat({ adapter }: { adapter: ChatAdapter }) {
 
         inputMessage.current.value = "";
 
-        // TODO: API call to send message
+        setProcessingMessage(true);
+        bottomScroll.current?.scrollIntoView({ behavior: "smooth" });
 
-        setChatEntries([
-            ...chatEntries,
+        setChatEntries(n => [
+            ...n,
             {
                 sender: "You",
                 message: message,
                 alignment: "right",
             },
         ]);
-        setProcessingMessage(true);
+
+        adapter.sendChatMessage(message)
+            .then((response) => {
+                if (response.status !== 200) {
+                    setChatEntries(n => [
+                        ...n,
+                        {
+                            sender: "",
+                            message: "An error occurred while processing your request please try again shortly...",
+                            alignment: "error",
+                        },
+                    ]);
+                    return;
+                }
+
+                response.json()
+                    .then((data) => {
+                        setChatEntries(n => [
+                            ...n,
+                            {
+                                sender: adapter.getName(),
+                                message: data[0].text,
+                                alignment: "left",
+                            },
+                        ]);
+                    }).catch((error) => {
+                        setChatEntries(n => [
+                            ...n,
+                            {
+                                sender: "",
+                                message: "An error occurred while processing your request please try again shortly...",
+                                alignment: "error",
+                            },
+                        ]);
+                    });
+            })
+            .catch((error) => {
+                setChatEntries(n => [
+                    ...n,
+                    {
+                        sender: "",
+                        message: "An error occurred while processing your request please try again shortly...",
+                        alignment: "error",
+                    },
+                ]);
+            })
+            .finally(() => {
+                setProcessingMessage(false);
+            });
     };
 
     const reactToEnterKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -111,12 +184,12 @@ export default function AgentChat({ adapter }: { adapter: ChatAdapter }) {
                         {chatEntries && chatEntries.map((entry, index) => (
                             <ChatMessage key={index} adapter={adapter} entry={entry} />
                         ))}
-                        {processingMessage && <ResponseWaiter />}
+                        {processingMessage && <ResponseWaiter adapter={adapter} />}
                         <div ref={bottomScroll}></div>
                     </Flex>
                     <Box borderRadius="13px" background="#1D3114" padding="0.5rem">
                         <Flex justify="space-between">
-                            <Input disabled={processingMessage} borderWidth="0px" color="#52651A" css={{ "--focus-color": "transparent", "--focus-ring-color": "transparent" }} placeholder={`Message ${adapter.getName().split(' ')[0]}`} ref={inputMessage} onKeyDown={(e) => reactToEnterKey(e)} />
+                            <Input disabled={processingMessage} borderWidth="0px" color="#AFDC29" css={{ "--focus-color": "transparent", "--focus-ring-color": "transparent" }} placeholder={`Message ${adapter.getName().split(' ')[0]}`} ref={inputMessage} onKeyDown={(e) => reactToEnterKey(e)} />
                             <Box cursor={processingMessage ? "disabled" : "pointer"} onClick={sendMessage} justifyItems="center" alignContent="center">
                                 {ArrowIcon("#AFDC29")}
                             </Box>

@@ -32,6 +32,36 @@ const customConfig = defineConfig({
         recipes: {
             button: buttonRecipe,
             text: textRecipe
+        },
+        keyframes: {
+            bounce1: {
+                "0%": { transform: "scale(1, 1)" },
+                "25%": { transform: "scale(1, 1.5)" },
+                "50%": { transform: "scale(1, 0.67)" },
+                "75%": { transform: "scale(1, 1)" },
+                "100%": { transform: "scale(1, 1)" }
+            },
+            bounce2: {
+                "0%": { transform: "scale(1, 1)" },
+                "25%": { transform: "scale(1, 1)" },
+                "50%": { transform: "scale(1, 1.5)" },
+                "75%": { transform: "scale(1, 1)" },
+                "100%": { transform: "scale(1, 1)" }
+            },
+            bounce3: {
+                "0%": { transform: "scale(1, 1)" },
+                "25%": { transform: "scale(1, 1)" },
+                "50%": { transform: "scale(1, 0.67)" },
+                "75%": { transform: "scale(1, 1.5)" },
+                "100%": { transform: "scale(1, 1)" }
+            }
+        },
+        tokens: {
+            animations: {
+                bounce1: { value: "bounce1 1s infinite linear" },
+                bounce2: { value: "bounce2 1s infinite linear" },
+                bounce3: { value: "bounce3 1s infinite linear" }
+            }
         }
     }
 })

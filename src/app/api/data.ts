@@ -3,7 +3,7 @@ import { ChatEntry, GroupChatEntry } from '@/app/lib/chat';
 
 export const testingAgents: Agent[] = [
     {
-        id: 0,
+        id: "mick.zanches",
         name: "Mick Zanches",
         bio: "Yeah Rorty, I’m that genius, booze-guzzling scientist yanking you through a bazillion dimensions. Deal with it.",
         stats: {
@@ -15,8 +15,8 @@ export const testingAgents: Agent[] = [
         image: "/agents/agent1.png"
     },
     {
-        id: 1,
-        name: "Mick Zanches",
+        id: "pickle.mick",
+        name: "Pickle Mick",
         bio: "Yeah Rorty, I’m that genius, booze-guzzling scientist yanking you through a bazillion dimensions. Deal with it.",
         stats: {
             funny: 9,
@@ -27,8 +27,8 @@ export const testingAgents: Agent[] = [
         image: "/agents/agent2.png"
     },
     {
-        id: 2,
-        name: "Mick Zanches",
+        id: "rorty.zmith",
+        name: "Rorty Zmith",
         bio: "Yeah Rorty, I’m that genius, booze-guzzling scientist yanking you through a bazillion dimensions. Deal with it.",
         stats: {
             funny: 9,
@@ -56,12 +56,18 @@ export const testingGroupChats: GroupChatEntry[] = [
     },
     {
         id: 1,
-        name: "Mick Zanches",
+        name: "Pickle Mick",
         icon: "/agents/agent2.png"
     },
     {
         id: 2,
-        name: "Mick Zanches",
+        name: "Rorty Zmith",
         icon: "/agents/agent3.png"
     }
 ]
+
+export const testingAgentGroupMap: Record<number, string[]> = {
+    0: ["mick.zanches"],
+    1: ["pickle.mick"],
+    2: ["rorty.zmith"],
+}

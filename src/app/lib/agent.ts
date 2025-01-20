@@ -6,7 +6,7 @@ export type AgentCharacteristics = {
 }
 
 export type Agent = {
-    id: number;
+    id: string;
     name: string;
     bio: string;
     stats: AgentCharacteristics;

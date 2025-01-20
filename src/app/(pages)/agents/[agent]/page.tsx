@@ -8,6 +8,7 @@ import AgentCard from "@/app/components/ui/agent/AgentCard";
 import AgentChat from "@/app/components/ui/agent/AgentChat";
 import AgentGraph from "@/app/components/ui/agent/AgentGraph";
 import { AgentDMChatAdapter } from "@/app/lib/chat";
+import { useRouter } from "next/navigation";
 
 function ActiveEllipse() {
     return (
@@ -19,13 +20,13 @@ function ActiveEllipse() {
     )
 }
 
-function AgentMiniIcon({ agent, activeAgent }: { agent: Agent, activeAgent: number }) {
+function AgentMiniIcon({ agent, activeAgent, onClick }: { agent: Agent, activeAgent: string, onClick: (agent: Agent) => void }) {
     const isActive = agent.id == activeAgent;
     const backgroundColor = isActive ? "#AFDC29" : "linear-gradient(132.4deg, rgba(84, 203, 104, 0) 14.89%, rgba(84, 185, 203, 0.1496) 73.86%), radial-gradient(77.92% 112.25% at 50% 50%, rgba(82, 101, 26, 0.67) 0%, rgba(82, 101, 26, 0) 100%)";
 
     return (
         <Box justifyItems="center">
-            <Container borderWidth="1px" borderColor="#BDE546" borderRadius="12px" width="81px" height="60px" boxShadow="0px 0px 8.34px 0px #F9E0CC1A" background={backgroundColor} cursor="pointer" _hover={{ "transform": "scale(1.05)" }}>
+            <Container borderWidth="1px" borderColor="#BDE546" borderRadius="12px" width="81px" height="60px" boxShadow="0px 0px 8.34px 0px #F9E0CC1A" background={backgroundColor} cursor="pointer" _hover={{ "transform": "scale(1.05)" }} onClick={() => onClick(agent)}>
                 <Image asChild draggable="false" alt="agent">
                     <NextImage src={agent.image} alt="agent" fill={true} objectFit="contain" />
                 </Image>
@@ -47,12 +48,11 @@ function GridBox({ children }: { children: React.ReactNode }) {
 export default function AgentLayout({
     params,
 }: {
-    params: Promise<{ agent: number }>
-}) {
+    params: Promise<{ agent: string }>
+    }) {
+    const router = useRouter();
     const args = use(params);
     const agentId = args.agent;
-
-    console.log(agentId);
 
     const [agents, setAgents] = useState<Agent[]>()
     const [activeAgent, setActiveAgent] = useState<Agent>()
@@ -73,11 +73,16 @@ export default function AgentLayout({
         setActiveAgent(agent);
     }, [agentId, agents]);
 
+    const agentMiniIconClick = (agent: Agent) => {
+        setActiveAgent(agent);
+        router.push(`/agents/${agent.id}`);
+    }
+
     return (
         <div>
             <Flex justifyContent="center" padding="1rem" gap="1rem">
                 {agents?.map((agent, index) => (
-                    <AgentMiniIcon key={index} agent={agent} activeAgent={agentId} />
+                    <AgentMiniIcon key={index} agent={agent} activeAgent={agentId} onClick={agentMiniIconClick} />
                 ))}
             </Flex>
             {activeAgent &&
