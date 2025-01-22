@@ -28,7 +28,7 @@ class BaseChatAdapter {
         this.roomId = this.generateId(12);
     }
 
-    private generateId(size: Number) {
+    private generateId(size: number) {
         return [...Array(size)]
             .map(() => Math.floor(Math.random() * 36).toString(36))
             .join("");

@@ -1,7 +1,7 @@
 "use client";
 
 import { ChatAdapter, ChatEntry } from "@/app/lib/chat";
-import { Box, Flex, Image, Input, Spinner, Text } from "@chakra-ui/react";
+import { Box, Flex, Image, Input, Text } from "@chakra-ui/react";
 import NextImage from "next/image";
 import React, { useState, useEffect } from "react";
 import ArrowIcon from "../../icons/arrow";
@@ -140,6 +140,7 @@ export default function AgentChat({ adapter }: { adapter: ChatAdapter }) {
                             },
                         ]);
                     }).catch((error) => {
+                        console.error(error);
                         setChatEntries(n => [
                             ...n,
                             {
@@ -151,6 +152,7 @@ export default function AgentChat({ adapter }: { adapter: ChatAdapter }) {
                     });
             })
             .catch((error) => {
+                console.error(error);
                 setChatEntries(n => [
                     ...n,
                     {

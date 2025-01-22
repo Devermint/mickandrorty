@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-import {  testingAgentGroupMap, testingChats } from "@/app/api/data";
-import { redirect } from "next/dist/server/api-utils";
+import {  testingAgentGroupMap } from "@/app/api/data";
 
 export async function POST(req: NextRequest): Promise<Response> {
     const reqData = await req.json();
