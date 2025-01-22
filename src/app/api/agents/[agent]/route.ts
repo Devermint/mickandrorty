@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { testingAgents } from "../../data";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ agent: number }>  }): Promise<Response> {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ agent: string }>  }): Promise<Response> {
     const { agent } = await params;
     const agentObject = testingAgents.find((a) => {
         return a.id == agent;
