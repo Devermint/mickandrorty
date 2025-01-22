@@ -8,11 +8,15 @@
     "start": "next start",
     "lint": "next lint --fix"
   },
+  "pre-commit": [
+    "lint"
+  ],
   "dependencies": {
     "@chakra-ui/react": "^3.3.3",
     "@fontsource/jetbrains-mono": "^5.1.2",
     "deepmerge": "^4.3.1",
     "next": "15.1.5",
+    "pre-commit": "^1.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
