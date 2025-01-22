@@ -88,7 +88,7 @@ export default function AgentLayout({
             {activeAgent &&
                 <Flex paddingLeft="2rem" paddingRight="2rem" height="508px">
                     <AgentCard {...activeAgent} />
-                    <Box marginLeft="2rem" marginRight="2rem" position="relative" alignItems="center">
+                    <Box marginLeft="2rem" marginRight="2rem" position="relative" alignItems="center" width="100%">
                         <Grid blur="5px" filter="auto" height="100%" width="100%" templateRows="repeat(5, 1fr)" templateColumns="repeat(5, 1fr)" gap="0.5rem">
                             <GridItem>
                                 <GridBox>
@@ -115,7 +115,7 @@ export default function AgentLayout({
                         </Grid>
                         <Text position="absolute" right="0" left="0" marginInline="auto" width="fit-content" top="50%" >Coming soon...</Text>
                     </Box>
-                    <Box width="320px">
+                    <Box>
                         <AgentChat adapter={new AgentDMChatAdapter(activeAgent)} />
                     </Box>
                 </Flex>
