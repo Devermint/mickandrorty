@@ -12,19 +12,24 @@
     "lint"
   ],
   "dependencies": {
+    "@aptos-labs/wallet-adapter-mui-design": "^3.0.23",
+    "@aptos-labs/wallet-adapter-react": "^3.7.9",
     "@chakra-ui/react": "^3.3.3",
     "@fontsource/jetbrains-mono": "^5.1.2",
+    "@okwallet/aptos-wallet-adapter": "^0.0.7",
+    "antd": "^5.23.2",
     "deepmerge": "^4.3.1",
     "next": "15.1.5",
+    "petra-plugin-wallet-adapter": "^0.4.5",
     "pre-commit": "^1.2.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "eslint": "^9",
     "eslint-config-next": "15.1.5",
     "typescript": "^5"
