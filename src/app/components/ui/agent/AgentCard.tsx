@@ -1,3 +1,5 @@
+"use client";
+
 import { Container, Flex, Grid, GridItem, IconButton, Image, Text } from "@chakra-ui/react";
 import { Agent } from "@/app/lib/agent";
 import NextImage from "next/image";
