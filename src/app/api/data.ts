@@ -45,7 +45,7 @@ export const testingChats: ChatEntry[] = [
         sender: "",
         message: "Yeah Rorty, I’m that genius, booze-guzzling scientist yanking you through a bazillion dimensions. Deal with it.",
         alignment: "left",
-    },
+    }
 ]
 
 export const testingGroupChats: GroupChatEntry[] = [

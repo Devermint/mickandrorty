@@ -8,6 +8,7 @@ import CommunityIcon from '../icons/community'
 import StakeIcon from '../icons/stake'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { isMobile } from '../responsive';
 
 const BaseIconColor = "#99B637"
 const ActiveIconColor = "#000000"
@@ -63,12 +64,25 @@ export default function NavBar() {
     }, [pathname])
 
     return (
-        <Box position="fixed" bottom="0" width="100%" mb="2rem">
-            <Flex borderRadius="21px" background="#3D3E3A1A" justify="center" justifySelf="center" padding="0.5rem" gap="2rem">
-                {navButtons.map((button, index) => (
-                    <NavBarButton key={index} text={button.text} onClick={handleButtonClick} icon={button.icon(button.active ? ActiveIconColor : BaseIconColor)} backgroundColor={button.active ? ActiveBackgroundColor : undefined} />
-                ))}
-            </Flex>
-        </Box>
+        <div>
+            {
+                isMobile() ?
+                    <Box position="fixed" bottom="0" width="100%" mb="1rem">
+                        <Flex borderRadius="21px" background="#1D311475" justify="center" justifySelf="center" padding="0.5rem" gap="1rem">
+                            {navButtons.map((button, index) => (
+                                <NavBarButton key={index} text={button.text} onClick={handleButtonClick} icon={button.icon(button.active ? ActiveIconColor : BaseIconColor)} backgroundColor={button.active ? ActiveBackgroundColor : undefined} />
+                            ))}
+                        </Flex>
+                    </Box>
+                    :
+                    <Box position="fixed" bottom="0" width="100%" mb="2rem">
+                        <Flex borderRadius="21px" background="#3D3E3A1A" justify="center" justifySelf="center" padding="0.5rem" gap="2rem">
+                            {navButtons.map((button, index) => (
+                                <NavBarButton key={index} text={button.text} onClick={handleButtonClick} icon={button.icon(button.active ? ActiveIconColor : BaseIconColor)} backgroundColor={button.active ? ActiveBackgroundColor : undefined} />
+                            ))}
+                        </Flex>
+                    </Box>
+            }
+        </div>
     )
 }
