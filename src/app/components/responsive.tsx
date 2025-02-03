@@ -1,11 +1,23 @@
 "use client";
 
-export function isMobile(): boolean {
-    if (typeof window === 'undefined') {
-        return false
-    }
+import { useEffect, useState } from "react";
 
-    return window.innerWidth <= 768
+export function useMobileBreak(): boolean {
+    const [shouldBreak, setShouldBreak] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setShouldBreak(window.innerWidth <= 768);
+
+            function handleResize() {
+                setShouldBreak(window.innerWidth <= 768);
+            }
+
+            window.window.addEventListener('resize', handleResize);
+        }
+    }, []);
+
+    return shouldBreak;
 }
 
 // TODO: React to resize

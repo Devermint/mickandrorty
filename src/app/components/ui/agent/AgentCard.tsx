@@ -3,7 +3,7 @@
 import { Container, Flex, Grid, GridItem, IconButton, Image, Text } from "@chakra-ui/react";
 import { Agent } from "@/app/lib/agent";
 import NextImage from "next/image";
-import { isMobile } from "../../responsive";
+import { useMobileBreak } from "../../responsive";
 
 function AgentCardDesktop(agent: Agent, handleTelegram: (e: React.MouseEvent) => void, handleX: (e: React.MouseEvent) => void) {
     return (
@@ -180,6 +180,8 @@ function AgentCardMobile(agent: Agent, handleTelegram: (e: React.MouseEvent) => 
 }
 
 export default function AgentCard(agent: Agent) {
+    const isMobile = useMobileBreak();
+
     const handleTelegram = (e: React.MouseEvent) => {
         // TODO: Link
         e.stopPropagation();
@@ -193,7 +195,7 @@ export default function AgentCard(agent: Agent) {
     return (
         <div>
             {
-                isMobile() ?
+                isMobile ?
                     AgentCardMobile(agent, handleTelegram, handleX)
                     :
                     AgentCardDesktop(agent, handleTelegram, handleX)

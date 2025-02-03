@@ -1,5 +1,5 @@
 import { Agent } from "@/app/lib/agent";
-import { Container } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import AgentCard from "./AgentCard";
 
@@ -12,8 +12,8 @@ export default function AgentCardInteractive(agent: Agent) {
     }
 
     return (
-        <Container cursor="pointer" _hover={{ "transform": "scale(1.05)" }} onClick={handleOnClick}>
+        <Box cursor="pointer" _hover={{ "transform": "scale(1.05)" }} onClick={handleOnClick}>
             <AgentCard {...agent} />
-        </Container>
+        </Box>
     )
 }

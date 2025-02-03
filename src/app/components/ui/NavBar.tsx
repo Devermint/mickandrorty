@@ -8,7 +8,7 @@ import CommunityIcon from '../icons/community'
 import StakeIcon from '../icons/stake'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { isMobile } from '../responsive';
+import { useMobileBreak } from '../responsive';
 
 const BaseIconColor = "#99B637"
 const ActiveIconColor = "#000000"
@@ -43,6 +43,7 @@ function NavBarButton(props: NavBarButtonProps) {
 export default function NavBar() {
     const [navButtons, setNavButtons] = useState(NavButtonsInitial)
     const router = useRouter();
+    const isMobile = useMobileBreak();
     const pathname = usePathname()
 
     const handleButtonClick = (id: string) => {
@@ -66,7 +67,7 @@ export default function NavBar() {
     return (
         <div>
             {
-                isMobile() ?
+                isMobile ?
                     <Box position="fixed" bottom="0" width="100%" mb="1rem">
                         <Flex borderRadius="21px" background="#1D311475" justify="center" justifySelf="center" padding="0.5rem" gap="1rem">
                             {navButtons.map((button, index) => (

@@ -5,16 +5,16 @@ import Underline from '@/app/components/ui/Underline';
 import { Agent } from '@/app/lib/agent';
 import { useState, useEffect } from 'react';
 import AgentCardInteractive from '@/app/components/ui/agent/AgentCardInteractive';
-import { isMobile } from '@/app/components/responsive';
 import NextImage from 'next/image';
 import AgentCard from '@/app/components/ui/agent/AgentCard';
 import { useRouter } from 'next/navigation';
+import { useMobileBreak } from '@/app/components/responsive';
 
-function AgentListDesktop(agents: Agent[] | undefined) {
+function AgentListDesktop({ agents }: { agents: Agent[] }) {
     return (
-        <Box padding="1rem" marginTop="3rem">
-            <Flex gap="2.5rem" overflowY="hidden" padding="1rem">
-                {agents?.map((agent, index) => (
+        <Box padding="2rem" marginTop="1rem">
+            <Flex overflowY="hidden" overflowX="auto" padding="1rem" justify="center" width="100%" gap="2.5rem">
+                {agents.map((agent, index) => (
                     <AgentCardInteractive key={index} {...agent} />
                 ))}
             </Flex>
@@ -22,7 +22,7 @@ function AgentListDesktop(agents: Agent[] | undefined) {
     )
 }
 
-function AgentListMobile(agents: Agent[] | undefined) {
+function AgentListMobile({ agents }: { agents: Agent[] }) {
     const router = useRouter();
     const [activeAgent, setActiveAgent] = useState(0)
 
@@ -31,11 +31,7 @@ function AgentListMobile(agents: Agent[] | undefined) {
     }
 
     const onContinueClick = () => {
-        router.push(`/agents/${agents![activeAgent].id}`);
-    }
-
-    if (agents === undefined) {
-        return <div>Loading...</div>
+        router.push(`/agents/${agents[activeAgent].id}`);
     }
 
     return (
@@ -66,6 +62,7 @@ function AgentListMobile(agents: Agent[] | undefined) {
 }
 
 export default function HomePage() {
+    const isMobile = useMobileBreak();
     const [agents, setAgents] = useState<Agent[]>()
 
     useEffect(() => {
@@ -78,6 +75,10 @@ export default function HomePage() {
         });
     }, []);
 
+    if (agents === undefined) {
+        return <div>Loading...</div>
+    }
+
     return (
         <div>
             <Container justifyItems="center">
@@ -86,10 +87,10 @@ export default function HomePage() {
             </Container>
 
             {
-                isMobile() ?
-                    AgentListMobile(agents)
+                isMobile ?
+                    <AgentListMobile agents={agents} />
                     :
-                    AgentListDesktop(agents)
+                    <AgentListDesktop agents={agents} />
             }
         </div>
     );

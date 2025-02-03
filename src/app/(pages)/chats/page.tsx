@@ -1,7 +1,7 @@
 "use client";
 
 import PlusIcon from "@/app/components/icons/plus";
-import { isMobile } from "@/app/components/responsive";
+import { useMobileBreak } from "@/app/components/responsive";
 import AgentMiniIcons from "@/app/components/ui/agent/AgenMiniIcons";
 import AgentChat from "@/app/components/ui/agent/AgentChat";
 import { GroupChatAdapter, GroupChatEntry } from "@/app/lib/chat";
@@ -94,12 +94,17 @@ function ChatsPageMobile(groupChats: GroupChatEntry[], activeChat: number | unde
 export default function ChatsPage() {
     const [groupChats, setGroupChats] = useState<GroupChatEntry[]>([]);
     const [activeChat, setActiveChat] = useState<number>();
+    const isMobile = useMobileBreak();
 
     useEffect(() => {
         fetch("/api/chats")
             .then((res) => res.json())
             .then((data) => {
                 setGroupChats(data);
+
+                if (data.length > 0) {
+                    setActiveChat(0);
+                }
             })
             .catch((err) => console.error(err));
     }, []);
@@ -112,7 +117,7 @@ export default function ChatsPage() {
     return (
         <div>
             {
-                isMobile() ?
+                isMobile ?
                     ChatsPageMobile(groupChats, activeChat, selectChat)
                     :
                     ChatsPageDesktop(groupChats, activeChat, selectChat)

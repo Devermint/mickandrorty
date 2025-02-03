@@ -8,8 +8,8 @@ import AgentChat from "@/app/components/ui/agent/AgentChat";
 import AgentGraph from "@/app/components/ui/agent/AgentGraph";
 import { AgentDMChatAdapter } from "@/app/lib/chat";
 import { useRouter } from "next/navigation";
-import { isMobile } from "@/app/components/responsive";
 import AgentMiniIcons from "@/app/components/ui/agent/AgenMiniIcons";
+import { useMobileBreak } from "@/app/components/responsive";
 
 function GridBox({ children }: { children: React.ReactNode }) {
     return (
@@ -103,6 +103,7 @@ export default function AgentLayout({
     const router = useRouter();
     const args = use(params);
     const agentId = args.agent;
+    const isMobile = useMobileBreak();
 
     const [agents, setAgents] = useState<Agent[]>()
     const [activeAgent, setActiveAgent] = useState<Agent>()
@@ -136,7 +137,7 @@ export default function AgentLayout({
         <div>
             <AgentMiniIcons images={agents?.map((agent) => agent.image)} activeIndex={agents?.findIndex((agent) => {return agent.id === activeAgent.id})} onClick={agentMiniIconClick} />
             {
-                isMobile() ?
+                isMobile ?
                     AgentLayoutMobile(activeAgent)
                     :
                     AgentLayoutDesktop(activeAgent)

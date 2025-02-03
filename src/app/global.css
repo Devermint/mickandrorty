@@ -6,6 +6,8 @@ body {
     background-repeat: no-repeat;
     background-position: center;
     font-family: "JetBrains Mono";
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 ::-webkit-scrollbar {
