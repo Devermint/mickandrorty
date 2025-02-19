@@ -20,6 +20,7 @@ import { IoMdAddCircleOutline } from 'react-icons/io'
 import { IoChatbubbleOutline } from 'react-icons/io5'
 import { GrGroup } from 'react-icons/gr'
 import { RiExchange2Line } from 'react-icons/ri'
+import TelegramLogin from 'components/ConnectWallet/TelegramLogin'
 
 export default function Navbar() {
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -47,6 +48,7 @@ export default function Navbar() {
           />
         </Flex>
         <Flex alignItems="center" mx={4}>
+          <TelegramLogin />
           <ConnectWallet />
         </Flex>
       </Flex>
