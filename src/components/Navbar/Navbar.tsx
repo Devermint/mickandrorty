@@ -1,4 +1,4 @@
-import React from 'react'
+import { CloseIcon, HamburgerIcon } from '@chakra-ui/icons'
 import {
   Box,
   Flex,
@@ -11,16 +11,13 @@ import {
   useDisclosure,
   VStack,
 } from '@chakra-ui/react'
-import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useAccount } from 'wagmi'
 import ConnectWallet from 'components/ConnectWallet/ConnectWallet'
-import { FaHome, FaInfoCircle, FaEnvelope } from 'react-icons/fa'
+import TelegramLogin from 'components/ConnectWallet/TelegramLogin'
+import { FaHome } from 'react-icons/fa'
+import { GrGroup } from 'react-icons/gr'
 import { IoMdAddCircleOutline } from 'react-icons/io'
 import { IoChatbubbleOutline } from 'react-icons/io5'
-import { GrGroup } from 'react-icons/gr'
 import { RiExchange2Line } from 'react-icons/ri'
-import TelegramLogin from 'components/ConnectWallet/TelegramLogin'
 
 export default function Navbar() {
   const { isOpen, onOpen, onClose } = useDisclosure()
