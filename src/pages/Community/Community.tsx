@@ -1,19 +1,16 @@
-import { useRef, useState } from 'react'
-import { Badge, Box, Button, Flex, HStack, IconButton, Image, Text, VStack } from '@chakra-ui/react'
-import ChatCard from 'components/ChatCard/ChatCard'
-import { FaHeart, FaReply, FaShareAlt } from 'react-icons/fa'
-import { Timeline } from 'react-twitter-widgets'
+import { Box, Flex, Text, VStack } from '@chakra-ui/react'
 import {
-  Chart as ChartJS,
   CategoryScale,
+  Chart as ChartJS,
+  Legend,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
+import { Timeline } from 'react-twitter-widgets'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const Community = () => {

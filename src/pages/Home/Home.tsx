@@ -1,33 +1,17 @@
-import { useRef, useState } from 'react'
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  HStack,
-  Link,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalOverlay,
-  SimpleGrid,
-  useDisclosure,
-  Text,
-  VStack,
-} from '@chakra-ui/react'
-import EvolutionPath from 'components/EvolutionPath/EvolutionPath'
-import CurrentAgents from 'components/CurrentAgents/CurrentAgents'
-import AgentCard from 'components/AgentCard'
+import AgentCard from '@/components/AgentCard'
+import CurrentAgents from '@/components/CurrentAgents/CurrentAgents'
+import EvolutionPath from '@/components/EvolutionPath/EvolutionPath'
+import { Box } from '@chakra-ui/react'
 
 const Home = () => {
   return (
     <Box>
       <EvolutionPath></EvolutionPath>
       <CurrentAgents></CurrentAgents>
-      {/* <AgentCard
+      <AgentCard
         name="RORTY ZMITH"
-        title="Rorty is that jittery, do-good teen tagging along, freaking out while trying to stay 'nice' in a universe that doesn’t give a squanch."
-        description="Rorty is that jittery, do-good teen tagging along, freaking out while trying to stay 'nice' in a universe that doesn’t give a squanch."
+        title="Rorty is that jittery, do-good teen tagging along, freaking out while trying to stay 'nice' in a universe that doesn't give a squanch."
+        description="Rorty is that jittery, do-good teen tagging along, freaking out while trying to stay 'nice' in a universe that doesn't give a squanch."
         image="/img/Vitalik-Mick.png"
         stats={{
           funny: 5,
@@ -39,7 +23,7 @@ const Home = () => {
           telegram: 'https://t.me/rortyzmith',
           twitter: 'https://x.com/rortyzmith',
         }}
-      ></AgentCard> */}
+      ></AgentCard>
     </Box>
   )
 }

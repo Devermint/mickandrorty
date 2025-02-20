@@ -1,39 +1,13 @@
-import { useRef, useState } from 'react'
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  HStack,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalOverlay,
-  SimpleGrid,
-  useDisclosure,
-  Text,
-  VStack,
-  Badge,
-  Button,
-  Input,
-  Stack,
-  Image,
-  useColorModeValue,
-  Grid,
-} from '@chakra-ui/react'
-import EvolutionPath from 'components/EvolutionPath/EvolutionPath'
-import CurrentAgents, { Agent } from 'components/CurrentAgents/CurrentAgents'
-import { ArrowBackIcon } from '@chakra-ui/icons'
-import { useLocation } from 'react-router-dom'
-import BuyForm from 'components/BuyForm/BuyForm'
-import { AiOutlineArrowLeft } from 'react-icons/ai'
-import { Link } from 'react-router-dom'
+import { Box, Button, Flex, Grid, Image, Text, VStack } from '@chakra-ui/react'
 import AgentChat from 'components/AgentChat/AgentChat'
+import BuyForm from 'components/BuyForm/BuyForm'
+import { Agent } from 'components/CurrentAgents/CurrentAgents'
+import { AiOutlineArrowLeft } from 'react-icons/ai'
+import { Link, useLocation } from 'react-router-dom'
 
 const AgentView = () => {
   const location = useLocation()
   const agent = location.state.agent as Agent
-  console.log(agent)
 
   return agent.name ? (
     <Box>

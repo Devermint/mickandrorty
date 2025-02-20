@@ -46,31 +46,20 @@ const AgentCard: React.FC<AgentCardProps> = ({
   return (
     <Box
       maxW="sm"
+      borderTopLeftRadius="full"
       bg="blackAlpha.800"
       borderWidth="1px"
-      borderColor="green.900"
-      borderRadius="lg"
       boxShadow="lg"
     >
       <Box position="relative">
         <Image src={image} alt={name} borderTopRadius="lg" w="full" />
-        <Box
-          position="absolute"
-          bottom={0}
-          left={0}
-          right={0}
-          p={4}
-          bgGradient="linear(to-t, blackAlpha.900, transparent)"
-        >
-          <Text color="green.400" fontSize="xl" fontFamily="mono">
-            {name}
-          </Text>
-          <Text color="gray.400" textTransform="uppercase">
-            {title}
-          </Text>
-        </Box>
+        <Text color="green.400" fontSize="xl" fontFamily="mono">
+          {name}
+        </Text>
+        <Text color="gray.400" textTransform="uppercase">
+          {title}
+        </Text>
       </Box>
-
       <VStack p={4} align="stretch" spacing={4}>
         <Text color="gray.300" fontFamily="mono">
           {description}
