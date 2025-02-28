@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatEntry } from "@/app/lib/chat";
+import { ChatAdapter, ChatEntry } from "@/app/lib/chat";
 import { db } from "@/app/lib/firebase";
 import { Box, Flex, Input } from "@chakra-ui/react";
 import { collection, query, orderBy, addDoc, serverTimestamp, limit } from "firebase/firestore";
@@ -11,9 +11,10 @@ import ResponseWaiter from "./ResponseWaiter";
 import ChatMessage from "./ChatMessage";
 
 interface AgentChatProps {
-  groupId: string;
-  groupName: string;
+  groupId?: string;
+  groupName?: string;
   userId?: string;
+  adapter?: ChatAdapter;
 }
 
 export default function AgentChat({
@@ -105,7 +106,7 @@ export default function AgentChat({
 
     try {
       // Add a message to the agent's queue
-      const agentQueueRef = collection(db, "agentQueues", groupId, "messages");
+      const agentQueueRef = collection(db, "agentQueues", groupId ?? "1", "messages");
 
       await addDoc(agentQueueRef, {
         chatId: chatId,
