@@ -57,6 +57,9 @@ const customConfig = defineConfig({
             }
         },
         tokens: {
+          colors: {
+            textGray: {value: "#B1B3B9"},
+          },
             animations: {
                 bounce1: { value: "bounce1 1s infinite linear" },
                 bounce2: { value: "bounce2 1s infinite linear" },

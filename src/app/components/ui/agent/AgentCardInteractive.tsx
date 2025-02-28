@@ -4,16 +4,16 @@ import { useRouter } from "next/navigation";
 import AgentCard from "./AgentCard";
 
 export default function AgentCardInteractive(agent: Agent) {
-    const router = useRouter();
+  const router = useRouter();
 
-    const handleOnClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        router.push(`/agents/${agent.id}`);
-    }
+  const handleOnClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/chats?agentId=${agent.id}`);
+  };
 
-    return (
-        <Box cursor="pointer" _hover={{ "transform": "scale(1.05)" }} onClick={handleOnClick}>
-            <AgentCard {...agent} />
-        </Box>
-    )
+  return (
+    <Box cursor="pointer" _hover={{ transform: "scale(1.05)" }} onClick={handleOnClick}>
+      <AgentCard {...agent} />
+    </Box>
+  );
 }
