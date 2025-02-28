@@ -33,10 +33,10 @@ export interface FirebaseChat {
 }
 
 export class FirebaseGroupChatAdapter implements ChatAdapter {
-  private group: GroupChatEntry;
+  private group!: GroupChatEntry;
   private chatEntries: ChatEntry[] = [];
   private unsubscribe: (() => void) | null = null;
-  private userId: string;
+  private userId!: string;
   private chatId: string | null = null;
   private subscribers: ((entries: ChatEntry[]) => void)[] = [];
   private isInitialized: boolean = false;
@@ -278,10 +278,10 @@ export class FirebaseGroupChatAdapter implements ChatAdapter {
 
 // Also keep the original adapter for direct agent chats
 export class FirebaseAgentChatAdapter implements ChatAdapter {
-  private agent: Agent;
+  private agent!: Agent;
   private chatEntries: ChatEntry[] = [];
   private unsubscribe: (() => void) | null = null;
-  private userId: string;
+  private userId!: string;
   private chatId: string | null = null;
   private subscribers: ((entries: ChatEntry[]) => void)[] = [];
   private isInitialized: boolean = false;
