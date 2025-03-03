@@ -64,16 +64,26 @@ export default function AgentGraph() {
           />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#AFDC29", fontSize: 12 }}
+            tick={{
+              fill: "#AFDC29",
+              fontSize: "10px",
+              style: { fontSize: "10px" },
+            }}
             axisLine={{ stroke: "#444", opacity: 0.2 }}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: "#AFDC29", fontSize: 12 }}
+            tick={{
+              fill: "#AFDC29",
+              fontSize: "10px",
+              style: { fontSize: "10px" },
+            }}
             axisLine={false}
             tickLine={false}
             domain={[100, 300]}
             ticks={[100, 200, 300]}
+            width={45}
+            dx={-5}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area

@@ -23,37 +23,42 @@ function AgentListMobile({ agents }: { agents: Agent[] }) {
     <div>
       <Flex justifyContent="center" marginTop="0.5rem" gap="1.25rem">
         {agents.map((agent, index) => (
-          <Box
-            key={index}
-            onClick={() => agentMiniIconClick(index)}
-            position="relative"
-            minWidth="80px"
-            height="60px"
-            overflow="hidden"
-            borderWidth={index == activeAgent ? "2px" : "1px"}
-            borderRadius="12px"
-            borderColor={index == activeAgent ? "#AFDC29" : "#5A7219"}
-            background={
-              index === activeAgent
-                ? "radial-gradient(circle at center, #A4F05C 0%, #56933B 100%)"
-                : "radial-gradient(circle at center, rgba(90, 114, 25, 0.3) 0%, rgba(29, 49, 20, 0.6) 80%)"
-            }
-            _hover={{
-              borderColor: "#BDE546",
-            }}
-          >
-            <Image asChild alt="agent icon">
-              <NextImage
-                src={agent.image}
-                alt="agent icon"
-                fill={true}
-                objectFit="contain"
-                style={{
-                  opacity: index === activeAgent ? 1 : 0.3,
-                }}
-              />
-            </Image>
-          </Box>
+          <Flex key={index} alignItems="center" flexDirection="column" gap="0.5rem">
+            <Box
+              key={index}
+              onClick={() => agentMiniIconClick(index)}
+              position="relative"
+              minWidth="80px"
+              height="60px"
+              overflow="hidden"
+              borderWidth={index == activeAgent ? "2px" : "1px"}
+              borderRadius="12px"
+              borderColor={index == activeAgent ? "#AFDC29" : "#5A7219"}
+              background={
+                index === activeAgent
+                  ? "radial-gradient(circle at center, #A4F05C 0%, #56933B 100%)"
+                  : "radial-gradient(circle at center, rgba(90, 114, 25, 0.3) 0%, rgba(29, 49, 20, 0.6) 80%)"
+              }
+              _hover={{
+                borderColor: "#BDE546",
+              }}
+            >
+              <Image asChild alt="agent icon">
+                <NextImage
+                  src={agent.image}
+                  alt="agent icon"
+                  fill={true}
+                  objectFit="contain"
+                  style={{
+                    opacity: index === activeAgent ? 1 : 0.3,
+                  }}
+                />
+              </Image>
+            </Box>
+            {index === activeAgent ? (
+              <Box w="8px" h="8px" borderRadius="full" background="#92B624" />
+            ) : null}
+          </Flex>
         ))}
       </Flex>
 
