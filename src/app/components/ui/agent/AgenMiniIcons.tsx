@@ -68,7 +68,7 @@ export default function AgentMiniIcons(props: AgentMiniIconProps) {
   }
 
   return (
-    <Flex justifyContent="center" padding="1rem" gap="1rem">
+    <Flex justifyContent="center" padding="0.5rem" gap="1rem">
       {props.images!.map((agent, index) => (
         <AgentMiniIcon
           key={index}

@@ -4,7 +4,7 @@ import AgentMiniIcons from "@/app/components/ui/agent/AgenMiniIcons";
 import AgentChat from "@/app/components/ui/agent/AgentChat";
 import { ChatAdapter, GroupChatEntry } from "@/app/lib/chat";
 import { db } from "@/app/lib/firebase";
-import { Box, Container, Flex, Spinner, Text, VStack } from "@chakra-ui/react";
+import { Box, Container, Flex, Text, Button } from "@chakra-ui/react";
 import { collection, onSnapshot, orderBy, query, Timestamp } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 
@@ -26,7 +26,7 @@ export const ChatsPageMobile: React.FC<{
   const [queuedMessages, setQueuedMessages] = useState<IQueuedMessage[]>([]);
   const [totalQueue, setTotalQueue] = useState<number>(0);
   const [isLoadingQueue, setIsLoadingQueue] = useState<boolean>(false);
-  const [showQueue, setShowQueue] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<"all" | "my">("all");
 
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const adaptersCache = useRef<Map<string, ChatAdapter>>(new Map());
@@ -119,158 +119,120 @@ export const ChatsPageMobile: React.FC<{
     };
   }, [activeChat, groupChats.length]);
 
+  // Filter messages based on active tab
+  // const filteredMessages =
+  //   activeTab === "all"
+  //     ? queuedMessages
+  //     : queuedMessages.filter((msg) => msg.senderType === "user");
+
   return (
     <Container justifyItems="center" marginBottom="3rem" height="70vh">
       <Flex height="100%" width="100%" direction="column">
-        <Flex alignItems="center" justifyContent="space-between">
-          <AgentMiniIcons images={images} activeIndex={activeChat} onClick={onMiniIconClick} />
-          {activeChat !== undefined && (
-            <Text
-              color="#AFDC29"
-              fontSize="14px"
-              onClick={() => setShowQueue(!showQueue)}
-              cursor="pointer"
-            >
-              Queue: {totalQueue}
-            </Text>
-          )}
-        </Flex>
-        <Box height="80%" marginTop="0.5rem">
-          {activeChat !== undefined ? (
-            showQueue ? (
-              <Box
-                background="#0C150A"
-                overflowY="auto"
-                borderRadius="18px"
-                padding="1rem"
-                height="100%"
-              >
-                <Flex alignItems="center" justifyContent="space-between" mb={3}>
-                  <Text color="#FFFFFF" fontSize="16px" fontWeight="500">
-                    Message Queue
-                  </Text>
-                  {isLoadingQueue && <Spinner size="sm" color="#AFDC29" />}
-                </Flex>
+        <AgentMiniIcons images={images} activeIndex={activeChat} onClick={onMiniIconClick} />
 
-                <VStack gap="0.5rem" alignItems="stretch">
-                  {isLoadingQueue && queuedMessages.length === 0 ? (
-                    <Flex justifyContent="center" alignItems="center" height="100px">
-                      <Text color="#FFFFFF" fontSize="14px" textAlign="center">
-                        Loading queue...
-                      </Text>
-                    </Flex>
-                  ) : queuedMessages.length > 0 ? (
-                    queuedMessages.map((message) => (
-                      <Box
-                        key={message.id}
-                        width="100%"
-                        background={
-                          message.status === "pending"
-                            ? "#1D3114"
-                            : message.status === "processing"
-                            ? "#2D2D11"
-                            : message.status === "completed"
-                            ? "#112D21"
-                            : message.status === "error"
-                            ? "#2D1111"
-                            : "#1D3114"
-                        }
-                        borderRadius="12px"
-                        padding="1rem"
-                        display="flex"
-                        flexDirection="column"
-                        gap="0.5rem"
-                      >
-                        <Flex alignItems="center" gap="0.75rem">
-                          <Box
-                            width="32px"
-                            height="32px"
-                            borderRadius="full"
-                            background="#030B0A"
-                          />
-                          <Text
-                            color="#FFFFFF"
-                            fontSize="14px"
-                            fontWeight="500"
-                            overflow="hidden"
-                            textOverflow="ellipsis"
-                            whiteSpace="nowrap"
-                          >
-                            {message.senderType === "user" ? "User" : message.agentName}
-                          </Text>
-                        </Flex>
-                        <Text
-                          color="#AFDC29"
-                          fontSize="12px"
-                          overflow="hidden"
-                          textOverflow="ellipsis"
-                          whiteSpace="nowrap"
-                        >
-                          {message.content?.substring(0, 50)}
-                          {message.content?.length > 50 ? "..." : ""}
-                        </Text>
-                        <Flex justifyContent="space-between" alignItems="center">
-                          <Text color="#FFFFFF" fontSize="10px" opacity={0.6}>
-                            {message.createdAt?.toDate
-                              ? new Date(message.createdAt.toDate()).toLocaleTimeString()
-                              : "Pending"}
-                          </Text>
-                          <Text
-                            color={
-                              message.status === "pending"
-                                ? "#AFDC29"
-                                : message.status === "processing"
-                                ? "#DCAF29"
-                                : message.status === "completed"
-                                ? "#29DCAF"
-                                : message.status === "error"
-                                ? "#DC2929"
-                                : "#FFFFFF"
-                            }
-                            fontSize="10px"
-                            background="#2D4121"
-                            borderRadius="4px"
-                            padding="2px 6px"
-                          >
-                            {message.status}
-                          </Text>
-                        </Flex>
-                      </Box>
-                    ))
-                  ) : (
-                    <Text color="#FFFFFF" fontSize="14px" textAlign="center" mt={4}>
-                      No messages in queue
-                    </Text>
-                  )}
-                </VStack>
-              </Box>
-            ) : (
-              <AgentChat
-                groupId={groupChats[activeChat].id.toString()}
-                groupName={groupChats[activeChat].name}
-              />
-            )
-          ) : (
-            <Box width="100%" height="100%" background="#0C150A" borderRadius="18px">
+        <Box height="80%" marginTop="0.5rem">
+          <Box borderRadius="18px" height="100%">
+            {/* Queue Messages Section */}
+            <Box
+              border="1px solid #11331D"
+              background="#0C150A"
+              borderRadius="18px"
+              position="relative"
+            >
+              {/* Sticky Header */}
               <Box
-                borderRadius="18px"
-                height="100%"
-                background="linear-gradient(184.07deg, rgba(84, 203, 104, 0) 50.89%, rgba(175, 220, 41, 0.09) 97.9%)"
-                padding="1rem"
+                position="sticky"
+                top="0"
+                zIndex="1"
+                padding="0.5rem"
+                background="#0C150A"
+                borderTopRadius="18px"
               >
                 <Text
-                  position="relative"
-                  right="0"
-                  left="0"
-                  marginInline="auto"
-                  width="fit-content"
-                  top="50%"
+                  position="absolute"
+                  right="2"
+                  top="2"
+                  color="#AFDC29"
+                  backdropFilter="blur(11.8px)"
+                  border="1px solid #AFDC29"
+                  borderRadius="8px"
+                  background="#11331D"
+                  padding="0.5rem"
+                  fontSize="14px"
+                  textAlign="right"
                 >
-                  Select a chat to begin...
+                  Total que {totalQueue}
                 </Text>
               </Box>
+
+              {/* Scrollable Content */}
+              {isLoadingQueue ? (
+                <Box overflowY="auto" maxHeight="25dvh" padding="4" paddingTop="0">
+                  {queuedMessages.slice(0, 4).map((message) => (
+                    <Box
+                      key={message.id}
+                      width="100%"
+                      background="#1D3114"
+                      borderRadius="12px"
+                      padding="0.75rem"
+                      marginBottom="0.5rem"
+                    >
+                      <Text color="#FFFFFF" fontSize="14px">
+                        {message.content?.substring(0, 50)}
+                        {message.content?.length > 50 ? "..." : ""}
+                      </Text>
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Box overflowY="auto" maxHeight="25dvh" padding="4" paddingTop="0">
+                  <Text>Loading...</Text>
+                </Box>
+              )}
             </Box>
-          )}
+
+            {/* Tabs Section */}
+            <Flex gap="1rem" marginTop="1rem" marginBottom="1rem">
+              <Button
+                flex="1"
+                background={activeTab === "all" ? "#1D3114" : "transparent"}
+                color="#AFDC29"
+                onClick={() => setActiveTab("all")}
+                _hover={{ background: "#1D3114" }}
+                border="none"
+                borderRadius="8px"
+                height="40px"
+              >
+                All messages
+              </Button>
+              <Button
+                flex="1"
+                background={activeTab === "my" ? "#1D3114" : "transparent"}
+                color="#AFDC29"
+                onClick={() => setActiveTab("my")}
+                _hover={{ background: "#1D3114" }}
+                border="none"
+                borderRadius="8px"
+                height="40px"
+              >
+                My messages
+              </Button>
+            </Flex>
+
+            {/* Chat Section */}
+            {activeChat !== undefined ? (
+              <Flex flex="1" maxHeight="35dvh" borderRadius="18px" overflowY="auto">
+                <AgentChat
+                  groupId={groupChats[activeChat].id.toString()}
+                  groupName={groupChats[activeChat].name}
+                />
+              </Flex>
+            ) : (
+              <Box flex="1">
+                <Text>Select a chat to begin...</Text>
+              </Box>
+            )}
+          </Box>
         </Box>
       </Flex>
     </Container>
