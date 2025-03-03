@@ -11,6 +11,7 @@ import WalletsModal from "./modals/wallet/WalletModal";
 export default function TopBar() {
   const { connected } = useWallet();
   const [modalState, setModalState] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const handleModalState = (state: boolean) => {
     setModalState(state);
@@ -20,11 +21,31 @@ export default function TopBar() {
     console.log("Wallet connection status:", connected);
   }, [connected]);
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <Flex alignItems="center" justifyContent="space-between">
       <Box mt="1rem" ml="2rem">
         <Link href="/">
-          <Image src="/logo.png" alt="logo" width={200} height={60} />
+          <Image
+            src={isMobile ? "/logo-mobile.png" : "/logo.png"}
+            alt="logo"
+            style={{
+              width: isMobile ? "50px" : "200px",
+              height: isMobile ? "50px" : "70px",
+            }}
+            width={isMobile ? 30 : 200}
+            height={isMobile ? 30 : 70}
+          />
         </Link>
       </Box>
       {connected ? (

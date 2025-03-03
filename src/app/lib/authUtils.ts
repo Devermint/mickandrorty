@@ -1,5 +1,7 @@
+"use client";
+
 // utils/firebaseUserUtils.ts
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, query, where, collection, getDocs, FieldValue, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/app/lib/firebase';
 import { AccountInfo, AdapterWallet } from '@aptos-labs/wallet-adapter-react';
 
@@ -10,11 +12,11 @@ interface UserData {
   photoURL?: string | null;
   aptosAddress?: string;
   provider: 'aptos_google' | 'aptos_apple' | 'wallet';
-  createdAt: number;
-  lastLoginAt: number;
+  createdAt: number | FieldValue;
+  lastLoginAt: number | FieldValue;
 }
 
-export const storeUserData = async ( account: AccountInfo, wallet:  AdapterWallet, email: string) => {
+export const storeUserData = async (account: AccountInfo, wallet: AdapterWallet, email: string) => {
   if (!account?.address) return;
 
   const currentAddress = account.address.toString();
@@ -25,7 +27,18 @@ export const storeUserData = async ( account: AccountInfo, wallet:  AdapterWalle
       : 'wallet';
 
   try {
-    const now = Date.now();
+    // Use Firebase server-side timestamp
+    const now = serverTimestamp();
+
+    // Check if a user with the same email already exists
+    const emailQuery = query(collection(db, 'users'), where('email', '==', email));
+    const emailQuerySnapshot = await getDocs(emailQuery);
+
+    if (!emailQuerySnapshot.empty) {
+      console.warn('A user with this email already exists.');
+      return; // Optionally, handle this case as needed
+    }
+
     const userDoc = await getDoc(doc(db, 'users', currentAddress));
     
     const userData: UserData = {
@@ -34,7 +47,7 @@ export const storeUserData = async ( account: AccountInfo, wallet:  AdapterWalle
       provider: currentProvider,
       lastLoginAt: now,
       createdAt: userDoc.exists() ? userDoc.data().createdAt : now,
-      ...(email && { email}),
+      ...(email && { email }),
       ...userDoc.exists() && {
         displayName: userDoc.data().displayName,
         photoURL: userDoc.data().photoURL,
