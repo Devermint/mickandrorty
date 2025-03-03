@@ -4,28 +4,31 @@ import AgentChat from "@/app/components/ui/agent/AgentChat";
 import AgentGraph from "@/app/components/ui/agent/AgentGraph";
 import { Agent } from "@/app/lib/agent";
 import { AgentDMChatAdapter } from "@/app/lib/chat";
-import { Box, Flex, Grid, GridItem, Text } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 
-function GridBox({ children }: { children: React.ReactNode }) {
-  return (
-    <Box background="#1D3114" borderRadius="16px" width="100%" height="100%" padding="0.5rem">
-      {children}
-    </Box>
-  );
-}
+// function GridBox({ children }: { children: React.ReactNode }) {
+//   return (
+//     <Box background="#1D3114" borderRadius="16px" width="100%" height="100%" padding="0.5rem">
+//       {children}
+//     </Box>
+//   );
+// }
 
 function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
   return (
-    <Flex paddingLeft="2rem" paddingRight="2rem" height="60vh" direction="column">
-      <Box
-        marginLeft="2rem"
-        marginRight="2rem"
-        position="relative"
-        alignItems="center"
-        height="40%"
-      >
-        <Grid
-          blur="5px"
+    <>
+      <Flex height="60vh" direction="column">
+        <Flex height="100%" width="100%">
+          <AgentGraph />
+        </Flex>
+        <Box
+          marginLeft="2rem"
+          marginRight="2rem"
+          position="relative"
+          alignItems="center"
+          height="40%"
+        >
+          {/* <Grid
           filter="auto"
           height="100%"
           width="100%"
@@ -62,25 +65,13 @@ function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
               </Text>
             </GridBox>
           </GridItem>
-          <GridItem colSpan={5} rowSpan={4}>
-            <AgentGraph />
-          </GridItem>
-        </Grid>
-        <Text
-          position="absolute"
-          right="0"
-          left="0"
-          marginInline="auto"
-          width="fit-content"
-          top="50%"
-        >
-          Coming soon...
-        </Text>
-      </Box>
-      <Box height="100%" marginTop="0.5rem">
-        <AgentChat adapter={new AgentDMChatAdapter(activeAgent)} />
-      </Box>
-    </Flex>
+        </Grid> */}
+        </Box>
+        <Box height="100%" marginTop="0.5rem">
+          <AgentChat adapter={new AgentDMChatAdapter(activeAgent)} />
+        </Box>
+      </Flex>
+    </>
   );
 }
 
