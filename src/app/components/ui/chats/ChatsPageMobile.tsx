@@ -4,7 +4,7 @@ import AgentMiniIcons from "@/app/components/ui/agent/AgenMiniIcons";
 import AgentChat from "@/app/components/ui/agent/AgentChat";
 import { ChatAdapter, GroupChatEntry } from "@/app/lib/chat";
 import { db } from "@/app/lib/firebase";
-import { Box, Container, Flex, Text, Button } from "@chakra-ui/react";
+import { Box, Flex, Text, Button } from "@chakra-ui/react";
 import { collection, onSnapshot, orderBy, query, Timestamp } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 

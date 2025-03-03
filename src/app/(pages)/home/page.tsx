@@ -5,7 +5,7 @@ import AgentListDesktop from "@/app/components/ui/agent/AgentListDesktop";
 import AgentListMobile from "@/app/components/ui/agent/AgentListMobile";
 import Underline from "@/app/components/ui/Underline";
 import { Agent } from "@/app/lib/agent";
-import { Container, Flex, Text } from "@chakra-ui/react";
+import { Flex, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
