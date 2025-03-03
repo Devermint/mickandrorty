@@ -1,12 +1,5 @@
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import {
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Popover,
-  Tooltip,
-} from "@mui/material";
+import { List, ListItem, ListItemButton, ListItemText, Popover, Tooltip } from "@mui/material";
 import { useState } from "react";
 
 type WalletMenuProps = {
@@ -26,10 +19,10 @@ export default function WalletMenu({
 
   const onAccountOptionClicked = () => {
     if (handleNavigate) {
-        handleNavigate();
+      handleNavigate();
     }
     handlePopoverClose();
-};
+  };
 
   const handleLogout = () => {
     disconnect();
@@ -41,18 +34,18 @@ export default function WalletMenu({
   const copyAddress = async () => {
     const address = account?.address;
     if (address) {
-        await navigator.clipboard.writeText(address);
+      await navigator.clipboard.writeText(address.toString());
 
-        setTooltipOpen(true);
+      setTooltipOpen(true);
 
-        setTimeout(() => {
-            setTooltipOpen(false);
-        }, 2000);
+      setTimeout(() => {
+        setTooltipOpen(false);
+      }, 2000);
     } else {
-        // Handle the case where address is undefined
-        console.error("Address is undefined");
+      // Handle the case where address is undefined
+      console.error("Address is undefined");
     }
-};
+  };
 
   return (
     <Popover
