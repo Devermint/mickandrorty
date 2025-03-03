@@ -1,11 +1,7 @@
 "use client";
 
-import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
-import { ChakraProvider } from "@chakra-ui/react";
 import "@fontsource/jetbrains-mono";
-import { system } from "./components/theme";
-import NavBar from "./components/ui/NavBar";
-import TopBar from "./components/ui/TopBar";
+import Providers from "./components/Providers";
 import "./global.css";
 
 export default function RootLayout({
@@ -14,15 +10,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        <AptosWalletAdapterProvider>
-          <ChakraProvider value={system}>
-            <TopBar />
-            {children}
-            <NavBar />
-          </ChakraProvider>
-        </AptosWalletAdapterProvider>
+    <html lang="en" suppressHydrationWarning={true}>
+      <body suppressHydrationWarning={true}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -2,9 +2,6 @@
 
 import { WalletSortingOptions } from "@aptos-labs/wallet-adapter-react";
 import { Breakpoint } from "@mui/material";
-import { useState } from "react";
-import WalletButton from "./WalletButton";
-import WalletsModal from "../ui/modals/wallet/WalletModal";
 export interface WalletConnectorProps extends WalletSortingOptions {
   networkSupport?: string;
   handleNavigate?: () => void;
@@ -12,26 +9,26 @@ export interface WalletConnectorProps extends WalletSortingOptions {
   modalMaxWidth?: Breakpoint;
 }
 
-export function WalletConnector({
-  networkSupport,
-  handleNavigate,
-  modalMaxWidth,
-  ...walletSortingOptions
-}: WalletConnectorProps) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const handleModalOpen = () => setModalOpen(true);
-  const handleClose = () => setModalOpen(false);
+// export function WalletConnector({
+//   networkSupport,
+//   handleNavigate,
+//   modalMaxWidth,
+//   ...walletSortingOptions
+// }: WalletConnectorProps) {
+//   const [modalOpen, setModalOpen] = useState(false);
+//   const handleModalOpen = () => setModalOpen(true);
+//   const handleClose = () => setModalOpen(false);
 
-  return (
-    <>
-      <WalletButton handleModalOpen={handleModalOpen} handleNavigate={handleNavigate} />
-      <WalletsModal
-        handleClose={handleClose}
-        modalOpen={modalOpen}
-        networkSupport={networkSupport}
-        modalMaxWidth={modalMaxWidth}
-        {...walletSortingOptions}
-      />
-    </>
-  );
-}
+//   return (
+//     <>
+//       <WalletButton handleModalOpen={handleModalOpen} handleNavigate={handleNavigate} />
+//       <WalletsModal
+//         handleClose={handleClose}
+//         modalOpen={modalOpen}
+//         networkSupport={networkSupport}
+//         modalMaxWidth={modalMaxWidth}
+//         {...walletSortingOptions}
+//       />
+//     </>
+//   );
+// }

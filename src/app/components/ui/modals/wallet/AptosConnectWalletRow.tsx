@@ -46,6 +46,7 @@ function AptosConnectWalletRow({ wallet, onConnect }: WalletRowProps) {
         bg={wallet.name.includes("Google") ? "white" : "gray.900"}
         color={wallet.name.includes("Google") ? "gray.900" : "white"}
         size="lg"
+        w="100%"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -53,7 +54,7 @@ function AptosConnectWalletRow({ wallet, onConnect }: WalletRowProps) {
           alt={`${wallet.name} icon`}
           style={{ width: 24, height: 24, marginRight: 8 }}
         />
-        Connect with {wallet.name}
+        {wallet.name}
       </Button>
     </div>
   );
