@@ -5,7 +5,7 @@ import AgentListDesktop from "@/app/components/ui/agent/AgentListDesktop";
 import AgentListMobile from "@/app/components/ui/agent/AgentListMobile";
 import Underline from "@/app/components/ui/Underline";
 import { Agent } from "@/app/lib/agent";
-import { Container, Text } from "@chakra-ui/react";
+import { Container, Flex, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
@@ -30,12 +30,18 @@ export default function HomePage() {
 
   return (
     <div>
-      <Container justifyItems="center">
-        <Text fontSize="20px" lineHeight="26px" fontWeight="700" marginBottom="0.5rem">
+      <Flex flexDirection="column" alignItems="center">
+        <Text
+          fontSize="20px"
+          textAlign="center"
+          lineHeight="26px"
+          fontWeight="700"
+          marginBottom="0.5rem"
+        >
           Select AI agent
         </Text>
         <Underline />
-      </Container>
+      </Flex>
 
       {isMobile ? <AgentListMobile agents={agents} /> : <AgentListDesktop agents={agents} />}
     </div>

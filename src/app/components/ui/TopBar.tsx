@@ -36,17 +36,17 @@ export default function TopBar() {
 
   return (
     <Flex alignItems="center" justifyContent="space-between">
-      <Box mt="1rem" ml="2rem">
+      <Box mt="0.5rem" ml="2rem">
         <Link href="/">
           <Image
             src={isMobile ? "/logo-mobile.png" : "/logo.png"}
             alt="logo"
             style={{
-              width: isMobile ? "50px" : "200px",
-              height: isMobile ? "50px" : "70px",
+              width: isMobile ? "40px" : "200px",
+              height: isMobile ? "40px" : "70px",
             }}
-            width={isMobile ? 30 : 200}
-            height={isMobile ? 30 : 70}
+            width={isMobile ? 40 : 200}
+            height={isMobile ? 40 : 70}
           />
         </Link>
       </Box>

@@ -17,11 +17,7 @@ interface AgentChatProps {
   adapter?: ChatAdapter;
 }
 
-export default function AgentChat({
-  groupId,
-  groupName,
-  userId = crypto.randomUUID().slice(0, 12),
-}: AgentChatProps) {
+export default function AgentChat({ groupId, groupName, userId = "1" }: AgentChatProps) {
   // Local state for UI purposes
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const inputMessage = useRef<HTMLInputElement>(null);

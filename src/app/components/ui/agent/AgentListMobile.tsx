@@ -28,8 +28,8 @@ function AgentListMobile({ agents }: { agents: Agent[] }) {
               key={index}
               onClick={() => agentMiniIconClick(index)}
               position="relative"
-              minWidth="80px"
-              height="60px"
+              minWidth="70px"
+              height="50px"
               overflow="hidden"
               borderWidth={index == activeAgent ? "2px" : "1px"}
               borderRadius="12px"
@@ -62,7 +62,7 @@ function AgentListMobile({ agents }: { agents: Agent[] }) {
         ))}
       </Flex>
 
-      <Box px="3rem" py="1rem" height="55vh">
+      <Box overflowY="auto" px="3rem" py="1rem" height="54dvh">
         <AgentCard {...agents[activeAgent]} />
       </Box>
 

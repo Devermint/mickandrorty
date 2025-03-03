@@ -25,7 +25,6 @@ export const ChatsPageMobile: React.FC<{
 }> = ({ groupChats, activeChat, selectChat }) => {
   const [queuedMessages, setQueuedMessages] = useState<IQueuedMessage[]>([]);
   const [totalQueue, setTotalQueue] = useState<number>(0);
-  const [isLoadingQueue, setIsLoadingQueue] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"all" | "my">("all");
 
   const unsubscribeRef = useRef<(() => void) | null>(null);
@@ -74,15 +73,12 @@ export const ChatsPageMobile: React.FC<{
 
     const agentId = activeGroupChat.id.toString();
 
-    setIsLoadingQueue(true);
     const agentQueueRef = collection(db, "agentQueues", agentId, "messages");
     const q = query(agentQueueRef, orderBy("createdAt", "desc"));
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        setIsLoadingQueue(false);
-
         const agentMessages = snapshot.docs.map((doc) => {
           const data = doc.data();
           return {
@@ -102,7 +98,6 @@ export const ChatsPageMobile: React.FC<{
       },
       (error) => {
         console.error(`Error in agent ${agentId} queue listener:`, error);
-        setIsLoadingQueue(false);
       }
     );
 
@@ -126,7 +121,7 @@ export const ChatsPageMobile: React.FC<{
   //     : queuedMessages.filter((msg) => msg.senderType === "user");
 
   return (
-    <Container justifyItems="center" marginBottom="3rem" height="70vh">
+    <Flex px={4} overflowY="auto" justifyItems="center" height="76dvh">
       <Flex height="100%" width="100%" direction="column">
         <AgentMiniIcons images={images} activeIndex={activeChat} onClick={onMiniIconClick} />
 
@@ -166,29 +161,23 @@ export const ChatsPageMobile: React.FC<{
               </Box>
 
               {/* Scrollable Content */}
-              {isLoadingQueue ? (
-                <Box overflowY="auto" maxHeight="25dvh" padding="4" paddingTop="0">
-                  {queuedMessages.slice(0, 4).map((message) => (
-                    <Box
-                      key={message.id}
-                      width="100%"
-                      background="#1D3114"
-                      borderRadius="12px"
-                      padding="0.75rem"
-                      marginBottom="0.5rem"
-                    >
-                      <Text color="#FFFFFF" fontSize="14px">
-                        {message.content?.substring(0, 50)}
-                        {message.content?.length > 50 ? "..." : ""}
-                      </Text>
-                    </Box>
-                  ))}
-                </Box>
-              ) : (
-                <Box overflowY="auto" maxHeight="25dvh" padding="4" paddingTop="0">
-                  <Text>Loading...</Text>
-                </Box>
-              )}
+              <Box overflowY="auto" maxHeight="20dvh" padding="4" paddingTop="0">
+                {queuedMessages.slice(0, 4).map((message) => (
+                  <Box
+                    key={message.id}
+                    width="100%"
+                    background="#1D3114"
+                    borderRadius="12px"
+                    padding="0.75rem"
+                    marginBottom="0.5rem"
+                  >
+                    <Text color="#FFFFFF" fontSize="14px">
+                      {message.content?.substring(0, 50)}
+                      {message.content?.length > 50 ? "..." : ""}
+                    </Text>
+                  </Box>
+                ))}
+              </Box>
             </Box>
 
             {/* Tabs Section */}
@@ -235,6 +224,6 @@ export const ChatsPageMobile: React.FC<{
           </Box>
         </Box>
       </Flex>
-    </Container>
+    </Flex>
   );
 };
