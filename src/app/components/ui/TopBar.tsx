@@ -6,10 +6,10 @@ import Link from "next/link";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useEffect, useState } from "react";
 import WalletButton from "../hooks/WalletButton";
-import WalletsModal from "../hooks/WalletModel";
+import WalletsModal from "./modals/wallet/WalletModal";
 
 export default function TopBar() {
-  const {connected} = useWallet();
+  const { connected } = useWallet();
   const [modalState, setModalState] = useState(false);
 
   const handleModalState = (state: boolean) => {
@@ -36,13 +36,11 @@ export default function TopBar() {
           <WalletsModal
             handleClose={() => handleModalState(false)}
             modalOpen={modalState}
+            networkSupport={undefined}
+            modalMaxWidth={undefined}
           />
-          <Button
-            mr="2rem"
-            background="#1D3114"
-            onClick={() => handleModalState(true)}
-          >
-            Connect wallet
+          <Button mr="2rem" background="#1D3114" onClick={() => handleModalState(true)}>
+            Sign in
           </Button>
         </>
       )}

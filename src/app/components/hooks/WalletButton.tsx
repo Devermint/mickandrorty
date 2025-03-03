@@ -1,3 +1,5 @@
+"use client";
+
 import { truncateAddress, useWallet } from "@aptos-labs/wallet-adapter-react";
 import { AccountBalanceWalletOutlined as AccountBalanceWalletOutlinedIcon } from "@mui/icons-material";
 import { Avatar, Button, Typography } from "@mui/material";
@@ -15,9 +17,7 @@ export default function WalletButton({
 }: WalletButtonProps): JSX.Element {
   const { connected, account, wallet } = useWallet();
 
-  const [popoverAnchor, setPopoverAnchor] = useState<HTMLButtonElement | null>(
-    null
-  );
+  const [popoverAnchor, setPopoverAnchor] = useState<HTMLButtonElement | null>(null);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setPopoverAnchor(event.currentTarget);
   };
@@ -42,15 +42,9 @@ export default function WalletButton({
       >
         {connected ? (
           <>
-            <Avatar
-              alt={wallet?.name}
-              src={wallet?.icon}
-              sx={{ width: 24, height: 24 }}
-            />
+            <Avatar alt={wallet?.name} src={wallet?.icon} sx={{ width: 24, height: 24 }} />
             <Typography noWrap ml={2}>
-              {account?.ansName ||
-                truncateAddress(account?.address) ||
-                "Unknown"}
+              {account?.ansName || truncateAddress(account?.address?.toString() || "") || "Unknown"}
             </Typography>
           </>
         ) : (
