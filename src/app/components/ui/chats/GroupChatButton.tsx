@@ -3,7 +3,12 @@
 import { GroupChatEntry } from "@/app/lib/chat";
 import { Box, Flex, Image, Text } from "@chakra-ui/react";
 import NextImage from "next/image";
-
+import { useAgentStats } from "@/app/hooks/useAgentStats";
+export const testingAgentGroupMap: Record<number, string> = {
+  0: "mick.zanches",
+  1: "pickle.mick",
+  2: "rorty.zmith",
+};
 export default function GroupChatButton({
   entry,
   activeChat,
@@ -14,6 +19,7 @@ export default function GroupChatButton({
   onClick: (entry: GroupChatEntry) => void;
 }) {
   const isActive = activeChat == entry.id;
+  const { subscriberCount } = useAgentStats(testingAgentGroupMap[entry.id]);
 
   return (
     <Box
@@ -55,7 +61,7 @@ export default function GroupChatButton({
             {entry.name}
           </Text>
           <Text color="#AFDC29" fontSize="14px" opacity="0.8">
-            +200 chatters
+            {subscriberCount} chatters
           </Text>
         </Flex>
       </Flex>

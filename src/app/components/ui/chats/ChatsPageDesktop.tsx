@@ -118,7 +118,7 @@ export default function ChatsPageDesktop({
         unsubscribeRef.current = null;
       }
     };
-  }, [, activeChat, groupChats.length]);
+  }, [activeChat, groupChats.length]);
 
   // Add a function to handle joining a public chat
   const joinPublicChat = async (groupChat: GroupChatEntry) => {
@@ -126,12 +126,11 @@ export default function ChatsPageDesktop({
     // You could also add logic here to mark the user as "joined" to the chat
     // or perform other initialization for public chat participation
   };
-
   return (
     <Container justifyItems="center" marginBottom="3rem" height="75vh">
       <Flex padding="2rem" height="100%" width="100%" gap="1rem">
         <Flex direction="column" gap={3} borderRadius="18px">
-          <ActivityStats onlineUsers={12234} totalUsers={12234} />
+          <ActivityStats />
           <VStack
             alignItems="flex-start"
             background="#0C150A"

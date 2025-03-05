@@ -1,13 +1,16 @@
 "use client";
 
 import { Box, Text, VStack } from "@chakra-ui/react";
+import { db } from "@/app/lib/firebase";
+import { doc } from "firebase/firestore";
+import { useDocument } from "react-firebase-hooks/firestore";
 
-interface ActivityStatsProps {
-  onlineUsers: number;
-  totalUsers: number;
-}
+export default function ActivityStats() {
+  const [snapshot] = useDocument(doc(db, "stats", "stats"));
 
-export default function ActivityStats({ onlineUsers, totalUsers }: ActivityStatsProps) {
+  const onlineUsers = snapshot?.data()?.totalGroupChatOnlineUserCount || 0;
+  const totalUsers = snapshot?.data()?.totalGroupChatUserCount || 0;
+
   return (
     <Box background="#0C150A" borderRadius="18px" marginTop="48px" py={4} px={5} width="300px">
       <VStack align="flex-start" gap="1rem">
