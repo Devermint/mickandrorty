@@ -30,7 +30,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <Flex flexDirection="column" alignItems="center">
+      <Flex flexDirection="column" display={{ base: "none", md: "flex" }} alignItems="center">
         <Text
           fontSize="20px"
           textAlign="center"

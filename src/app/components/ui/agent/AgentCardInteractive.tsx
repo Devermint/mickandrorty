@@ -8,7 +8,8 @@ export default function AgentCardInteractive(agent: Agent) {
 
   const handleOnClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    router.push(`/chats?agentId=${agent.id}`);
+    // router.push(`/chats?agentId=${agent.id}`);
+    router.push(`/agents/${agent.id}`);
   };
 
   return (

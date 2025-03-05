@@ -15,9 +15,17 @@ interface AgentChatProps {
   groupName?: string;
   userId?: string;
   adapter?: ChatAdapter;
+  onInputFocus?: () => void;
+  onInputBlur?: () => void;
 }
 
-export default function AgentChat({ groupId, groupName, userId = "1" }: AgentChatProps) {
+export default function AgentChat({
+  groupId,
+  groupName,
+  userId = "1",
+  onInputFocus,
+  onInputBlur,
+}: AgentChatProps) {
   // Local state for UI purposes
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const inputMessage = useRef<HTMLInputElement>(null);
@@ -150,9 +158,7 @@ export default function AgentChat({ groupId, groupName, userId = "1" }: AgentCha
                 Loading messages...
               </Box>
             ) : messages.length === 0 ? (
-              <Box textAlign="center" color="#AFDC29" padding="1rem">
-                No messages yet. Start the conversation!
-              </Box>
+              <></>
             ) : (
               messages
                 .toReversed()
@@ -186,6 +192,8 @@ export default function AgentChat({ groupId, groupName, userId = "1" }: AgentCha
                 placeholder={`Message ${displayName}`}
                 ref={inputMessage}
                 onKeyDown={reactToEnterKey}
+                onFocus={onInputFocus}
+                onBlur={onInputBlur}
               />
               <Box
                 cursor={processingMessage || loading ? "not-allowed" : "pointer"}

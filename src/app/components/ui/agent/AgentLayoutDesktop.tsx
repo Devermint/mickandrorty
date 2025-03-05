@@ -6,6 +6,7 @@ import AgentGraph from "@/app/components/ui/agent/AgentGraph";
 import { Agent } from "@/app/lib/agent";
 import { AgentDMChatAdapter } from "@/app/lib/chat";
 import { Box, Flex, Grid, GridItem, Text } from "@chakra-ui/react";
+import { useAgentStats } from "@/app/hooks/useAgentStats";
 
 function GridBox({ children }: { children: React.ReactNode }) {
   return (
@@ -16,13 +17,12 @@ function GridBox({ children }: { children: React.ReactNode }) {
 }
 
 function AgentLayoutDesktop({ activeAgent }: { activeAgent: Agent }) {
+  const { subscriberCount, messageCount, messageHistory } = useAgentStats(activeAgent.id);
   return (
     <Flex paddingLeft="2rem" paddingRight="2rem" height="508px">
       <AgentCard {...activeAgent} />
       <Box marginLeft="2rem" marginRight="2rem" position="relative" alignItems="center">
         <Grid
-          blur="5px"
-          filter="auto"
           height="100%"
           width="100%"
           templateRows="repeat(5, 1fr)"
@@ -41,37 +41,27 @@ function AgentLayoutDesktop({ activeAgent }: { activeAgent: Agent }) {
           <GridItem colSpan={2}>
             <GridBox>
               <Text fontWeight="700" fontSize="32px" lineHeight="41px">
-                302
+                {messageCount}
               </Text>
               <Text fontWeight="500" fontSize="16px" lineHeight="21px" color="#FFFFFF">
-                Score
+                Messages
               </Text>
             </GridBox>
           </GridItem>
           <GridItem colSpan={2}>
             <GridBox>
               <Text fontWeight="700" fontSize="32px" lineHeight="41px">
-                30.32K
+                {subscriberCount}
               </Text>
               <Text fontWeight="500" fontSize="16px" lineHeight="21px" color="#FFFFFF">
-                Followers
+                Subscribers
               </Text>
             </GridBox>
           </GridItem>
           <GridItem colSpan={5} rowSpan={4}>
-            <AgentGraph />
+            <AgentGraph data={messageHistory} />
           </GridItem>
         </Grid>
-        <Text
-          position="absolute"
-          right="0"
-          left="0"
-          marginInline="auto"
-          width="fit-content"
-          top="50%"
-        >
-          Coming soon...
-        </Text>
       </Box>
       <Box width="30%">
         <AgentChat adapter={new AgentDMChatAdapter(activeAgent)} />

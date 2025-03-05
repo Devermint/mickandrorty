@@ -12,14 +12,14 @@ import {
   TooltipProps,
 } from "recharts";
 
-// Sample data to match the graph in the image
-const data = [
-  { date: "05-20", value: 50 },
-  { date: "05-21", value: 300 },
-  { date: "05-22", value: 250 },
-  { date: "05-23", value: 180 },
-  { date: "05-24", value: 320 },
-];
+interface MessageHistoryData {
+  date: string;
+  count: number;
+}
+
+interface AgentGraphProps {
+  data: MessageHistoryData[];
+}
 
 // Custom tooltip component
 const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
@@ -33,19 +33,26 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
         color="#AFDC29"
         fontSize="12px"
       >
-        <p>{`${label}: ${payload[0].value}`}</p>
+        <p>{`${label}: ${payload[0].value} messages`}</p>
       </Box>
     );
   }
   return null;
 };
 
-export default function AgentGraph() {
+export default function AgentGraph({ data }: AgentGraphProps) {
+  // If no data, show empty graph with 0 values
+  const graphData = data.length > 0 ? data : [{ date: "Today", count: 0 }];
+
+  // Calculate domain for Y axis
+  const maxCount = Math.max(...graphData.map((d) => d.count));
+  const yDomain = [0, Math.max(100, Math.ceil(maxCount / 100) * 100)];
+
   return (
     <Box height="100%" width="100%" paddingTop="10px">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
-          data={data}
+          data={graphData}
           margin={{ top: 5, right: 0, left: 0, bottom: 5 }}
           style={{ backgroundColor: "transparent" }}
         >
@@ -80,15 +87,14 @@ export default function AgentGraph() {
             }}
             axisLine={false}
             tickLine={false}
-            domain={[100, 300]}
-            ticks={[100, 200, 300]}
+            domain={yDomain}
             width={45}
             dx={-5}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area
             type="monotone"
-            dataKey="value"
+            dataKey="count"
             stroke="#AFDC29"
             strokeWidth={2}
             fillOpacity={1}

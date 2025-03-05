@@ -43,7 +43,14 @@ export default function AgentSelect() {
 
   return (
     <Box minH="100vh" bg="black" color="white" p={8}>
-      <Text textAlign="center" fontSize="48px" fontFamily="monospace" mb={12} color="gray.400">
+      <Text
+        textAlign="center"
+        fontSize="48px"
+        display={{ base: "none", md: "block" }}
+        fontFamily="monospace"
+        mb={12}
+        color="gray.400"
+      >
         SELECT AI AGENT
       </Text>
 

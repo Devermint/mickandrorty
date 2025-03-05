@@ -1,8 +1,17 @@
 "use client";
 
-import { Box, HStack, Image, Text } from "@chakra-ui/react";
-
-export default function Tweet({ text }: { text: string }) {
+import { Box, HStack, Icon, Image, Text } from "@chakra-ui/react";
+import XLogo from "@/app/components/icons/XLogo";
+import VerifiedCheck from "../../icons/verifiedCheck";
+export default function Tweet({
+  text,
+  image,
+  name,
+}: {
+  text: string;
+  image: string;
+  name: string;
+}) {
   return (
     <Box
       w="100%"
@@ -12,12 +21,14 @@ export default function Tweet({ text }: { text: string }) {
       border="1px solid rgba(164, 208, 63, 0.1)"
     >
       <HStack gap={3} mb={2}>
-        <Image src="/rick.png" alt="Rick" width={10} height={10} borderRadius="full" />
+        <Image src={image} alt="Rick" width={10} height={10} borderRadius="full" />
         <Box>
           <HStack gap={2}>
             <Text color="#A4D03F" fontWeight="bold" fontSize="sm">
-              Rorty Rick
+              {name}
             </Text>
+            <Icon as={VerifiedCheck} />
+            <Icon as={XLogo} />
             <Text color="#A4D03F" opacity={0.5} fontSize="sm">
               @Rortyrick
             </Text>

@@ -62,7 +62,7 @@ function AgentListMobile({ agents }: { agents: Agent[] }) {
         ))}
       </Flex>
 
-      <Box overflowY="auto" px="3rem" py="1rem" height="54dvh">
+      <Box overflowY="auto" px="3rem" py="1rem" height="60dvh">
         <AgentCard {...agents[activeAgent]} />
       </Box>
 

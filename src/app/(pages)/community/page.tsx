@@ -14,7 +14,7 @@
 //   const [showBottomShadowRight, setShowBottomShadowRight] = useState(true);
 
 //   // States for streaming and agent interaction
-//   const [tweetMessages, setTweetMessages] = useState<string[]>([]);
+//   const [tweetMessages, setTweetMessages] = useState<{ content: string; agentId: string }[]>([]);
 //   const [chatMessages, setChatMessages] = useState<ChatEntry[]>([]);
 //   const [agent, setAgent] = useState<Agent>();
 //   // const [eventSource, setEventSource] = useState<EventSource | null>(null);
@@ -30,6 +30,7 @@
 //   // function generateId(size: number) {
 //   //   return [...Array(size)].map(() => Math.floor(Math.random() * 36).toString(36)).join("");
 //   // }
+//   const [agents, setAgents] = useState<Agent[]>();
 
 //   const handleScroll = (
 //     element: HTMLDivElement | null,
@@ -68,7 +69,8 @@
 //     source.onmessage = (event) => {
 //       const data = JSON.parse(event.data);
 //       // Add to tweet messages immediately
-//       setTweetMessages((prev) => [...prev, data.content]);
+//       console.log(data, "data");
+//       setTweetMessages((prev) => [...prev, { content: data.content, agentId: data.agentId }]);
 
 //       // Add to message queue for agent processing
 //       setMessageQueue((prev) => [...prev, data.content]);
@@ -165,6 +167,21 @@
 //     };
 //   }, []);
 
+//   useEffect(() => {
+//     fetch("/api/agents")
+//       .then((response) => {
+//         response.json().then((data) => {
+//           setAgents(data);
+//         });
+//       })
+//       .catch((error) => {
+//         console.error(error);
+//       });
+//   }, []);
+
+//   if (agents === undefined) {
+//     return <div>Loading...</div>;
+//   }
 //   return (
 //     <Container maxW="container.xl" h="100vh" py={8}>
 //       <VStack gap={8} align="center" h="full">
@@ -213,8 +230,13 @@
 //             )}
 //             <Box ref={leftScrollRef} overflowY="auto" h="full" px={4} py={2}>
 //               <VStack gap={4}>
-//                 {tweetMessages.map((text, i) => (
-//                   <Tweet key={i} text={text} />
+//                 {tweetMessages.map((message, i) => (
+//                   <Tweet
+//                     key={i}
+//                     text={message.content}
+//                     image={agents.find((a) => a.id === message.agentId)?.image || ""}
+//                     name={agents.find((a) => a.id === message.agentId)?.name || ""}
+//                   />
 //                 ))}
 //               </VStack>
 //             </Box>
