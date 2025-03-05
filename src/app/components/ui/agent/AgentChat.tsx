@@ -17,11 +17,13 @@ interface AgentChatProps {
   adapter?: ChatAdapter;
   onInputFocus?: () => void;
   onInputBlur?: () => void;
+  chatIdProp?: string;
 }
 
 export default function AgentChat({
   groupId,
   groupName,
+  chatIdProp,
   userId = "1",
   onInputFocus,
   onInputBlur,
@@ -33,7 +35,7 @@ export default function AgentChat({
   const [processingMessage, setProcessingMessage] = useState(false);
 
   // For react-firebase-hooks approach
-  const chatId = useMemo(() => `public_${groupId}`, [groupId]);
+  const chatId = useMemo(() => chatIdProp ?? `public_${groupId}`, [groupId, chatIdProp]);
 
   // Use react-firebase-hooks to get messages
   const messagesRef = useMemo(() => {
