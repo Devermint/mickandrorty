@@ -2,6 +2,7 @@
 
 import AgentChat from "@/app/components/ui/agent/AgentChat";
 import AgentGraph from "@/app/components/ui/agent/AgentGraph";
+import { useAgentStats } from "@/app/hooks/useAgentStats";
 import { Agent } from "@/app/lib/agent";
 import { AgentDMChatAdapter } from "@/app/lib/chat";
 import { Box, Flex, Text } from "@chakra-ui/react";
@@ -17,13 +18,13 @@ import { useState } from "react";
 
 function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
-
+  const { subscriberCount, messageCount, messageHistory } = useAgentStats(activeAgent.id);
   return (
     <Flex height="68dvh" direction="column">
       {!isInputFocused && (
         <>
           <Flex height="30dvh" width="100%">
-            <AgentGraph />
+            <AgentGraph data={messageHistory} />
           </Flex>
           <Flex gap="1rem" px="1rem" justifyContent="center">
             <Flex
@@ -40,7 +41,7 @@ function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
             </Flex>
             <Box background="#1D3114" borderRadius="16px" padding="0.5rem" width="50%">
               <Text fontWeight="700" fontSize="24px" lineHeight="41px">
-                302
+                {messageCount}
               </Text>
               <Text fontWeight="500" fontSize="14px" lineHeight="21px" color="#FFFFFF">
                 Messages
@@ -48,7 +49,7 @@ function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
             </Box>
             <Box background="#1D3114" borderRadius="16px" padding="0.5rem" width="50%">
               <Text fontWeight="700" fontSize="24px" lineHeight="41px">
-                302
+                {subscriberCount}
               </Text>
               <Text fontWeight="500" fontSize="14px" lineHeight="21px" color="#FFFFFF">
                 Subscribers
