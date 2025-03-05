@@ -2,15 +2,16 @@
 
 import AgentCard from "@/app/components/ui/agent/AgentCard";
 import AgentGraph from "@/app/components/ui/agent/AgentGraph";
+import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
 import { useAgentStats } from "@/app/hooks/useAgentStats";
 import { Agent } from "@/app/lib/agent";
 import { AgentDMChatAdapter } from "@/app/lib/chat";
 import { db } from "@/app/lib/firebase";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Box, Flex, Grid, GridItem, Text } from "@chakra-ui/react";
-import { addDoc, collection, getDocs, serverTimestamp, query, where } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, serverTimestamp, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import AgentChat from "./AgentChat";
+
 import AgentChatWithAdapter from "./AgentChatWithAdapter";
 function GridBox({ children }: { children: React.ReactNode }) {
   return (
@@ -22,39 +23,47 @@ function GridBox({ children }: { children: React.ReactNode }) {
 
 function AgentLayoutDesktop({ activeAgent }: { activeAgent: Agent }) {
   const { subscriberCount, messageCount, messageHistory } = useAgentStats(activeAgent.id);
-  const account = useWallet();
+  const { account } = useAptosWallet();
   const [chatId, setChatId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const getChatId = async () => {
-    const chatsRef = collection(db, "chats");
-    const q = query(
-      chatsRef,
-      where("agentId", "==", activeAgent.id),
-      where("type", "==", "private"),
-      where("userWalletAddress", "==", account.account?.address)
-    );
-    console.log("before query");
-    const querySnapshot = await getDocs(q);
-    console.log(querySnapshot.docs, "ha");
-    if (!querySnapshot.empty) {
-      setChatId(querySnapshot.docs[0].id);
-    } else if (account.account?.address) {
-      // Create new chat instance if none exists
-      const chatDoc = await addDoc(chatsRef, {
-        agentId: activeAgent.id,
-        type: "private",
-        userWalletAddress: account.account.address,
-        createdAt: serverTimestamp(),
-      });
-      setChatId(chatDoc.id);
+    if (!account) return;
+    setIsLoading(true);
+    try {
+      const chatsRef = collection(db, "chats");
+      const q = query(
+        chatsRef,
+        where("agentId", "==", activeAgent.id),
+        where("type", "==", "private"),
+        where("userWalletAddress", "==", account?.address)
+      );
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        setChatId(querySnapshot.docs[0].id);
+      } else if (account?.address) {
+        // Create new chat instance if none exists
+        const chatDoc = await addDoc(chatsRef, {
+          agentId: activeAgent.id,
+          type: "private",
+          userWalletAddress: account.address,
+          createdAt: serverTimestamp(),
+        });
+        setChatId(chatDoc.id);
+      }
+    } catch (error) {
+      console.error("Error fetching chat:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (account.connected) {
+    if (account?.address) {
       getChatId();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account.connected]);
+  }, [account?.address]);
   return (
     <Flex paddingLeft="2rem" justifyContent="center" paddingRight="2rem" height="508px">
       <AgentCard {...activeAgent} />
@@ -101,7 +110,13 @@ function AgentLayoutDesktop({ activeAgent }: { activeAgent: Agent }) {
         </Grid>
       </Box>
       <Box width="30%">
-        {account.connected && chatId ? (
+        {isLoading ? (
+          <GridBox>
+            <Flex height="100%" alignItems="center" justifyContent="center">
+              <Text>Loading chat...</Text>
+            </Flex>
+          </GridBox>
+        ) : account?.address && chatId ? (
           <AgentChat chatIdProp={chatId} />
         ) : (
           <AgentChatWithAdapter adapter={new AgentDMChatAdapter(activeAgent)} />

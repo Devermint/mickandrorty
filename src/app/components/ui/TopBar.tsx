@@ -3,23 +3,19 @@
 import { Box, Button, Flex } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useEffect, useState } from "react";
 import WalletButton from "../hooks/WalletButton";
 import WalletsModal from "./modals/wallet/WalletModal";
+import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
 
 export default function TopBar() {
-  const { connected } = useWallet();
   const [modalState, setModalState] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { isConnected } = useAptosWallet();
 
   const handleModalState = (state: boolean) => {
     setModalState(state);
   };
-
-  useEffect(() => {
-    console.log("Wallet connection status:", connected);
-  }, [connected]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -50,7 +46,7 @@ export default function TopBar() {
           />
         </Link>
       </Box>
-      {connected ? (
+      {isConnected ? (
         <Box mr="2rem">
           <WalletButton handleModalOpen={() => handleModalState(false)} />
         </Box>
