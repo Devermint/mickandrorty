@@ -10,9 +10,9 @@ import { db } from "@/app/lib/firebase";
 import { Box, Flex, Grid, GridItem, Text } from "@chakra-ui/react";
 import { addDoc, collection, getDocs, query, serverTimestamp, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import AgentChat from "./AgentChat";
 
 import AgentChatWithAdapter from "./AgentChatWithAdapter";
+import AgentDirectChat from "./AgentDirectChat";
 function GridBox({ children }: { children: React.ReactNode }) {
   return (
     <Box background="#1D3114" borderRadius="16px" width="100%" height="100%" padding="0.5rem">
@@ -117,7 +117,7 @@ function AgentLayoutDesktop({ activeAgent }: { activeAgent: Agent }) {
             </Flex>
           </GridBox>
         ) : account?.address && chatId ? (
-          <AgentChat chatIdProp={chatId} />
+          <AgentDirectChat agent={activeAgent} chatIdProp={chatId} agentId={activeAgent.id} />
         ) : (
           <AgentChatWithAdapter adapter={new AgentDMChatAdapter(activeAgent)} />
         )}
