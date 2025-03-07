@@ -165,7 +165,11 @@ export default function AgentChat({
               messages
                 .toReversed()
                 .map((entry, index) => (
-                  <ChatMessage key={`${index}-${entry.messageId || ""}`} entry={entry} />
+                  <ChatMessage
+                    key={`${index}-${entry.messageId || ""}`}
+                    agentImage={agentImage}
+                    entry={entry}
+                  />
                 ))
             )}
 
