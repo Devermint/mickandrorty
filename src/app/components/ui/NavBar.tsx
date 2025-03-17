@@ -4,7 +4,6 @@ import { Flex, Text, Box } from "@chakra-ui/react";
 import HomeIcon from "../icons/home";
 import CreateIcon from "../icons/create";
 import ChatsIcon from "../icons/chats";
-import CommunityIcon from "../icons/community";
 import StakeIcon from "../icons/stake";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
