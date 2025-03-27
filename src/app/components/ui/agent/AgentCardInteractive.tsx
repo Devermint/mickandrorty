@@ -13,7 +13,12 @@ export default function AgentCardInteractive(agent: Agent) {
   };
 
   return (
-    <Box cursor="pointer" _hover={{ transform: "scale(1.05)" }} onClick={handleOnClick}>
+    <Box
+      cursor="pointer"
+      transition="transform 0.2s ease-in-out"
+      _hover={{ transform: "scale(1.05)" }}
+      onClick={handleOnClick}
+    >
       <AgentCard {...agent} />
     </Box>
   );
