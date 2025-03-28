@@ -40,10 +40,11 @@ function NavBarButton(props: NavBarButtonProps) {
       <Box
         width="36px"
         height="36px"
-        alignContent="center"
-        justifyItems="center"
         backgroundColor={props.backgroundColor}
         borderRadius="4px"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
       >
         {props.icon}
       </Box>
