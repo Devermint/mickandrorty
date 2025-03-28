@@ -7,7 +7,7 @@ import { system } from "./theme";
 import NavBar from "./ui/NavBar";
 import TopBar from "./ui/TopBar";
 import { AptosWalletProvider } from "../contexts/AptosWalletContext";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +37,15 @@ function LoadingSpinner() {
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.location.protocol === "http:" &&
+      process.env.NODE_ENV === "production"
+    ) {
+      window.location.href = window.location.href.replace("http:", "https:");
+    }
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={system}>
