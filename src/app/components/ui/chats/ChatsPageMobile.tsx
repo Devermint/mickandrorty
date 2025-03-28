@@ -155,13 +155,13 @@ export const ChatsPageMobile: React.FC<{
                   fontSize="14px"
                   textAlign="right"
                 >
-                  Total que {totalQueue}
+                  Total queue {totalQueue}
                 </Text>
               </Box>
 
               {/* Scrollable Content */}
               <Box overflowY="auto" maxHeight="20dvh" padding="4" paddingTop="0">
-                {queuedMessages.slice(0, 4).map((message) => (
+                {queuedMessages.map((message) => (
                   <Box
                     key={message.id}
                     width="100%"

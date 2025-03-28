@@ -1,15 +1,21 @@
 body {
   background-color: #020909;
   z-index: -3;
-  background-image: url("/background1-min.webp"), url("/background2-min.webp");
+  background-image: url("/background2-min.webp"),
+    radial-gradient(
+      ellipse 75% 70% at center,
+      rgba(13, 43, 24, 0.9) 0%,
+      rgba(13, 43, 24, 0.7) 30%,
+      rgba(2, 9, 9, 0.95) 60%
+    );
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
+  background-attachment: fixed;
   font-family: "JetBrains Mono";
   overflow-x: hidden;
   overflow-y: hidden;
 }
-
 ::-webkit-scrollbar {
   width: 10px;
 }

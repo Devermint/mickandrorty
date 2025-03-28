@@ -7,6 +7,7 @@ import { system } from "./theme";
 import NavBar from "./ui/NavBar";
 import TopBar from "./ui/TopBar";
 import { AptosWalletProvider } from "../contexts/AptosWalletContext";
+import { Suspense } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,9 +25,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <AptosWalletProvider sessionDuration={8 * 60 * 60 * 1000}>
             {" "}
             {/* 8 hour session */}
-            <TopBar />
-            {children}
-            <NavBar />
+            <Suspense>
+              <TopBar />
+            </Suspense>
+            <Suspense>{children}</Suspense>
+            <Suspense>
+              <NavBar />
+            </Suspense>
           </AptosWalletProvider>
         </AptosWalletAdapterProvider>
       </ChakraProvider>

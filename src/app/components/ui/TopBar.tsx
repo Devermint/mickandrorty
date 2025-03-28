@@ -1,5 +1,3 @@
-"use client";
-
 import { Box, Button, Flex } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +8,7 @@ import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
 
 export default function TopBar() {
   const [modalState, setModalState] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
   const { isConnected } = useAptosWallet();
 
   const handleModalState = (state: boolean) => {
@@ -31,8 +29,8 @@ export default function TopBar() {
   }, []);
 
   return (
-    <Flex alignItems="center" justifyContent="space-between">
-      <Box mt="0.5rem" ml="2rem">
+    <Flex alignItems="center" justifyContent="space-between" minHeight="50px" py={2}>
+      <Box ml="2rem">
         <Link href="/">
           <Image
             src={isMobile ? "/logo-mobile.png" : "/logo.png"}
