@@ -24,8 +24,12 @@ export default function WalletMenu({
     handlePopoverClose();
   };
 
-  const handleLogout = () => {
-    disconnect();
+  const handleLogout = async () => {
+    try {
+      await disconnect();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
     handlePopoverClose();
   };
 

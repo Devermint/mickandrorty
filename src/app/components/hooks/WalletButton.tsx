@@ -31,7 +31,6 @@ export default function WalletButton({
     handlePopoverClose();
     handleModalOpen();
   };
-  console.log(account, wallet, "account, wallet");
   return (
     <>
       <Button
