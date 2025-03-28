@@ -51,8 +51,6 @@ export default function AgentDirectChat({
   }, [messagesRef]);
 
   const [messagesData, loading, error] = useCollectionData(messagesQuery);
-  console.log(messagesData, "what is the messagesData");
-  // Transform the data into our ChatEntry format
   const messages: ChatEntry[] = useMemo(() => {
     if (!messagesData) return [];
 
@@ -78,7 +76,6 @@ export default function AgentDirectChat({
       }
     });
   }, [messagesData, agentId]);
-  console.log(messages, "?");
   // Set error message if there's an error from the hook
   useEffect(() => {
     if (error) {

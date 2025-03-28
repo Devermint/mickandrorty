@@ -3,7 +3,6 @@ import { NextRequest } from "next/server";
 export async function POST(req: NextRequest): Promise<Response> {
     const reqData = await req.json();
 
-    console.log(reqData);
 
     if (reqData === undefined) {
         return new Response("Bad request", { status: 400 });

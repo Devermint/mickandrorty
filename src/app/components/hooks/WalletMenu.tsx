@@ -1,4 +1,4 @@
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
 import { List, ListItem, ListItemButton, ListItemText, Popover, Tooltip } from "@mui/material";
 import { useState } from "react";
 
@@ -13,7 +13,7 @@ export default function WalletMenu({
   handlePopoverClose,
   handleNavigate,
 }: WalletMenuProps): JSX.Element {
-  const { account, disconnect } = useWallet();
+  const { account, disconnect } = useAptosWallet();
   const popoverOpen = Boolean(popoverAnchor);
   const id = popoverOpen ? "wallet-popover" : undefined;
 
@@ -23,7 +23,6 @@ export default function WalletMenu({
     }
     handlePopoverClose();
   };
-
   const handleLogout = async () => {
     try {
       await disconnect();

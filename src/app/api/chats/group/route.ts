@@ -4,7 +4,6 @@ import {  testingAgentGroupMap } from "@/app/api/data";
 export async function POST(req: NextRequest): Promise<Response> {
     const reqData = await req.json();
 
-    console.log(reqData);
 
     if (reqData === undefined) {
         return new Response("Bad request", { status: 400 });

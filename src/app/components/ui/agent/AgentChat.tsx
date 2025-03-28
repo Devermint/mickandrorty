@@ -92,7 +92,6 @@ export default function AgentChat({
 
   // Default agent image
   const agentImage = `/agents/agent${parseInt(groupId ?? "1") + 1}.png`;
-  console.log(agentImage, "messages");
   const sendMessage = async () => {
     if (processingMessage || !inputMessage.current) {
       return;

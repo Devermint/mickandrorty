@@ -107,7 +107,6 @@ export const ChatsPageMobile: React.FC<{
     // Clean up when component unmounts or when activeChat changes
     return () => {
       if (unsubscribeRef.current) {
-        console.log(`Unsubscribing from agent ${agentId} queue`);
         unsubscribeRef.current();
         unsubscribeRef.current = null;
       }

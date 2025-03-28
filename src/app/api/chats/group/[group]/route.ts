@@ -1,9 +1,6 @@
-import { NextRequest } from "next/server";
-import {  testingChats } from "@/app/api/data";
+import { testingChats } from "@/app/api/data";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ group: number }>  }): Promise<Response> {
-    const { group } = await params;
-    console.log(group);
+export async function GET(): Promise<Response> {
 
     const chats = [...testingChats]
     chats[0].sender = "Mick Zanches";

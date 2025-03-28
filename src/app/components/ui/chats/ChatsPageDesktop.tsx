@@ -62,7 +62,6 @@ export default function ChatsPageDesktop({
 
     // Clean up previous subscription if it exists
     if (unsubscribeRef.current) {
-      console.log("Unsubscribing from previous agent queue");
       unsubscribeRef.current();
       unsubscribeRef.current = null;
     }
@@ -79,7 +78,6 @@ export default function ChatsPageDesktop({
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        console.log(`Agent ${agentId} queue update:`, snapshot.docs.length, "messages");
         setIsLoadingQueue(false);
 
         const agentMessages = snapshot.docs.map((doc) => {
@@ -113,7 +111,6 @@ export default function ChatsPageDesktop({
     // Clean up when component unmounts or when activeChat changes
     return () => {
       if (unsubscribeRef.current) {
-        console.log(`Unsubscribing from agent ${agentId} queue`);
         unsubscribeRef.current();
         unsubscribeRef.current = null;
       }

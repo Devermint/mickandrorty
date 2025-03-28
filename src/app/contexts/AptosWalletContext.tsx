@@ -112,12 +112,26 @@ export function AptosWalletProvider({
 
   const disconnect = useCallback(async () => {
     try {
+      // First clear all states
+      setIsConnected(false);
+      setAccountFromStorage(null);
+      setSessionExpiresAt(null);
+
+      // Clear all Aptos-related storage items
+      localStorage.removeItem("@aptos-connect/connectedAccount");
+      localStorage.removeItem("@aptos-connect/dapp-local-state");
+      localStorage.removeItem("WK__LAST_CONNECT_WALLET_NAME");
+
+      // Then disconnect the wallet
       await walletDisconnect();
+
+      // Force an immediate connection check
+      checkConnection();
     } catch (error) {
       console.error("Failed to disconnect wallet:", error);
       throw error;
     }
-  }, [walletDisconnect]);
+  }, [walletDisconnect, checkConnection]);
 
   const refreshSession = useCallback(() => {
     const connectedAccount = getConnectedAccount();

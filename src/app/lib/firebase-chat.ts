@@ -187,10 +187,8 @@ export class FirebaseGroupChatAdapter implements ChatAdapter {
   async getChatEntries(): Promise<ChatEntry[]> {
     // If we don't have any entries yet and we have a chatId, 
     // fetch them manually to ensure we have initial data
-    console.log(this.chatEntries, "chatEntries", 'heeeey');
     if (this.chatEntries.length === 0 && this.chatId) {
       try {
-        console.log(this.chatId, "chatId");
         const messagesRef = collection(db, 'chats', this.chatId, 'messages');
         const q = query(
           messagesRef,
@@ -199,7 +197,6 @@ export class FirebaseGroupChatAdapter implements ChatAdapter {
         
         const snapshot = await getDocs(q)
         const entries: ChatEntry[] = [];
-        console.log(snapshot, "snapshot")
         snapshot.docs.forEach((doc) => {
           const data = doc.data() as FirebaseMessage;
           

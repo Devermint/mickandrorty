@@ -25,10 +25,8 @@ function AptosConnectWalletRow({ wallet, onConnect }: WalletRowProps) {
         ?.find((resource) => resource.startsWith("aptosconnect.app.email"))
         ?.split(":")
         ?.at(1);
-      console.log(result, "result");
       await storeUserData(result.account, wallet, email ?? "");
       if (email) {
-        console.log(email, "email");
         onConnect?.(email); // Pass the email to the onConnect callback
       }
     } catch (error) {
