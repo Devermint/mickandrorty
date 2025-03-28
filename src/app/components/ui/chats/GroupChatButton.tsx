@@ -20,7 +20,6 @@ export default function GroupChatButton({
 }) {
   const isActive = activeChat == entry.id;
   const { subscriberCount } = useAgentStats(testingAgentGroupMap[entry.id]);
-
   return (
     <Box
       width="100%"

@@ -47,7 +47,7 @@ export default function AgentDirectChat({
   }, [chatId]);
 
   const messagesQuery = useMemo(() => {
-    return query(messagesRef, orderBy("createdAt", "desc"), limit(1000));
+    return query(messagesRef, orderBy("createdAt", "desc"), limit(300));
   }, [messagesRef]);
 
   const [messagesData, loading, error] = useCollectionData(messagesQuery);

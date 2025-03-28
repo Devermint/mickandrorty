@@ -1,7 +1,7 @@
 "use client";
 
 import { ChatEntry } from "@/app/lib/chat";
-import { Box, Flex, Image, Text } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import NextImage from "next/image";
 
 interface AgentMessageProps {
@@ -21,9 +21,7 @@ function AgentMessage({ entry, agentImage = "/default-agent.png" }: AgentMessage
         borderRadius="50%"
         borderColor="#5A7219"
       >
-        <Image asChild alt="agent icon">
-          <NextImage src={agentImage} alt="agent icon" width="31" height="31" />
-        </Image>
+        <NextImage src={agentImage} alt="agent icon" width="31" height="31" />
       </Box>
       <Box borderRadius="11px" opacity="30%" width="80%" background="#1D3114" padding="0.5rem">
         <Text fontWeight="400" fontSize="14px" lineHeight="21px">

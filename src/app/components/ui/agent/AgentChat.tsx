@@ -43,7 +43,7 @@ export default function AgentChat({
   }, [chatId]);
 
   const messagesQuery = useMemo(() => {
-    return query(messagesRef, orderBy("createdAt", "desc"), limit(1000));
+    return query(messagesRef, orderBy("createdAt", "desc"), limit(300));
   }, [messagesRef]);
 
   const [messagesData, loading, error] = useCollectionData(messagesQuery);
@@ -91,8 +91,8 @@ export default function AgentChat({
   }, [messages]);
 
   // Default agent image
-  const agentImage = "/default-agent.png";
-
+  const agentImage = `/agents/agent${parseInt(groupId ?? "1") + 1}.png`;
+  console.log(agentImage, "messages");
   const sendMessage = async () => {
     if (processingMessage || !inputMessage.current) {
       return;
