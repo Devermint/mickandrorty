@@ -1,8 +1,6 @@
-"use client";
 import "@fontsource/jetbrains-mono";
 import Providers from "./components/Providers";
 import "./global.css";
-import { useEffect } from "react";
 import { Suspense } from "react";
 import { Box } from "@chakra-ui/react";
 import type { Viewport } from "next";
@@ -40,21 +38,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      window.location.protocol === "http:" &&
-      process.env.NODE_ENV === "production"
-    ) {
-      window.location.href = window.location.href.replace("http:", "https:");
-    }
-  }, []);
-
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-      </head>
       <body suppressHydrationWarning={true}>
         <Suspense fallback={<Loading />}>
           <Providers>{children}</Providers>
