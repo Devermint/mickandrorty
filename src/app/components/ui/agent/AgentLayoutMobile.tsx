@@ -1,6 +1,6 @@
 "use client";
 
-import AgentGraph from "@/app/components/ui/agent/AgentGraph";
+// import AgentGraph from "@/app/components/ui/agent/AgentGraph";
 import { useAgentStats } from "@/app/hooks/useAgentStats";
 import { Agent } from "@/app/lib/agent";
 import { AgentDMChatAdapter } from "@/app/lib/chat";
@@ -22,7 +22,7 @@ import AgentChatWithAdapter from "./AgentChatWithAdapter";
 
 function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const { subscriberCount, messageCount, messageHistory } = useAgentStats(activeAgent.id);
+  const { subscriberCount, messageCount } = useAgentStats(activeAgent.id);
   const { account } = useAptosWallet();
   const [chatId, setChatId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,9 +67,9 @@ function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
     <Flex height="68dvh" direction="column">
       {!isInputFocused && (
         <>
-          <Flex height="30dvh" width="100%">
+          {/* <Flex height="30dvh" width="100%">
             <AgentGraph data={messageHistory} />
-          </Flex>
+          </Flex> */}
           <Flex gap="1rem" px="1rem" justifyContent="center">
             <Flex
               alignItems="center"
