@@ -26,7 +26,6 @@ function AgentLayoutDesktop({ activeAgent }: { activeAgent: Agent }) {
   const { account } = useAptosWallet();
   const [chatId, setChatId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
   const getChatId = async () => {
     if (!account) return;
     setIsLoading(true);
@@ -119,7 +118,11 @@ function AgentLayoutDesktop({ activeAgent }: { activeAgent: Agent }) {
         ) : account?.address && chatId ? (
           <AgentDirectChat agent={activeAgent} chatIdProp={chatId} agentId={activeAgent.id} />
         ) : (
-          <AgentChatWithAdapter adapter={new AgentDMChatAdapter(activeAgent)} />
+          <AgentChatWithAdapter
+            adapter={new AgentDMChatAdapter(activeAgent)}
+            onInputFocus={() => {}}
+            onInputBlur={() => {}}
+          />
         )}
       </Box>
     </Flex>
