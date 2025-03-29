@@ -102,7 +102,12 @@ function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
           </Flex>
         </>
       )}
-      <Box height={isInputFocused ? "100%" : undefined} padding="0.5rem" pb="1rem">
+      <Box
+        height={isInputFocused ? "70dvh" : "50dvh"}
+        maxHeight={isInputFocused ? "60dvh" : "60dvh"}
+        padding="0.5rem"
+        pb="1rem"
+      >
         {isLoading ? (
           <Flex height="100%" alignItems="center" justifyContent="center">
             <Text>Loading chat...</Text>

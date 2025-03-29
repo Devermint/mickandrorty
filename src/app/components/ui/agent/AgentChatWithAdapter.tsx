@@ -243,10 +243,10 @@ export default function AgentChat({
               chatEntries.map((entry, index) => (
                 <ChatMessage key={index} adapter={adapter} entry={entry} />
               ))}
-            {processingMessage && <ResponseWaiter adapter={adapter} />}
             <div ref={bottomScroll}></div>
           </Flex>
           <Box borderRadius="13px" background="#1D3114" padding="0.5rem">
+            {processingMessage && <ResponseWaiter adapter={adapter} />}
             <Flex justify="space-between">
               <Input
                 disabled={processingMessage}

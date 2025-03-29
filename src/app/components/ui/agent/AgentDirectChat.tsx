@@ -168,10 +168,9 @@ export default function AgentDirectChat({
       await sendMessage();
     }
   };
-
+  console.log(messages, "messages");
   // Get the display name for the placeholder
   const displayName = (groupName ?? "").split(" ")[0] || "Agent";
-  console.log("gi");
   return (
     <Box width="100%" height={"100%"} background="#0C150A" borderRadius="18px">
       <Box
