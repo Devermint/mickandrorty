@@ -143,7 +143,7 @@ export default function AgentChat({
 
   // Get the display name for the placeholder
   const displayName = (groupName ?? "").split(" ")[0] || "Agent";
-
+  console.log(messages, "messages");
   return (
     <Box width="100%" height="100%" background="#0C150A" borderRadius="18px">
       <Box

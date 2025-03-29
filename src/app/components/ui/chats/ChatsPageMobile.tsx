@@ -118,7 +118,7 @@ export const ChatsPageMobile: React.FC<{
   //   activeTab === "all"
   //     ? queuedMessages
   //     : queuedMessages.filter((msg) => msg.senderType === "user");
-
+  console.log(queuedMessages, "queuedMessages");
   return (
     <Flex px={4} overflowY="auto" justifyItems="center" height="76dvh">
       <Flex height="100%" width="100%" direction="column">

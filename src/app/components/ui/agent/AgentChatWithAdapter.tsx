@@ -112,7 +112,15 @@ function ResponseWaiter({ adapter }: { adapter: ChatAdapter }) {
   );
 }
 
-export default function AgentChat({ adapter }: { adapter: ChatAdapter }) {
+export default function AgentChat({
+  adapter,
+  onInputFocus,
+  onInputBlur,
+}: {
+  adapter: ChatAdapter;
+  onInputFocus: () => void;
+  onInputBlur: () => void;
+}) {
   const [chatEntries, setChatEntries] = useState<ChatEntry[]>([]);
 
   const inputMessage = React.useRef<HTMLInputElement>(null);
@@ -248,6 +256,8 @@ export default function AgentChat({ adapter }: { adapter: ChatAdapter }) {
                 placeholder={`Message ${adapter.getName().split(" ")[0]}`}
                 ref={inputMessage}
                 onKeyDown={(e) => reactToEnterKey(e)}
+                onFocus={onInputFocus}
+                onBlur={onInputBlur}
               />
               <Box
                 cursor={processingMessage ? "disabled" : "pointer"}
