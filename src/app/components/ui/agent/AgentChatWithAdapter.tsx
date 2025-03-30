@@ -3,9 +3,11 @@
 import { ChatAdapter, ChatEntry } from "@/app/lib/chat";
 import { Box, Flex, Image, Input, Text } from "@chakra-ui/react";
 import NextImage from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ArrowIcon from "../../icons/arrow";
 import DotsLoader from "../loader/DotsLoader";
+import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
+import { getOrCreateSessionId } from "@/app/lib/sessionManager";
 
 function AgentMessage({ adapter, entry }: { adapter: ChatAdapter; entry: ChatEntry }) {
   return (
@@ -122,7 +124,8 @@ export default function AgentChat({
   onInputBlur: () => void;
 }) {
   const [chatEntries, setChatEntries] = useState<ChatEntry[]>([]);
-
+  const account = useAptosWallet();
+  const sessionId = useMemo(() => getOrCreateSessionId(), []);
   const inputMessage = React.useRef<HTMLInputElement>(null);
   const bottomScroll = React.useRef<HTMLDivElement>(null);
   const [processingMessage, setProcessingMessage] = React.useState(false);
@@ -153,6 +156,7 @@ export default function AgentChat({
         sender: "You",
         message: message,
         alignment: "right",
+        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
       },
     ]);
 
@@ -167,6 +171,7 @@ export default function AgentChat({
               message:
                 "An error occurred while processing your request please try again shortly...",
               alignment: "error",
+              userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
             },
           ]);
           return;
@@ -181,6 +186,7 @@ export default function AgentChat({
                 sender: adapter.getName(),
                 message: data[0].text,
                 alignment: "left",
+                userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
               },
             ]);
           })
@@ -193,6 +199,7 @@ export default function AgentChat({
                 message:
                   "An error occurred while processing your request please try again shortly...",
                 alignment: "error",
+                userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
               },
             ]);
           });
@@ -205,6 +212,7 @@ export default function AgentChat({
             sender: "",
             message: "An error occurred while processing your request please try again shortly...",
             alignment: "error",
+            userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
           },
         ]);
       })
