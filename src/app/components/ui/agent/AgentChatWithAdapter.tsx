@@ -127,11 +127,6 @@ export default function AgentChat({
   const bottomScroll = React.useRef<HTMLDivElement>(null);
   const [processingMessage, setProcessingMessage] = React.useState(false);
 
-  useEffect(() => {
-    const entries = adapter.getChatEntries();
-    entries.then((data) => setChatEntries(data));
-  }, [adapter]);
-
   const sendMessage = () => {
     if (processingMessage) {
       return;
