@@ -3,7 +3,15 @@
 import { ChatAdapter, ChatEntry } from "@/app/lib/chat";
 import { db } from "@/app/lib/firebase";
 import { Box, Flex, Input } from "@chakra-ui/react";
-import { collection, query, orderBy, addDoc, serverTimestamp, limit } from "firebase/firestore";
+import {
+  collection,
+  query,
+  orderBy,
+  addDoc,
+  serverTimestamp,
+  limit,
+  where,
+} from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import ArrowIcon from "../../icons/arrow";
@@ -47,8 +55,20 @@ export default function AgentChat({
   }, [chatId]);
 
   const messagesQuery = useMemo(() => {
-    return query(messagesRef, orderBy("createdAt", "desc"), limit(300));
-  }, [messagesRef]);
+    const baseQuery = query(messagesRef, orderBy("createdAt", "desc"), limit(300));
+
+    if (showMyMessages) {
+      const userId = account.isConnected ? account?.account?.address?.toString() : sessionId;
+      return query(
+        messagesRef,
+        orderBy("createdAt", "desc"),
+        limit(300),
+        where("userId", "==", userId)
+      );
+    }
+
+    return baseQuery;
+  }, [messagesRef, showMyMessages, account.isConnected, account?.account?.address, sessionId]);
 
   const [messagesData, loading, error] = useCollectionData(messagesQuery);
 
@@ -170,17 +190,12 @@ export default function AgentChat({
                 Loading messages...
               </Box>
             ) : messages.length === 0 ? (
-              <></>
+              <Box textAlign="center" color="#AFDC29" padding="1rem">
+                {showMyMessages ? "No messages found in your history" : "No messages yet"}
+              </Box>
             ) : (
               messages
                 .toReversed()
-                .filter((entry) =>
-                  showMyMessages
-                    ? account.isConnected
-                      ? entry.userId === account?.account?.address?.toString()
-                      : entry.userId === sessionId
-                    : true
-                )
                 .map((entry, index) => (
                   <ChatMessage
                     key={`${index}-${entry.messageId || ""}`}
