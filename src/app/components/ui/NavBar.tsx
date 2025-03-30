@@ -82,14 +82,15 @@ export default function NavBar() {
   return (
     <div>
       {isMobile ? (
-        <Box position="fixed" bottom="0" width="100%" mb="1rem">
+        <Box position="fixed" bottom="0" width="100%">
           <Flex
-            borderRadius="21px"
             background="#1D311475"
             justify="center"
+            borderTopRadius="21px"
+            borderTopLeftRadius="28px"
             justifySelf="center"
-            padding="0.5rem"
             gap="1rem"
+            width="100%"
           >
             {navButtons.map((button, index) => (
               <NavBarButton
@@ -103,7 +104,7 @@ export default function NavBar() {
           </Flex>
         </Box>
       ) : (
-        <Box position="fixed" bottom="0" width="100%" mb="2rem">
+        <Box position="fixed" bottom="0" width="100%" mb="0.5rem">
           <Flex
             borderRadius="21px"
             background="#3D3E3A1A"

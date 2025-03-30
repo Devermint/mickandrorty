@@ -10,6 +10,9 @@ import ArrowIcon from "../../icons/arrow";
 import ResponseWaiter from "./ResponseWaiter";
 import ChatMessage from "./ChatMessage";
 import { Agent } from "@/app/lib/agent";
+import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
+import { getOrCreateSessionId } from "@/app/lib/sessionManager";
+// import { getOrCreateSessionId } from "@/app/lib/sessionManager";
 
 interface AgentChatProps {
   groupId?: string;
@@ -29,7 +32,7 @@ export default function AgentDirectChat({
   agent,
   chatIdProp,
   agentId,
-  userId = "1",
+  userId,
   onInputFocus,
   onInputBlur,
 }: AgentChatProps) {
@@ -38,7 +41,9 @@ export default function AgentDirectChat({
   const inputMessage = useRef<HTMLInputElement>(null);
   const bottomScroll = useRef<HTMLDivElement>(null);
   const [processingMessage, setProcessingMessage] = useState(false);
-
+  const account = useAptosWallet();
+  const sessionId = useMemo(() => getOrCreateSessionId(), []);
+  // const sessionId = useMemo(() => getOrCreateSessionId(), []);
   // For react-firebase-hooks approach
   const chatId = useMemo(() => chatIdProp ?? `public_${groupId}`, [groupId, chatIdProp]);
   // Use react-firebase-hooks to get messages
@@ -63,6 +68,7 @@ export default function AgentDirectChat({
           messageId: data.id,
           responseToMessageId: data.responseToMessageId,
           isResponseTo: data.isResponseTo,
+          userId: data.userId,
         };
       } else {
         return {
@@ -72,6 +78,7 @@ export default function AgentDirectChat({
           messageId: data.id,
           responseToMessageId: data.responseToMessageId,
           isResponseTo: data.isResponseTo,
+          userId: data.userId,
         };
       }
     });
@@ -118,13 +125,14 @@ export default function AgentDirectChat({
       await addDoc(messagesRef, {
         chatId: chatId,
         text: message,
-        userId: userId,
         roomId: chatId,
         status: "pending",
         senderType: "user",
         attempts: 0,
         originalMessageId: null,
         createdAt: serverTimestamp(),
+        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
+        sessionId: sessionId,
       });
       const apiUrl = `https://sui-cluster.xyz/agents/${agentId}/message`;
 
@@ -168,7 +176,6 @@ export default function AgentDirectChat({
       await sendMessage();
     }
   };
-  console.log(messages, "messages");
   // Get the display name for the placeholder
   const displayName = (groupName ?? "").split(" ")[0] || "Agent";
   return (

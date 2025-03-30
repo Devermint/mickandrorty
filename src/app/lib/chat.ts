@@ -1,6 +1,7 @@
 import { Agent } from "./agent";
 
 export type ChatEntry = {
+    userId: string | undefined;
     sender: string;
     message: string;
     alignment: "left" | "right" | "error";

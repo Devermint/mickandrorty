@@ -9,31 +9,35 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import ArrowIcon from "../../icons/arrow";
 import ResponseWaiter from "./ResponseWaiter";
 import ChatMessage from "./ChatMessage";
-
+import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
+import { getOrCreateSessionId } from "@/app/lib/sessionManager";
 interface AgentChatProps {
   groupId?: string;
   groupName?: string;
-  userId?: string;
   adapter?: ChatAdapter;
   onInputFocus?: () => void;
   onInputBlur?: () => void;
   chatIdProp?: string;
+  onMessageSent?: (messageId: string) => void;
+  showMyMessages?: boolean;
 }
 
 export default function AgentChat({
   groupId,
   groupName,
   chatIdProp,
-  userId = "1",
   onInputFocus,
   onInputBlur,
+  onMessageSent,
+  showMyMessages = false,
 }: AgentChatProps) {
   // Local state for UI purposes
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const inputMessage = useRef<HTMLInputElement>(null);
   const bottomScroll = useRef<HTMLDivElement>(null);
   const [processingMessage, setProcessingMessage] = useState(false);
-
+  const account = useAptosWallet();
+  const sessionId = useMemo(() => getOrCreateSessionId(), []);
   // For react-firebase-hooks approach
   const chatId = useMemo(() => chatIdProp ?? `public_${groupId}`, [groupId, chatIdProp]);
 
@@ -61,6 +65,7 @@ export default function AgentChat({
           messageId: data.id,
           responseToMessageId: data.responseToMessageId,
           isResponseTo: data.isResponseTo,
+          userId: data.userId,
         };
       } else {
         return {
@@ -70,6 +75,7 @@ export default function AgentChat({
           messageId: data.id,
           responseToMessageId: data.responseToMessageId,
           isResponseTo: data.isResponseTo,
+          userId: data.userId,
         };
       }
     });
@@ -113,17 +119,22 @@ export default function AgentChat({
       // Add a message to the agent's queue
       const agentQueueRef = collection(db, "agentQueues", groupId ?? "1", "messages");
 
-      await addDoc(agentQueueRef, {
+      const docRef = await addDoc(agentQueueRef, {
         chatId: chatId,
         content: message,
-        userId: userId,
+        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
         roomId: chatId,
         status: "pending",
         senderName: "User",
         attempts: 0,
         originalMessageId: null,
         createdAt: serverTimestamp(),
+        sessionId: sessionId,
+        senderType: "user",
       });
+
+      // Track the new message
+      onMessageSent?.(docRef.id);
     } catch (error) {
       console.error("Error sending message:", error);
       setErrorMessage(
@@ -143,7 +154,7 @@ export default function AgentChat({
 
   // Get the display name for the placeholder
   const displayName = (groupName ?? "").split(" ")[0] || "Agent";
-  console.log(messages, "messages");
+  console.log(showMyMessages, messages, "???");
   return (
     <Box width="100%" height="100%" background="#0C150A" borderRadius="18px">
       <Box
@@ -163,6 +174,13 @@ export default function AgentChat({
             ) : (
               messages
                 .toReversed()
+                .filter((entry) =>
+                  showMyMessages
+                    ? account.isConnected
+                      ? entry.userId === account?.account?.address?.toString()
+                      : entry.userId === sessionId
+                    : true
+                )
                 .map((entry, index) => (
                   <ChatMessage
                     key={`${index}-${entry.messageId || ""}`}
@@ -190,7 +208,7 @@ export default function AgentChat({
           <Box borderRadius="13px" background="#1D3114" padding="0.5rem">
             <Flex justify="space-between">
               <Input
-                disabled={processingMessage || loading}
+                disabled={processingMessage || loading || showMyMessages}
                 borderWidth="0px"
                 color="#AFDC29"
                 css={{ "--focus-color": "transparent", "--focus-ring-color": "transparent" }}

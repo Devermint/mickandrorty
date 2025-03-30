@@ -3,11 +3,13 @@
 import AgentChat from "@/app/components/ui/agent/AgentChat";
 import ActivityStats from "@/app/components/ui/chats/ActivityStats";
 import GroupChatButton from "@/app/components/ui/chats/GroupChatButton";
+import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
 import { ChatAdapter, GroupChatEntry } from "@/app/lib/chat";
 import { db } from "@/app/lib/firebase";
+import { getOrCreateSessionId } from "@/app/lib/sessionManager";
 import { Box, Button, Container, Flex, Spinner, Text, VStack } from "@chakra-ui/react";
 import { collection, onSnapshot, orderBy, query, Timestamp } from "firebase/firestore";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type IQueuedMessage = {
   id: string;
@@ -32,10 +34,11 @@ export default function ChatsPageDesktop({
   const [queuedMessages, setQueuedMessages] = useState<IQueuedMessage[]>([]);
   const [totalQueue, setTotalQueue] = useState<number>(0);
   const [isLoadingQueue, setIsLoadingQueue] = useState<boolean>(false);
-
-  // Reference to store the current unsubscribe function
+  const [myMessageIds, setMyMessageIds] = useState<Set<string>>(new Set());
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const { account } = useAptosWallet(); // Reference to store the current unsubscribe function
   const unsubscribeRef = useRef<(() => void) | null>(null);
-
+  const sessionId = useMemo(() => getOrCreateSessionId(), []);
   // Create a cache for adapters to avoid recreating them
   const adaptersCache = useRef<Map<string, ChatAdapter>>(new Map());
 
@@ -90,7 +93,19 @@ export default function ChatsPageDesktop({
             status: data.status,
             content: data.content,
             senderType: data.senderType,
+            userId: data.userId,
           };
+        });
+
+        // Update myMessageIds based on sessionId
+        setMyMessageIds((prev) => {
+          const newSet = new Set(prev);
+          for (const msg of agentMessages) {
+            if (msg.userId === account?.address?.toString() || msg.userId === sessionId) {
+              newSet.add(msg.id);
+            }
+          }
+          return newSet;
         });
 
         setQueuedMessages(agentMessages.toReversed());
@@ -123,6 +138,23 @@ export default function ChatsPageDesktop({
     // You could also add logic here to mark the user as "joined" to the chat
     // or perform other initialization for public chat participation
   };
+
+  const trackNewMessage = (messageId: string) => {
+    setMyMessageIds((prev) => new Set(prev).add(messageId));
+  };
+  // Add scroll function
+  const scrollToMyMessage = () => {
+    if (!messageContainerRef.current) return;
+
+    const myMessage = queuedMessages.find((msg) => myMessageIds.has(msg.id));
+    if (!myMessage) return;
+
+    const messageElement = messageContainerRef.current.querySelector(
+      `[data-message-id="${myMessage.id}"]`
+    );
+    messageElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   return (
     <Container justifyItems="center" marginBottom="3rem" height="75vh">
       <Flex padding="2rem" height="100%" width="100%" gap="1rem">
@@ -199,6 +231,8 @@ export default function ChatsPageDesktop({
                 <AgentChat
                   groupId={groupChats[activeChat].id.toString()}
                   groupName={groupChats[activeChat].name}
+                  showMyMessages={activeTab === "my"}
+                  onMessageSent={trackNewMessage}
                 />
               ) : (
                 <Box
@@ -222,6 +256,7 @@ export default function ChatsPageDesktop({
             </Box>
             {/* Queue section - Updated to show message queue with loading indicator */}
             <Box
+              ref={messageContainerRef}
               background="#0C150A"
               overflowY="auto"
               borderRadius="18px"
@@ -232,7 +267,18 @@ export default function ChatsPageDesktop({
                 <Text color="#FFFFFF" fontSize="16px" fontWeight="500">
                   Message Queue
                 </Text>
-                {isLoadingQueue && <Spinner size="sm" color="#AFDC29" />}
+                <Flex gap={2} alignItems="center">
+                  {isLoadingQueue && <Spinner size="sm" color="#AFDC29" />}
+                  <Text
+                    color="#AFDC29"
+                    fontSize="12px"
+                    cursor="pointer"
+                    onClick={scrollToMyMessage}
+                    textDecoration="underline"
+                  >
+                    Scroll to your message
+                  </Text>
+                </Flex>
               </Flex>
 
               <VStack pr={2} gap="0.5rem" maxHeight="calc(100vh - 200px)" alignItems="stretch">
@@ -246,6 +292,7 @@ export default function ChatsPageDesktop({
                   queuedMessages.map((message) => (
                     <Box
                       key={message.id}
+                      data-message-id={message.id}
                       width="100%"
                       background={
                         message.status === "pending"
@@ -263,6 +310,8 @@ export default function ChatsPageDesktop({
                       display="flex"
                       flexDirection="column"
                       gap="0.5rem"
+                      borderWidth="1px"
+                      borderColor={myMessageIds.has(message.id) ? "#DCAF29" : "transparent"}
                     >
                       <Flex alignItems="center" gap="0.75rem">
                         <Box width="32px" height="32px" borderRadius="full" background="#030B0A" />
@@ -273,9 +322,24 @@ export default function ChatsPageDesktop({
                           overflow="hidden"
                           textOverflow="ellipsis"
                           whiteSpace="nowrap"
+                          mr="auto"
                         >
-                          {message.senderType === "user" ? "User" : message.agentName}
+                          {message.senderType === "user" ? "User" : "User"}
                         </Text>
+                        {myMessageIds.has(message.id) && message.status === "pending" && (
+                          <Text
+                            color="#DCAF29"
+                            fontSize="12px"
+                            background="#2D2D11"
+                            padding="2px 8px"
+                            borderRadius="4px"
+                          >
+                            Position:{" "}
+                            {queuedMessages
+                              .filter((msg) => msg.status === "pending")
+                              .findIndex((msg) => msg.id === message.id) + 1}
+                          </Text>
+                        )}
                       </Flex>
                       <Text
                         color="#AFDC29"
