@@ -153,7 +153,7 @@ export default function AgentDirectChat({
       await addDoc(messagesRef, {
         chatId: chatId,
         text: parsedData.text,
-        userId: userId,
+        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
         roomId: chatId,
         status: "processed",
         createdAt: serverTimestamp(),
