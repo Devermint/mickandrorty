@@ -107,7 +107,7 @@ function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
                 lineHeight="21px"
                 color="#FFFFFF"
               >
-                Messages
+                {showMessages ? "Statistics" : "Messages"}
               </Text>
             </Button>
             <Text background="#1D3114" borderRadius="16px" padding="0.5rem" width="50%">
