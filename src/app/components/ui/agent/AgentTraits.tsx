@@ -1,4 +1,4 @@
-import { Container, Flex, Grid, GridItem, Text } from "@chakra-ui/react";
+import { Flex, Grid, GridItem, Text } from "@chakra-ui/react";
 import { AgentTraitsProps } from "./types";
 
 export function AgentTraits({ stats }: AgentTraitsProps) {
