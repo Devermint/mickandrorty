@@ -99,7 +99,7 @@ export default function AgentDirectChat({
   }, [messages]);
 
   // Default agent image
-  const agentImage = "/default-agent.png";
+  const agentImage = agent.image;
 
   const sendMessage = async () => {
     if (processingMessage || !inputMessage.current) {
@@ -218,10 +218,10 @@ export default function AgentDirectChat({
               </Box>
             )}
 
-            {processingMessage && <ResponseWaiter agentImage={agentImage} />}
             <div ref={bottomScroll}></div>
           </Flex>
           <Box borderRadius="13px" background="#1D3114" padding="0.5rem">
+            {processingMessage && <ResponseWaiter agentImage={agentImage} />}
             <Flex justify="space-between">
               <Input
                 disabled={processingMessage || loading}
