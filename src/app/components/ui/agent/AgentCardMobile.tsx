@@ -8,7 +8,6 @@ import { AgentTraits } from "./AgentTraits";
 export function AgentCardMobile({ agent, handleTelegram, handleX }: AgentCardProps) {
   return (
     <Container
-      height="50vh"
       background="linear-gradient(0deg, #040E0B, #040E0B), radial-gradient(446% 189.36% at 53.02% -48.52%, rgba(175, 220, 41, 0.13) 0%, rgba(0, 0, 0, 0) 100%)"
       borderTopLeftRadius="100px"
       boxShadow="0px 0px 32px 0px #F9E0CC1A"
