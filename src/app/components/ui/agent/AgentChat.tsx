@@ -239,7 +239,7 @@ export default function AgentChat({
                 alignContent="center"
                 opacity={processingMessage || loading ? 0.5 : 1}
               >
-                {ArrowIcon("#AFDC29")}
+                <ArrowIcon strokeColor="#AFDC29" />
               </Box>
             </Flex>
           </Box>

@@ -268,7 +268,7 @@ export default function AgentChat({
                 justifyItems="center"
                 alignContent="center"
               >
-                {ArrowIcon("#AFDC29")}
+                <ArrowIcon strokeColor="#AFDC29" />
               </Box>
             </Flex>
           </Box>
