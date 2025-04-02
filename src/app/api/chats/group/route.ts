@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import {  testingAgentGroupMap } from "@/app/api/data";
+import {  testingAgentGroupMap } from "@/app/lib/data";
 
 export async function POST(req: NextRequest): Promise<Response> {
     const reqData = await req.json();

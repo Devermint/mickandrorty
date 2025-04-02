@@ -12,10 +12,10 @@
     "lint"
   ],
   "dependencies": {
-    "@aptos-labs/wallet-adapter-mui-design": "^3.0.23",
     "@aptos-labs/wallet-adapter-react": "^4.1.0",
     "@chakra-ui/react": "^3.3.3",
     "@fontsource/jetbrains-mono": "^5.1.2",
+    "@next/bundle-analyzer": "^15.2.4",
     "@okwallet/aptos-wallet-adapter": "^0.0.7",
     "@tanstack/react-query": "^5.67.1",
     "antd": "^5.23.2",

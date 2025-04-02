@@ -1,5 +1,7 @@
 "use client";
 
+import ChevronDownIcon from "@/app/components/icons/chevronDown";
+import GlobeIcon from "@/app/components/icons/globe";
 import {
   AboutAptosConnect,
   AptosPrivacyPolicy,
@@ -7,31 +9,17 @@ import {
   groupAndSortWallets,
   useWallet,
 } from "@aptos-labs/wallet-adapter-react";
-import {
-  Box,
-  Button,
-  Collapse,
-  Dialog,
-  Divider,
-  IconButton,
-  Stack,
-  Typography,
-  useTheme,
-} from "@mui/material";
-import { grey } from "@/app/components/aptosColorPalette";
-// reported bug with loading mui icons with esm, therefore need to import like this https://github.com/mui/material-ui/issues/35233
-import {
-  ArrowForward,
-  Close as CloseIcon,
-  ExpandMore,
-  LanOutlined as LanOutlinedIcon,
-} from "@mui/icons-material";
-import { useState } from "react";
-import { WalletConnectorProps } from "@/app/components/hooks/WalletConnector";
+import { Box, Button, Dialog, Flex, Icon, Stack, Text, useDisclosure } from "@chakra-ui/react";
+import AptosConnectWalletRow from "./AptosConnectWalletRow";
 import renderEducationScreen from "./RenderEducationScreen";
 import WalletRow from "./WalletRow";
-import AptosConnectWalletRow from "./AptosConnectWalletRow";
 
+export interface WalletConnectorProps extends WalletSortingOptions {
+  networkSupport?: string;
+  handleNavigate?: () => void;
+  /** The max width of the wallet selector modal. Defaults to `xs`. */
+  modalMaxWidth?: unknown;
+}
 interface WalletsModalProps
   extends Pick<WalletConnectorProps, "networkSupport" | "modalMaxWidth">,
     WalletSortingOptions {
@@ -43,12 +31,9 @@ export default function WalletsModal({
   handleClose,
   modalOpen,
   networkSupport,
-  modalMaxWidth,
   ...walletSortingOptions
 }: WalletsModalProps): JSX.Element {
-  const theme = useTheme();
-  const [expanded, setExpanded] = useState(false);
-
+  const { open, onToggle } = useDisclosure();
   const { wallets = [] } = useWallet();
 
   const { aptosConnectWallets, availableWallets, installableWallets } = groupAndSortWallets(
@@ -59,174 +44,128 @@ export default function WalletsModal({
   const hasAptosConnectWallets = !!aptosConnectWallets.length;
 
   return (
-    <Dialog
-      open={modalOpen}
-      onClose={handleClose}
-      aria-label="wallet selector modal"
-      sx={{ borderRadius: `${theme.shape.borderRadius}px` }}
-      maxWidth={modalMaxWidth ?? "xs"}
-      fullWidth
-    >
-      <Stack
-        sx={{
-          top: "50%",
-          left: "50%",
-          bgcolor: "background.paper",
-          boxShadow: 24,
-          p: 3,
-          gap: 2,
-        }}
-      >
-        <IconButton
-          onClick={handleClose}
-          sx={{
-            position: "absolute",
-            right: 12,
-            top: 12,
-            color: grey[450],
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-        <AboutAptosConnect renderEducationScreen={renderEducationScreen}>
-          <Typography
-            align="center"
-            variant="h5"
-            component="h2"
-            pt={2}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
+    <Dialog.Root open={modalOpen} onOpenChange={handleClose}>
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content bg="#1D3114" borderRadius="2xl" border="1px solid #AFDC296E">
+          <Dialog.CloseTrigger />
+          <Dialog.Header textAlign="center" pt={4}>
             {hasAptosConnectWallets ? (
-              <>
-                <span>Log in or sign up</span>
-                <span>with Social + Aptos Connect</span>
-              </>
+              <Stack gap={0}>
+                <Text>Log in or sign up</Text>
+                <Text>with Social + Aptos Connect</Text>
+              </Stack>
             ) : (
               "Connect Wallet"
             )}
-          </Typography>
-          {networkSupport && (
-            <Box
-              sx={{
-                display: "flex",
-                gap: 0.5,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <LanOutlinedIcon
-                sx={{
-                  fontSize: "0.9rem",
-                  color: grey[400],
-                }}
-              />
-              <Typography
-                sx={{
-                  display: "inline-flex",
-                  fontSize: "0.9rem",
-                  color: grey[400],
-                }}
-                align="center"
-              >
-                {networkSupport} only
-              </Typography>
-            </Box>
-          )}
-          {hasAptosConnectWallets && (
-            <Stack gap={1}>
-              {aptosConnectWallets.map((wallet) => (
-                <AptosConnectWalletRow key={wallet.name} wallet={wallet} onConnect={handleClose} />
-              ))}
-              <Typography
-                component="p"
-                fontSize="14px"
-                sx={{
-                  display: "flex",
-                  gap: 0.5,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  color: grey[400],
-                }}
-              >
-                Learn more about{" "}
-                <Box
-                  component={AboutAptosConnect.Trigger}
-                  sx={{
-                    background: "none",
-                    border: "none",
-                    fontFamily: "inherit",
-                    fontSize: "inherit",
-                    cursor: "pointer",
-                    display: "flex",
-                    gap: 0.5,
-                    px: 0,
-                    py: 1.5,
-                    alignItems: "center",
-                    color: theme.palette.text.primary,
-                    appearance: "none",
-                  }}
-                >
-                  Aptos Connect <ArrowForward sx={{ height: 16, width: 16 }} />
-                </Box>
-              </Typography>
-
-              <Stack component={AptosPrivacyPolicy} alignItems="center" py={0.5}>
-                <Typography component="p" fontSize="12px" lineHeight="20px">
-                  <AptosPrivacyPolicy.Disclaimer />{" "}
-                  <Box
-                    component={AptosPrivacyPolicy.Link}
-                    sx={{
-                      color: grey[400],
-                      textDecoration: "underline",
-                      textUnderlineOffset: "4px",
-                    }}
-                  />
-                  <span>.</span>
-                </Typography>
-                <Box
-                  component={AptosPrivacyPolicy.PoweredBy}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.75,
-                    fontSize: "12px",
-                    lineHeight: "20px",
-                    color: grey[400],
-                  }}
-                />
+          </Dialog.Header>
+          <Dialog.Body pb={6}>
+            {networkSupport && (
+              <Stack direction="row" justify="center" gap={1} mb={4}>
+                <Icon as={GlobeIcon} color="gray.500" />
+                <Text fontSize="sm" color="gray.500">
+                  {networkSupport} only
+                </Text>
               </Stack>
-              <Divider sx={{ color: grey[400], pt: 2 }}>Or</Divider>
-            </Stack>
-          )}
-          <Stack sx={{ gap: 1 }}>
-            {availableWallets.map((wallet) => (
-              <WalletRow key={wallet.name} wallet={wallet} onConnect={handleClose} />
-            ))}
-            {!!installableWallets.length && (
-              <>
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={() => setExpanded((prev) => !prev)}
-                  endIcon={<ExpandMore sx={{ height: "20px", width: "20px" }} />}
-                >
-                  More Wallets
-                </Button>
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
-                  <Stack sx={{ gap: 1 }}>
-                    {availableWallets.map((wallet) => (
-                      <WalletRow key={wallet.name} wallet={wallet} onConnect={handleClose} />
-                    ))}
-                  </Stack>
-                </Collapse>
-              </>
             )}
-          </Stack>
-        </AboutAptosConnect>
-      </Stack>
-    </Dialog>
+
+            <AboutAptosConnect renderEducationScreen={renderEducationScreen}>
+              {hasAptosConnectWallets && (
+                <Stack gap={4} align="stretch">
+                  {aptosConnectWallets.map((wallet) => (
+                    <AptosConnectWalletRow
+                      key={wallet.name}
+                      wallet={wallet}
+                      onConnect={handleClose}
+                    />
+                  ))}
+
+                  <Stack direction="row" justify="center" gap={2}>
+                    <Text fontSize="sm" color="gray.500">
+                      Learn more about
+                    </Text>
+                    <Text
+                      as={AboutAptosConnect.Trigger}
+                      color="black"
+                      fontSize="sm"
+                      _hover={{ color: "gray.500", textDecoration: "underline", cursor: "pointer" }}
+                      h="auto"
+                    >
+                      {`Aptos Connect`}
+                    </Text>
+                  </Stack>
+
+                  <Box textAlign="center" py={1}>
+                    <Text fontSize="xs" lineHeight="5">
+                      <AptosPrivacyPolicy.Disclaimer />{" "}
+                      <Text
+                        as={AptosPrivacyPolicy.Link}
+                        fontSize="xs"
+                        color="gray.500"
+                        _hover={{
+                          color: "gray.500",
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                        }}
+                        p={0}
+                        h="auto"
+                      />
+                      .
+                    </Text>
+                    <Flex
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="center"
+                      gap={1}
+                      as={AptosPrivacyPolicy.PoweredBy}
+                      fontSize="xs"
+                      color="gray.500"
+                    />
+                  </Box>
+
+                  <Box position="relative" py={4}>
+                    <Box position="absolute" inset={0} display="flex" alignItems="center">
+                      <Box w="full" borderTop="1px" borderColor="gray.200" />
+                    </Box>
+                    <Box position="relative" display="flex" justifyContent="center">
+                      <Text px={2} color="gray.500" fontSize="sm">
+                        Or
+                      </Text>
+                    </Box>
+                  </Box>
+                </Stack>
+              )}
+
+              <Stack gap={4} align="stretch">
+                {availableWallets.map((wallet) => (
+                  <WalletRow key={wallet.name} wallet={wallet} onConnect={handleClose} />
+                ))}
+
+                {!!installableWallets.length && (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={onToggle}>
+                      More Wallets
+                      <Icon
+                        as={ChevronDownIcon}
+                        ml={1}
+                        transform={open ? "rotate(180deg)" : "none"}
+                        transition="transform 0.2s"
+                      />
+                    </Button>
+                    {open && (
+                      <Stack gap={4} align="stretch">
+                        {installableWallets.map((wallet) => (
+                          <WalletRow key={wallet.name} wallet={wallet} onConnect={handleClose} />
+                        ))}
+                      </Stack>
+                    )}
+                  </>
+                )}
+              </Stack>
+            </AboutAptosConnect>
+          </Dialog.Body>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 }

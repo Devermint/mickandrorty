@@ -1,66 +1,42 @@
-import { Box, Button, Flex } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import WalletButton from "../hooks/WalletButton";
-import WalletsModal from "./modals/wallet/WalletModal";
-import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
+import TopBarClient from "./TopBarClient";
 
 export default function TopBar() {
-  const [modalState, setModalState] = useState(false);
-  const [isMobile, setIsMobile] = useState(true);
-  const { isConnected } = useAptosWallet();
-
-  const handleModalState = (state: boolean) => {
-    setModalState(state);
-  };
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const checkMobile = () => {
-        setIsMobile(window.innerWidth <= 768);
-      };
-
-      checkMobile();
-      window.addEventListener("resize", checkMobile);
-
-      return () => window.removeEventListener("resize", checkMobile);
-    }
-  }, []);
-
   return (
     <Flex alignItems="center" justifyContent="space-between" minHeight="50px" py={2}>
       <Box ml="2rem">
         <Link href="/">
-          <Image
-            src={isMobile ? "/logo-mobile.png" : "/logo.png"}
-            alt="logo"
-            style={{
-              width: isMobile ? "40px" : "200px",
-              height: isMobile ? "40px" : "70px",
-            }}
-            width={isMobile ? 40 : 200}
-            height={isMobile ? 40 : 70}
-          />
+          <Box display={{ base: "none", md: "block" }}>
+            <Image
+              src="/logo.png"
+              alt="logo"
+              style={{
+                width: "100%",
+                height: "auto",
+              }}
+              width={200}
+              height={70}
+              sizes="200px"
+            />
+          </Box>
+          <Box display={{ base: "block", md: "none" }}>
+            <Image
+              src="/logo-mobile.png"
+              alt="logo"
+              style={{
+                width: "100%",
+                height: "auto",
+              }}
+              width={40}
+              height={40}
+              sizes="40px"
+            />
+          </Box>
         </Link>
       </Box>
-      {isConnected ? (
-        <Box mr="2rem">
-          <WalletButton handleModalOpen={() => handleModalState(false)} />
-        </Box>
-      ) : (
-        <>
-          <WalletsModal
-            handleClose={() => handleModalState(false)}
-            modalOpen={modalState}
-            networkSupport={undefined}
-            modalMaxWidth={undefined}
-          />
-          <Button mr="2rem" background="#1D3114" onClick={() => handleModalState(true)}>
-            Sign in
-          </Button>
-        </>
-      )}
+      <TopBarClient />
     </Flex>
   );
 }

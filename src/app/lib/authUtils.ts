@@ -49,11 +49,11 @@ export const storeUserData = async (account: AccountInfo, wallet: AdapterWallet,
       createdAt: userDoc.exists() ? userDoc.data().createdAt : now,
       ...(email && { email }),
       ...userDoc.exists() && {
-        displayName: userDoc.data().displayName,
-        photoURL: userDoc.data().photoURL,
+        displayName: userDoc.data().displayName ?? '',
+        photoURL: userDoc.data().photoURL ?? '',
       }
     };
-
+    console.log('userData', userData);
     await setDoc(doc(db, 'users', currentAddress), userData, { merge: true });
   } catch (error) {
     console.error('Error storing user data:', error);

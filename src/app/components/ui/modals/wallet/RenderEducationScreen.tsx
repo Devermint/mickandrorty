@@ -1,49 +1,38 @@
 "use client";
 
 import { AboutAptosConnectEducationScreen } from "@aptos-labs/wallet-adapter-react";
-import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
-// reported bug with loading mui icons with esm, therefore need to import like this https://github.com/mui/material-ui/issues/35233
-import { ArrowBack, ArrowForward } from "@mui/icons-material";
+import { Box, Button, IconButton, Stack, Text, Grid } from "@chakra-ui/react";
+import ArrowIcon from "@/app/components/icons/arrow";
 
 export default function renderEducationScreen(screen: AboutAptosConnectEducationScreen) {
   return (
     <>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "1fr 4fr 1fr",
-          alignItems: "center",
-          justifyItems: "start",
-        }}
-      >
-        <IconButton onClick={screen.cancel}>
-          <ArrowBack />
+      <Grid templateColumns="1fr 4fr 1fr" alignItems="center" justifyItems="start">
+        <IconButton
+          onClick={screen.cancel}
+          aria-label="Back"
+          variant="ghost"
+          transform="rotate(180deg)"
+        >
+          <ArrowIcon strokeColor="currentColor" />
         </IconButton>
-        <Typography variant="body1" component="h2" width="100%" align="center">
+        <Text as="h2" width="100%" textAlign="center" fontSize="md">
           About Aptos Connect
-        </Typography>
-      </Box>
+        </Text>
+      </Grid>
 
-      <Box
-        sx={{
-          display: "flex",
-          pb: 1.5,
-          alignItems: "end",
-          justifyContent: "center",
-          height: "162px",
-        }}
-      >
+      <Box display="flex" pb={6} alignItems="flex-end" justifyContent="center" height="162px">
         <screen.Graphic />
       </Box>
-      <Stack sx={{ gap: 1, textAlign: "center", pb: 2 }}>
-        <Typography component={screen.Title} variant="h6" />
-        <Typography
-          component={screen.Description}
-          variant="body2"
-          color={(theme) => theme.palette.text.secondary}
-          sx={{
+      <Stack gap={1} textAlign="center" pb={4}>
+        <Box as={screen.Title} fontSize="xl" fontWeight="semibold" />
+        <Box
+          as={screen.Description}
+          fontSize="sm"
+          color="gray.600"
+          css={{
             "&>a": {
-              color: (theme) => theme.palette.text.primary,
+              color: "inherit",
               textDecoration: "underline",
               textUnderlineOffset: "4px",
             },
@@ -51,59 +40,32 @@ export default function renderEducationScreen(screen: AboutAptosConnectEducation
         />
       </Stack>
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-          alignItems: "center",
-        }}
-      >
-        <Button size="small" variant="text" onClick={screen.back} sx={{ justifySelf: "start" }}>
+      <Grid templateColumns="repeat(3, 1fr)" alignItems="center">
+        <Button size="sm" variant="ghost" onClick={screen.back} justifySelf="start">
           Back
         </Button>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            placeSelf: "center",
-          }}
-        >
+        <Box display="flex" alignItems="center" gap={1} justifySelf="center">
           {screen.screenIndicators.map((ScreenIndicator, i) => (
             <Box
               key={i}
-              component={ScreenIndicator}
-              sx={{
-                px: 0,
-                py: 2,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-              }}
+              as={ScreenIndicator}
+              px={0}
+              py={2}
+              bg="none"
+              border="none"
+              cursor="pointer"
             >
-              <Box
-                sx={{
-                  height: "2px",
-                  width: "24px",
-                  bgcolor: (theme) => theme.palette.text.disabled,
-                  "[data-active]>&": {
-                    bgcolor: (theme) => theme.palette.text.primary,
-                  },
-                }}
-              />
+              <Box height="2px" width="24px" bg="gray.400" _groupActive={{ bg: "gray.900" }} />
             </Box>
           ))}
         </Box>
-        <Button
-          size="small"
-          variant="text"
-          onClick={screen.next}
-          sx={{ justifySelf: "end" }}
-          endIcon={<ArrowForward sx={{ height: 16, width: 16 }} />}
-        >
+        <Button size="sm" variant="ghost" onClick={screen.next} justifySelf="end">
           {screen.screenIndex === screen.totalScreens - 1 ? "Finish" : "Next"}
+          <Box as="span" ml={2}>
+            <ArrowIcon strokeColor="currentColor" />
+          </Box>
         </Button>
-      </Box>
+      </Grid>
     </>
   );
 }
