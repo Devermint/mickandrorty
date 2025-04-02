@@ -34,10 +34,6 @@ function AgentLayoutMobile({ activeAgent }: { activeAgent: Agent }) {
     setIsLoading(true);
     try {
       // Log the query parameters for debugging
-      console.log("Query params:", {
-        agentId: activeAgent.id,
-        userWalletAddress: account.address,
-      });
 
       const chatsRef = collection(db, "chats");
       // Ensure the address is a string

@@ -55,14 +55,14 @@ export default function AgentChat({
   }, [chatId]);
 
   const messagesQuery = useMemo(() => {
-    const baseQuery = query(messagesRef, orderBy("createdAt", "desc"), limit(300));
+    const baseQuery = query(messagesRef, orderBy("createdAt", "desc"), limit(200));
 
     if (showMyMessages) {
       const userId = account.isConnected ? account?.account?.address?.toString() : sessionId;
       return query(
         messagesRef,
         orderBy("createdAt", "desc"),
-        limit(300),
+        limit(200),
         where("userId", "==", userId)
       );
     }
@@ -174,7 +174,6 @@ export default function AgentChat({
 
   // Get the display name for the placeholder
   const displayName = (groupName ?? "").split(" ")[0] || "Agent";
-  console.log(showMyMessages, messages, "???");
   return (
     <Box width="100%" height="100%" background="#0C150A" borderRadius="18px">
       <Box

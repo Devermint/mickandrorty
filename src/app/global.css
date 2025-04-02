@@ -16,6 +16,55 @@ body {
   overflow-x: hidden;
   overflow-y: hidden;
 }
+
+/* View Transitions API styles */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* Animation keyframes */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Apply the animations to the view transitions */
+::view-transition-old(root) {
+  animation: fade-out 0.5s ease-in-out;
+}
+
+::view-transition-new(root) {
+  animation: fade-in 0.5s ease-in-out;
+}
+
+/* Add a class to the html element for transitions */
+html {
+  view-transition-name: root;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }

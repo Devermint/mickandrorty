@@ -5,20 +5,23 @@ import HomeIcon from "../icons/home";
 import CreateIcon from "../icons/create";
 import ChatsIcon from "../icons/chats";
 import StakeIcon from "../icons/stake";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useMobileBreak } from "../responsive";
+import { useTransitionRouter } from "next-view-transitions";
+import { animations } from "./Animations";
 
 const BaseIconColor = "#99B637";
 const ActiveIconColor = "#000000";
 const ActiveBackgroundColor = "#AFDC29";
 
+// Define the navigation structure with order
 const NavButtonsInitial = [
-  { active: false, text: "Home", icon: HomeIcon, page: "/home" },
-  { active: false, text: "Create", icon: CreateIcon, page: "/create" },
-  { active: false, text: "My Chats", icon: ChatsIcon, page: "/chats" },
+  { active: false, text: "Home", icon: HomeIcon, page: "/home", order: 0 },
+  { active: false, text: "Create", icon: CreateIcon, page: "/create", order: 1 },
+  { active: false, text: "My Chats", icon: ChatsIcon, page: "/chats", order: 2 },
   // { active: false, text: "Community", icon: CommunityIcon, page: "/community" },
-  { active: false, text: "Stake", icon: StakeIcon, page: "/stake" },
+  { active: false, text: "Stake", icon: StakeIcon, page: "/stake", order: 3 },
 ];
 
 type NavBarButtonProps = {
@@ -57,7 +60,7 @@ function NavBarButton(props: NavBarButtonProps) {
 
 export default function NavBar() {
   const [navButtons, setNavButtons] = useState(NavButtonsInitial);
-  const router = useRouter();
+  const router = useTransitionRouter();
   const isMobile = useMobileBreak();
   const pathname = usePathname();
 
@@ -66,7 +69,23 @@ export default function NavBar() {
       button.active = button.text === id;
     });
 
-    router.push(navButtons.find((button) => button.text === id)!.page);
+    const currentIndex = navButtons.findIndex((button) => button.page === pathname);
+    const targetIndex = navButtons.findIndex((button) => button.text === id);
+
+    if (currentIndex !== -1 && targetIndex !== -1) {
+      // If moving to a higher index (right in the nav bar), slide right
+      // If moving to a lower index (left in the nav bar), slide left
+      const animation = targetIndex > currentIndex ? animations.slideRight : animations.slideLeft;
+
+      router.push(navButtons[targetIndex].page, {
+        onTransitionReady: animation,
+      });
+    } else {
+      // Fallback if we can't determine the direction
+      router.push(navButtons[targetIndex].page, {
+        onTransitionReady: animations.fadeInOut,
+      });
+    }
   };
 
   useEffect(() => {

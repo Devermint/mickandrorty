@@ -60,7 +60,7 @@ export const storeUserData = async (account: AccountInfo, wallet: AdapterWallet,
         userData.photoURL = userDoc.data().photoURL;
       }
     } catch {
-      console.log('Could not fetch existing user data, creating new record');
+      // console.log('Could not fetch existing user data, creating new record');
     }
 
     await setDoc(doc(db, 'users', currentAddress), userData, { merge: true });
