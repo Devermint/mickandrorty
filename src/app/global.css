@@ -15,6 +15,11 @@ body {
   font-family: "JetBrains Mono";
   overflow-x: hidden;
   overflow-y: hidden;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* View Transitions API styles */
@@ -22,6 +27,7 @@ body {
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+  will-change: transform, opacity;
 }
 
 ::view-transition-old(root) {
@@ -63,6 +69,7 @@ body {
 /* Add a class to the html element for transitions */
 html {
   view-transition-name: root;
+  scroll-behavior: smooth;
 }
 
 ::-webkit-scrollbar {

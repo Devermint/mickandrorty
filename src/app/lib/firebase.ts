@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { GoogleAuthProvider, getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 
 // Your Firebase configuration
 // Replace with your actual Firebase config
@@ -15,8 +15,15 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
- const googleProvider = new GoogleAuthProvider();
- const auth = getAuth(app);
 
-export { db, googleProvider, auth }; 
+// Initialize Firestore with persistent local cache
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+});
+
+const googleProvider = new GoogleAuthProvider();
+const auth = getAuth(app);
+
+export { db, googleProvider, auth };
