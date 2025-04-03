@@ -158,184 +158,179 @@ export const ChatsPageMobile: React.FC<{
   //     ? queuedMessages
   //     : queuedMessages.filter((msg) => msg.senderType === "user");
   return (
-    <Flex px={4} overflowY="auto" justifyItems="center" height="81dvh">
-      <Flex height="100%" width="100%" direction="column">
-        <AgentMiniIcons images={images} activeIndex={activeChat} onClick={onMiniIconClick} />
+    <Flex px={4} height="81dvh" direction="column">
+      <AgentMiniIcons images={images} activeIndex={activeChat} onClick={onMiniIconClick} />
 
-        <Box height="80%" marginTop="0.5rem">
-          <Box borderRadius="18px" height="100%">
-            {/* Queue Messages Section */}
-            <Box
-              border="1px solid #11331D"
-              background="#0C150A"
-              borderRadius="18px"
-              position="relative"
+      <Box flex="1" marginTop="0.5rem" display="flex" flexDirection="column" overflow="hidden">
+        {/* Queue Messages Section */}
+        <Box
+          border="1px solid #11331D"
+          background="#0C150A"
+          borderRadius="18px"
+          position="relative"
+          mb="0.5rem"
+          maxHeight="23dvh"
+          overflow="hidden"
+          display="flex"
+          flexDirection="column"
+        >
+          {/* Sticky Header */}
+          <Box
+            position="sticky"
+            top="0"
+            zIndex="1"
+            padding="0.5rem"
+            background="#0C150A"
+            borderTopRadius="18px"
+          >
+            <Text
+              position="absolute"
+              right="2"
+              top="2"
+              color="#AFDC29"
+              backdropFilter="blur(11.8px)"
+              border="1px solid #AFDC29"
+              borderRadius="8px"
+              background="#11331D"
+              padding="0.5rem"
+              fontSize="14px"
+              textAlign="right"
             >
-              {/* Sticky Header */}
-              <Box
-                position="sticky"
-                top="0"
-                zIndex="1"
-                padding="0.5rem"
-                background="#0C150A"
-                borderTopRadius="18px"
-              >
-                <Text
-                  position="absolute"
-                  right="2"
-                  top="2"
-                  color="#AFDC29"
-                  backdropFilter="blur(11.8px)"
-                  border="1px solid #AFDC29"
-                  borderRadius="8px"
-                  background="#11331D"
-                  padding="0.5rem"
-                  fontSize="14px"
-                  textAlign="right"
+              Total queue {totalQueue}
+            </Text>
+            <Text
+              right="4"
+              top="2"
+              pl="0.5rem"
+              fontSize="12px"
+              borderRadius="8px"
+              textDecoration="underline"
+              cursor="pointer"
+              onClick={scrollToMyMessage}
+            >
+              Scroll to your message
+            </Text>
+          </Box>
+
+          {/* Scrollable Content */}
+          <Box ref={messageContainerRef} overflowY="auto" flex="1" padding="4" paddingTop="0">
+            {queuedMessages.map((message) => {
+              const isMyMessage = myMessageIds.has(message.id);
+              const queuePosition =
+                queuedMessages
+                  .filter((msg) => msg.status === "pending")
+                  .findIndex((msg) => msg.id === message.id) + 1;
+
+              return (
+                <Box
+                  key={message.id}
+                  data-message-id={message.id}
+                  width="100%"
+                  background={isMyMessage ? "#1D2614" : "#1D3114"}
+                  borderRadius="12px"
+                  padding="0.75rem"
+                  marginBottom="0.5rem"
+                  borderWidth="1px"
+                  borderColor={isMyMessage ? "#DCAF29" : "transparent"}
                 >
-                  Total queue {totalQueue}
-                </Text>
-                <Text
-                  right="4"
-                  top="2"
-                  pl="0.5rem"
-                  fontSize="12px"
-                  borderRadius="8px"
-                  textDecoration="underline"
-                  cursor="pointer"
-                  onClick={scrollToMyMessage}
-                >
-                  Scroll to your message
-                </Text>
-              </Box>
+                  <Flex direction="column" gap="0.5rem">
+                    <Flex justifyContent="space-between" alignItems="center">
+                      <Text
+                        color={isMyMessage ? "#DCAF29" : "#AFDC29"}
+                        fontSize="12px"
+                        fontWeight="500"
+                      >
+                        {isMyMessage ? "Your message" : "Queued message"}
+                      </Text>
 
-              {/* Scrollable Content */}
-              <Box
-                ref={messageContainerRef}
-                overflowY="auto"
-                maxHeight="30dvh"
-                padding="4"
-                paddingTop="0"
-              >
-                {queuedMessages.map((message) => {
-                  const isMyMessage = myMessageIds.has(message.id);
-                  const queuePosition =
-                    queuedMessages
-                      .filter((msg) => msg.status === "pending")
-                      .findIndex((msg) => msg.id === message.id) + 1;
-
-                  return (
-                    <Box
-                      key={message.id}
-                      data-message-id={message.id}
-                      width="100%"
-                      background={isMyMessage ? "#1D2614" : "#1D3114"}
-                      borderRadius="12px"
-                      padding="0.75rem"
-                      marginBottom="0.5rem"
-                      borderWidth="1px"
-                      borderColor={isMyMessage ? "#DCAF29" : "transparent"}
-                    >
-                      <Flex direction="column" gap="0.5rem">
-                        <Flex justifyContent="space-between" alignItems="center">
-                          <Text
-                            color={isMyMessage ? "#DCAF29" : "#AFDC29"}
-                            fontSize="12px"
-                            fontWeight="500"
-                          >
-                            {isMyMessage ? "Your message" : "Queued message"}
-                          </Text>
-
-                          <Text
-                            color={
-                              message.status === "pending"
-                                ? "#DCAF29"
-                                : message.status === "processing"
-                                ? "#DCAF29"
-                                : message.status === "completed"
-                                ? "#29DCAF"
-                                : message.status === "error"
-                                ? "#DC2929"
-                                : "#FFFFFF"
-                            }
-                            fontSize="12px"
-                            background="#2D4121"
-                            borderRadius="4px"
-                            padding="2px 8px"
-                          >
-                            {message.status}
-                          </Text>
-                        </Flex>
-                      </Flex>
-                      <Flex direction="row" pt="1" gap="0.5rem">
-                        <Text color="#FFFFFF" fontSize="14px" mr="auto">
-                          {message.content?.substring(0, 50)}
-                          {message.content?.length > 50 ? "..." : ""}
-                        </Text>
-                        {isMyMessage && message.status === "pending" && (
-                          <Text
-                            color="#DCAF29"
-                            fontSize="12px"
-                            background="#2D2D11"
-                            padding="2px 8px"
-                            borderRadius="4px"
-                          >
-                            Queue position: {queuePosition}
-                          </Text>
-                        )}
-                      </Flex>
-                    </Box>
-                  );
-                })}
-              </Box>
-            </Box>
-
-            {/* Tabs Section */}
-            <Flex gap="1rem" marginTop="1rem" marginBottom="1rem">
-              <Button
-                flex="1"
-                background={activeTab === "all" ? "#1D3114" : "transparent"}
-                color="#AFDC29"
-                onClick={() => setActiveTab("all")}
-                _hover={{ background: "#1D3114" }}
-                border="none"
-                borderRadius="8px"
-                height="40px"
-              >
-                All messages
-              </Button>
-              <Button
-                flex="1"
-                background={activeTab === "my" ? "#1D3114" : "transparent"}
-                color="#AFDC29"
-                onClick={() => setActiveTab("my")}
-                _hover={{ background: "#1D3114" }}
-                border="none"
-                borderRadius="8px"
-                height="40px"
-              >
-                My messages
-              </Button>
-            </Flex>
-
-            {/* Chat Section */}
-            {activeChat !== undefined ? (
-              <Flex flex="1" maxHeight="35dvh" borderRadius="18px" overflowY="auto">
-                <AgentChat
-                  groupId={groupChats[activeChat].id.toString()}
-                  groupName={groupChats[activeChat].name}
-                  onMessageSent={trackNewMessage}
-                  showMyMessages={activeTab === "my"}
-                />
-              </Flex>
-            ) : (
-              <Box flex="1">
-                <Text>Select a chat to begin...</Text>
-              </Box>
-            )}
+                      <Text
+                        color={
+                          message.status === "pending"
+                            ? "#DCAF29"
+                            : message.status === "processing"
+                            ? "#DCAF29"
+                            : message.status === "completed"
+                            ? "#29DCAF"
+                            : message.status === "error"
+                            ? "#DC2929"
+                            : "#FFFFFF"
+                        }
+                        fontSize="12px"
+                        background="#2D4121"
+                        borderRadius="4px"
+                        padding="2px 8px"
+                      >
+                        {message.status}
+                      </Text>
+                    </Flex>
+                  </Flex>
+                  <Flex direction="row" pt="1" gap="0.5rem">
+                    <Text color="#FFFFFF" fontSize="14px" mr="auto">
+                      {message.content?.substring(0, 50)}
+                      {message.content?.length > 50 ? "..." : ""}
+                    </Text>
+                    {isMyMessage && message.status === "pending" && (
+                      <Text
+                        color="#DCAF29"
+                        fontSize="12px"
+                        background="#2D2D11"
+                        padding="2px 8px"
+                        borderRadius="4px"
+                      >
+                        Queue position: {queuePosition}
+                      </Text>
+                    )}
+                  </Flex>
+                </Box>
+              );
+            })}
           </Box>
         </Box>
-      </Flex>
+
+        {/* Tabs Section */}
+        <Flex gap="1rem" py="1">
+          <Button
+            flex="1"
+            background={activeTab === "all" ? "#1D3114" : "transparent"}
+            color="#AFDC29"
+            onClick={() => setActiveTab("all")}
+            _hover={{ background: "#1D3114" }}
+            border="none"
+            borderRadius="8px"
+            height="30px"
+          >
+            All messages
+          </Button>
+          <Button
+            flex="1"
+            background={activeTab === "my" ? "#1D3114" : "transparent"}
+            color="#AFDC29"
+            onClick={() => setActiveTab("my")}
+            _hover={{ background: "#1D3114" }}
+            border="none"
+            borderRadius="8px"
+            height="30px"
+          >
+            My messages
+          </Button>
+        </Flex>
+
+        {/* Chat Section */}
+        <Box flex="1" borderRadius="18px" overflow="hidden" display="flex" flexDirection="column">
+          {activeChat !== undefined ? (
+            <AgentChat
+              groupId={groupChats[activeChat].id.toString()}
+              groupName={groupChats[activeChat].name}
+              onMessageSent={trackNewMessage}
+              showMyMessages={activeTab === "my"}
+            />
+          ) : (
+            <Box flex="1" display="flex" alignItems="center" justifyContent="center">
+              <Text>Select a chat to begin...</Text>
+            </Box>
+          )}
+        </Box>
+      </Box>
     </Flex>
   );
 };

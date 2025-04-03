@@ -181,9 +181,19 @@ export default function AgentChat({
         height="100%"
         background="linear-gradient(184.07deg, rgba(84, 203, 104, 0) 50.89%, rgba(175, 220, 41, 0.09) 97.9%)"
         padding="1rem"
+        position="relative"
+        display="flex"
+        flexDirection="column"
       >
-        <Flex direction="column" gap="1rem" justify="space-between" height="100%">
-          <Flex direction="column" height="90%" overflowY="auto" gap="0.75rem" padding="0.25rem">
+        <Flex
+          direction="column"
+          gap="1rem"
+          justify="space-between"
+          height="100%"
+          display="flex"
+          flexDirection="column"
+        >
+          <Box flex="1" overflowY="auto" gap="0.75rem" padding="0.25rem">
             {loading ? (
               <Box textAlign="center" color="#AFDC29" padding="1rem">
                 Loading messages...
@@ -218,8 +228,8 @@ export default function AgentChat({
 
             {processingMessage && <ResponseWaiter agentImage={agentImage} />}
             <div ref={bottomScroll}></div>
-          </Flex>
-          <Box borderRadius="13px" background="#1D3114" padding="0.5rem">
+          </Box>
+          <Box borderRadius="13px" background="#1D3114" padding="0.5rem" mt="auto">
             <Flex justify="space-between">
               <Input
                 disabled={processingMessage || loading || showMyMessages}

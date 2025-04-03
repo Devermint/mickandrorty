@@ -24,8 +24,8 @@ function AgentMiniIcon({
     <Flex alignItems="center" flexDirection="column" gap="0.5rem">
       <Box
         position="relative"
-        minWidth="80px"
-        height="60px"
+        minWidth="60px"
+        height="40px"
         overflow="hidden"
         borderWidth={isActive ? "2px" : "1px"}
         borderRadius="12px"
