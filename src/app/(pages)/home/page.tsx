@@ -6,10 +6,17 @@ import AgentListMobile from "@/app/components/ui/agent/AgentListMobile";
 import Underline from "@/app/components/ui/Underline";
 import { testingAgents } from "@/app/lib/data";
 import { Flex, Text } from "@chakra-ui/react";
+import { useEffect } from "react";
 
 export default function HomePage() {
   const isMobile = useMobileBreak();
   const agents = testingAgents;
+  // Redirect to HTTPS in production
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" && window.location.protocol === "http:") {
+      window.location.href = window.location.href.replace("http:", "https:");
+    }
+  }, []);
 
   return (
     <div>
