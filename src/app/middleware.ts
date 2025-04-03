@@ -1,16 +1,22 @@
 import { NextResponse, NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // SECURITY: Strip the vulnerable header first (CVE-2025-29927 mitigation)
+  // SECURITY: Strip the vulnerable header first
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete('x-middleware-subrequest');
 
-  // Check for HTTPS
   const hostname = request.headers.get('host');
   const protocol = request.headers.get('x-forwarded-proto');
+  const pathname = request.nextUrl.pathname;
   
-  // Handle Heroku's specific protocol header which might contain multiple values
+  // Handle Heroku's specific protocol header
   const isHttps = protocol ? protocol.includes('https') : false;
+
+  // Check if we're at the root path and need to redirect to /home
+  if (pathname === '/') {
+    const url = new URL('/home', request.url);
+    return NextResponse.redirect(url);
+  }
 
   // Only redirect in production and when not already using HTTPS
   if (process.env.NODE_ENV === 'production' && !isHttps) {
@@ -27,14 +33,3 @@ export function middleware(request: NextRequest) {
     },
   });
 }
-
-// Only run on specific paths to maintain performance
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except static files, images, and other
-     * files that don't need the security check
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)',
-  ],
-};
