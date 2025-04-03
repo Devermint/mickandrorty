@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const next = require('next');
 const express = require('express');
 const sslRedirect = require('heroku-ssl-redirect');
