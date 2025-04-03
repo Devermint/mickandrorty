@@ -52,9 +52,8 @@ export const ChatsPageMobile: React.FC<{
     adaptersCache.current.clear();
   }, []);
 
-  const images = groupChats.map((groupChat) => {
-    return groupChat.icon;
-  });
+  // Memoize the images array to prevent unnecessary re-renders
+  const images = useMemo(() => groupChats.map((groupChat) => groupChat.icon), [groupChats]);
 
   const onMiniIconClick = (index: number) => {
     selectChat(groupChats[index]);
