@@ -216,7 +216,7 @@ export default function AgentDirectChat({
 
       // Send the transaction message to the server and handle the response
 
-      const apiUrl = `https://sandbox.sui-cluster.xyz/aptos.sandbox/message`;
+      const apiUrl = `https://sandbox.sui-cluster.xyz/ccca63fc-02b2-0c57-b15b-15b68354ebfe/message`;
 
       const response = await fetch(apiUrl, {
         method: "POST",
