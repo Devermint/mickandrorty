@@ -136,7 +136,7 @@ export default function AgentDirectChat({
         sessionId: sessionId,
       });
       // TODO: Eikit nx jus visi kurva debilai. Pakeist reiks agentu id ir url. krw krw nx.
-      const apiUrl = `http://z8ggwk0cok048o0c048sc4gc.69.62.112.186.sslip.io/${"ccca63fc-02b2-0c57-b15b-15b68354ebfe"}/message`;
+      const apiUrl = `https://sandbox.sui-cluster.xyz/aptos.sandbox/message`;
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -216,7 +216,7 @@ export default function AgentDirectChat({
 
       // Send the transaction message to the server and handle the response
 
-      const apiUrl = `http://z8ggwk0cok048o0c048sc4gc.69.62.112.186.sslip.io/${"ccca63fc-02b2-0c57-b15b-15b68354ebfe"}/message`;
+      const apiUrl = `https://sandbox.sui-cluster.xyz/aptos.sandbox/message`;
 
       const response = await fetch(apiUrl, {
         method: "POST",
