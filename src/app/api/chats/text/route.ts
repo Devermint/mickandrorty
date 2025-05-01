@@ -8,7 +8,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         return new Response("Bad request", { status: 400 });
     }
 
-    return fetch(`https://sui-cluster.xyz/agents/${reqData.agent}/message`,
+    return fetch(`https://sandbox.sui-cluster.xyz/aptos.sandbox/message`,
         {
             method: "POST",
             headers: {
