@@ -146,8 +146,8 @@ export default function AgentDirectChat({
         body: JSON.stringify({
           text: message,
           userId: userId,
-          roomId: `default-room-${"ccca63fc-02b2-0c57-b15b-15b68354ebfe"}`,
-          userName: "User",
+          roomId: `default-room-${"randomstringrealia"}`,
+          userName: "Userl",
         }),
       });
       const data = await response.json();
@@ -216,7 +216,7 @@ export default function AgentDirectChat({
 
       // Send the transaction message to the server and handle the response
 
-      const apiUrl = `https://sandbox.sui-cluster.xyz/ccca63fc-02b2-0c57-b15b-15b68354ebfe/message`;
+      const apiUrl = `https://sandbox.sui-cluster.xyz/aptos.sandbox/message`;
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -225,8 +225,8 @@ export default function AgentDirectChat({
         },
         body: JSON.stringify({
           text: `Transaction successful! Hash: ${pendingTxn.hash}`,
-          userId: "user",
-          roomId: `default-room-${agentId}`,
+          userId: "userl",
+          roomId: `default-room-${"randomstringrealia"}`,
         }),
       });
 
