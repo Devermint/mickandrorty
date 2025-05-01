@@ -4,6 +4,7 @@ import { Box, Button, Text, VStack } from "@chakra-ui/react";
 import { useEffect, useState, Suspense, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
+import { useRouter } from "next/navigation";
 
 const WalletMenu = dynamic(() => import("../hooks/WalletMenu"), {
   loading: () => (
@@ -17,7 +18,7 @@ const WalletMenu = dynamic(() => import("../hooks/WalletMenu"), {
 export default function TopBarClient() {
   const [mounted, setMounted] = useState(false);
   const { isConnected, connect } = useAptosWallet();
-
+  const router = useRouter();
   const handleConnect = useCallback(async () => {
     try {
       await connect();
@@ -55,7 +56,13 @@ export default function TopBarClient() {
             <Button background="#1D3114" onClick={handleConnect}>
               Sign in
             </Button>
-            <Text fontSize="xs" color="gray.400">
+            <Text
+              onClick={() => router.push("https://petra.app/")}
+              cursor="pointer"
+              textDecoration="underline"
+              fontSize="xs"
+              color="gray.400"
+            >
               Requires Petra Wallet
             </Text>
           </VStack>
