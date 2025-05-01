@@ -8,6 +8,7 @@ export type ChatEntry = {
     messageId?: string; // Unique ID for the message
     responseToMessageId?: string | null; // ID of the message this is responding to
     isResponseTo?: boolean; // Whether this message is a response
+    action?: string;
 }
 
 export type GroupChatEntry = {

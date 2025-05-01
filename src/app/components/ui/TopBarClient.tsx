@@ -1,7 +1,7 @@
 "use client";
 
-import { Box, Button } from "@chakra-ui/react";
-import { useEffect, useState, Suspense } from "react";
+import { Box, Button, Text, VStack } from "@chakra-ui/react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
 
@@ -14,18 +14,20 @@ const WalletMenu = dynamic(() => import("../hooks/WalletMenu"), {
   ssr: false,
 });
 
-const WalletsModal = dynamic(() => import("./modals/wallet/WalletModal"), {
-  ssr: false,
-});
-
 export default function TopBarClient() {
-  const [modalState, setModalState] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { isConnected } = useAptosWallet();
+  const { isConnected, connect } = useAptosWallet();
 
-  const handleModalState = (state: boolean) => {
-    setModalState(state);
-  };
+  const handleConnect = useCallback(async () => {
+    try {
+      await connect();
+      // Optional: Add success feedback here (e.g., toast notification)
+    } catch (error) {
+      console.error("Connection failed:", error);
+      // Optional: Add error feedback here (e.g., toast notification)
+      // The connect function in the context already alerts the user if Petra is not found.
+    }
+  }, [connect]);
 
   useEffect(() => {
     setMounted(true);
@@ -45,20 +47,19 @@ export default function TopBarClient() {
     >
       {isConnected ? (
         <Box mr="2rem">
-          <WalletMenu handleModalOpen={() => handleModalState(true)} />
+          <WalletMenu />
         </Box>
       ) : (
-        <>
-          <WalletsModal
-            handleClose={() => handleModalState(false)}
-            modalOpen={modalState}
-            networkSupport={undefined}
-            modalMaxWidth={undefined}
-          />
-          <Button mr="2rem" background="#1D3114" onClick={() => handleModalState(true)}>
-            Sign in
-          </Button>
-        </>
+        <Box mr="2rem">
+          <VStack gap={1}>
+            <Button background="#1D3114" onClick={handleConnect}>
+              Sign in
+            </Button>
+            <Text fontSize="xs" color="gray.400">
+              Requires Petra Wallet
+            </Text>
+          </VStack>
+        </Box>
       )}
     </Suspense>
   );

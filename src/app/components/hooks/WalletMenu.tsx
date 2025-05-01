@@ -1,6 +1,5 @@
 import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
 import { toaster } from "@/components/ui/toaster";
-import { truncateAddress } from "@aptos-labs/wallet-adapter-react";
 import {
   Menu,
   MenuContent,
@@ -12,18 +11,20 @@ import {
   Text,
   Flex,
 } from "@chakra-ui/react";
-import { WalletIcon } from "../icons/wallet";
 
 type WalletMenuProps = {
-  handleModalOpen: () => void;
   handleNavigate?: () => void;
 };
 
-export default function WalletMenu({
-  handleModalOpen,
-  handleNavigate,
-}: WalletMenuProps): JSX.Element {
-  const { isConnected, account, disconnect } = useAptosWallet();
+// Simple address truncation function
+const truncateAddress = (address: string | undefined | null, length = 4): string => {
+  if (!address) return "Unknown";
+  if (address.length <= length * 2 + 2) return address; // Avoid truncating if too short
+  return `${address.substring(0, length + 2)}...${address.substring(address.length - length)}`;
+};
+
+export default function WalletMenu({ handleNavigate }: WalletMenuProps): JSX.Element {
+  const { account, disconnect } = useAptosWallet();
 
   const onAccountOptionClicked = () => {
     if (handleNavigate) {
@@ -52,19 +53,6 @@ export default function WalletMenu({
       console.error("Address is undefined");
     }
   };
-
-  if (!isConnected) {
-    return (
-      <Button size="lg" onClick={handleModalOpen} className="wallet-button" borderRadius="10px">
-        <Flex alignItems="center">
-          <WalletIcon mr={1} />
-          <Text overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-            Connect Wallet
-          </Text>
-        </Flex>
-      </Button>
-    );
-  }
 
   return (
     <Menu.Root>

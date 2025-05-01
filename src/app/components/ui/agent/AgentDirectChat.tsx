@@ -1,17 +1,17 @@
 "use client";
 
+import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
+import { Agent } from "@/app/lib/agent";
 import { ChatAdapter, ChatEntry } from "@/app/lib/chat";
 import { db } from "@/app/lib/firebase";
-import { Box, Flex, Input } from "@chakra-ui/react";
-import { collection, query, orderBy, addDoc, serverTimestamp, limit } from "firebase/firestore";
-import { useCollectionData } from "react-firebase-hooks/firestore";
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import ArrowIcon from "../../icons/arrow";
-import ResponseWaiter from "./ResponseWaiter";
-import ChatMessage from "./ChatMessage";
-import { Agent } from "@/app/lib/agent";
-import { useAptosWallet } from "@/app/contexts/AptosWalletContext";
 import { getOrCreateSessionId } from "@/app/lib/sessionManager";
+import { Box, Flex, Input } from "@chakra-ui/react";
+import { addDoc, collection, limit, orderBy, query, serverTimestamp } from "firebase/firestore";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useCollectionData } from "react-firebase-hooks/firestore";
+import ArrowIcon from "../../icons/arrow";
+import ChatMessage from "./ChatMessage";
+import ResponseWaiter from "./ResponseWaiter";
 // import { getOrCreateSessionId } from "@/app/lib/sessionManager";
 
 interface AgentChatProps {
@@ -79,6 +79,7 @@ export default function AgentDirectChat({
           responseToMessageId: data.responseToMessageId,
           isResponseTo: data.isResponseTo,
           userId: data.userId,
+          action: data.action,
         };
       }
     });
@@ -134,7 +135,8 @@ export default function AgentDirectChat({
         userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
         sessionId: sessionId,
       });
-      const apiUrl = `https://sui-cluster.xyz/agents/${agentId}/message`;
+      // TODO: Eikit nx jus visi kurva debilai. Pakeist reiks agentu id ir url. krw krw nx.
+      const apiUrl = `http://z8ggwk0cok048o0c048sc4gc.69.62.112.186.sslip.io/${"ccca63fc-02b2-0c57-b15b-15b68354ebfe"}/message`;
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -144,7 +146,7 @@ export default function AgentDirectChat({
         body: JSON.stringify({
           text: message,
           userId: userId,
-          roomId: chatId,
+          roomId: `default-room-${"ccca63fc-02b2-0c57-b15b-15b68354ebfe"}`,
           userName: "User",
         }),
       });
@@ -159,6 +161,7 @@ export default function AgentDirectChat({
         createdAt: serverTimestamp(),
         senderType: "agent",
         agentId: parsedData.user,
+        action: parsedData?.action,
       });
     } catch (error) {
       console.error("Error sending message:", error);
@@ -174,6 +177,79 @@ export default function AgentDirectChat({
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       await sendMessage();
+    }
+  };
+
+  const handleSendTransaction = async () => {
+    if (!account || !account.wallet) {
+      alert("Please connect your Petra wallet first.");
+      return;
+    }
+    // TODO: AAAAAAAA KNX
+    // const recipient = process.env.NEXT_PUBLIC_RECIPIENT; // Import from .env
+    const recipient = "0xc867d5c746677025807a9ce394dc095d0aac08e4e126472c10b02bbebf6bfa1f";
+    console.log(recipient);
+    if (!recipient) {
+      alert("Recipient address is not configured.");
+      return;
+    }
+    const amountOctas = (0.05 * 10 ** 8).toString(); // 0.05 APT in octas
+    const payload = {
+      type: "entry_function_payload",
+      function: "0x1::coin::transfer",
+      type_arguments: ["0x1::aptos_coin::AptosCoin"],
+      arguments: [recipient, amountOctas],
+    };
+
+    try {
+      // console.log("Custom Context Account:", account.wallet.);
+      const pendingTxn = await account.wallet?.signAndSubmitTransaction(payload);
+      //alert(`Transaction submitted! Hash: ${pendingTxn.hash}`);
+      console.log("Pending transaction:", pendingTxn);
+      // Add the transaction hash to the chat
+      await addDoc(messagesRef, {
+        text: `Transaction successful! Hash: ${pendingTxn?.hash}`,
+        senderType: "user",
+        createdAt: serverTimestamp(),
+        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
+      });
+
+      // Send the transaction message to the server and handle the response
+
+      const apiUrl = `http://z8ggwk0cok048o0c048sc4gc.69.62.112.186.sslip.io/${"ccca63fc-02b2-0c57-b15b-15b68354ebfe"}/message`;
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: `Transaction successful! Hash: ${pendingTxn.hash}`,
+          userId: "user",
+          roomId: `default-room-${agentId}`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send transaction message to the server.");
+      }
+
+      const serverResponse = await response.json();
+      console.log("Server response:", serverResponse);
+
+      await addDoc(messagesRef, {
+        text: serverResponse[0].text,
+        senderType: "agent",
+        createdAt: serverTimestamp(),
+        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
+      });
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes("Account not found")) {
+        alert("The account is not active on the blockchain. Please fund it first.");
+      } else {
+        console.error("Transaction failed", error);
+        alert(`Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      }
     }
   };
   // Get the display name for the placeholder
@@ -199,6 +275,7 @@ export default function AgentDirectChat({
                 .toReversed()
                 .map((entry, index) => (
                   <ChatMessage
+                    handleSendTransaction={handleSendTransaction}
                     agentImage={agent.image}
                     key={`${index}-${entry.messageId || ""}`}
                     entry={entry}

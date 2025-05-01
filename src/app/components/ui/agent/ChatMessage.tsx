@@ -5,11 +5,25 @@ import AgentMessage from "./AgentMessage";
 import ErrorMessage from "./ErrorMessage";
 import PersonMessage from "./PersonMessage";
 
-function ChatMessage({ entry, agentImage }: { entry: ChatEntry; agentImage: string }) {
+function ChatMessage({
+  entry,
+  agentImage,
+  handleSendTransaction,
+}: {
+  entry: ChatEntry;
+  agentImage: string;
+  handleSendTransaction?: () => void;
+}) {
   return (
     <div>
       {(entry.alignment === "right" && <PersonMessage entry={entry} />) ||
-        (entry.alignment === "left" && <AgentMessage entry={entry} agentImage={agentImage} />) ||
+        (entry.alignment === "left" && (
+          <AgentMessage
+            handleSendTransaction={handleSendTransaction}
+            entry={entry}
+            agentImage={agentImage}
+          />
+        )) ||
         (entry.alignment === "error" && <ErrorMessage entry={entry} />)}
     </div>
   );
