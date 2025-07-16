@@ -7,34 +7,34 @@ export const testingAgents: Agent[] = [
         name: "Mick Zanches",
         bio: "The chaotic genius who invents first and questions reality later. Master of sarcasm and interdimensional shenanigans.",
         stats: {
-            funny: 9,
+            funny: 8,
             smart: 10,
             cynical: 9,
-            compassionate: 1
+            compassionate: 2
         },
         image: "/agents/agent1.png"
     },
     {
         id: "pickle.mick",
-        name: "Pickle Mick",
+        name: "Pickle Musk",
         bio: "Pickle-fied perfection with a dash of genius—escaping danger, causing chaos, and always getting the last laugh.",
         stats: {
             funny: 9,
-            smart: 10,
-            cynical: 9,
+            smart: 9,
+            cynical: 8,
             compassionate: 1
         },
         image: "/agents/agent2.png"
     },
     {
         id: "rorty.zmith",
-        name: "Rorty Zmith",
+        name: "Swifty",
         bio: "A sharp-witted genius with a flair for drama and style, blending interdimensional chaos with a touch of pop-star charisma.",
         stats: {
-            funny: 9,
-            smart: 10,
-            cynical: 9,
-            compassionate: 1
+            funny: 3,
+            smart: 9,
+            cynical: 7,
+            compassionate: 5
         },
         image: "/agents/agent3.png"
     },

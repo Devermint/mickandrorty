@@ -7,7 +7,7 @@ export default function TopBar() {
   return (
     <Flex alignItems="center" justifyContent="space-between" minHeight="50px" py={2}>
       <Box ml="2rem">
-        <Link href="/home">
+        <Link href="https://aptoslayer.ai/">
           <Box display={{ base: "none", md: "block" }}>
             <Image
               src="/logo.png"

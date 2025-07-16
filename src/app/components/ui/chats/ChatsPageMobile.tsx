@@ -184,15 +184,15 @@ export const ChatsPageMobile: React.FC<{
           >
             <Text
               position="absolute"
-              right="2"
-              top="2"
+              right="1"
+              top="1"
               color="#AFDC29"
               backdropFilter="blur(11.8px)"
               border="1px solid #AFDC29"
               borderRadius="8px"
               background="#11331D"
               padding="0.5rem"
-              fontSize="14px"
+              fontSize="12px"
               textAlign="right"
             >
               Total queue {totalQueue}
