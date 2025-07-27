@@ -1,13 +1,11 @@
 "use client";
 
-import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { ChakraProvider, Box, Spinner } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { system } from "./theme";
 import NavBar from "./ui/NavBar";
-import TopBar from "./ui/TopBar";
-import { AptosWalletProvider } from "../contexts/AptosWalletContext";
 import { Suspense, useEffect } from "react";
+import Footer from "./ui/Footer";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,19 +47,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={system}>
-        <AptosWalletAdapterProvider>
-          <AptosWalletProvider sessionDuration={8 * 60 * 60 * 1000}>
-            {" "}
-            {/* 8 hour session */}
-            <Suspense fallback={<LoadingSpinner />}>
-              <TopBar />
-            </Suspense>
-            <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-            <Suspense fallback={<LoadingSpinner />}>
-              <NavBar />
-            </Suspense>
-          </AptosWalletProvider>
-        </AptosWalletAdapterProvider>
+        {/* <AptosWalletAdapterProvider> */} {/* 8 hour session */}
+        <Suspense fallback={<LoadingSpinner />}>
+          <NavBar />
+        </Suspense>
+        <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+        {/* </AptosWalletAdapterProvider> */}
+        <Footer />
       </ChakraProvider>
     </QueryClientProvider>
   );

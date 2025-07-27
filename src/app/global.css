@@ -3,7 +3,7 @@ body {
   z-index: -3;
   background-image: url("/background2-min.webp"),
     radial-gradient(
-      ellipse 75% 70% at center,
+      ellipse 30% 50% at 50% 40%,
       rgba(13, 43, 24, 0.9) 0%,
       rgba(13, 43, 24, 0.7) 30%,
       rgba(2, 9, 9, 0.95) 60%

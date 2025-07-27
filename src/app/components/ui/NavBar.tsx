@@ -1,33 +1,23 @@
 "use client";
 
 import { Flex, Text, Box } from "@chakra-ui/react";
-import HomeIcon from "../icons/home";
-import CreateIcon from "../icons/create";
-import ChatsIcon from "../icons/chats";
-import StakeIcon from "../icons/stake";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useMobileBreak } from "../responsive";
 import { useTransitionRouter } from "next-view-transitions";
-import { animations } from "./Animations";
+import ConnectWalletButton from "./ConnectWaletButton";
+import Link from "next/link";
+import Image from "next/image";
 
-const BaseIconColor = "#99B637";
-const ActiveIconColor = "#000000";
-const ActiveBackgroundColor = "#AFDC29";
-
-// Define the navigation structure with order
 const NavButtonsInitial = [
-  { active: false, text: "Home", icon: HomeIcon, page: "/home", order: 0 },
-  { active: false, text: "Create", icon: CreateIcon, page: "/create", order: 1 },
-  { active: false, text: "My Chats", icon: ChatsIcon, page: "/chats", order: 2 },
-  // { active: false, text: "Community", icon: CommunityIcon, page: "/community" },
-  { active: false, text: "Stake", icon: StakeIcon, page: "/stake", order: 3 },
+  { active: false, text: "Agents", page: "/agents" },
+  { active: false, text: "Chat", page: "/chat" },
+  { active: false, text: "About", page: "/about" },
 ];
 
 type NavBarButtonProps = {
   text: string;
-  backgroundColor?: string;
-  icon: React.ReactElement;
+  textColor?: string;
   onClick: (id: string) => void;
 };
 
@@ -37,21 +27,16 @@ function NavBarButton(props: NavBarButtonProps) {
       direction="column"
       alignItems="center"
       cursor="pointer"
-      padding="0.25rem"
+      padding="0.6rem"
       onClick={() => props.onClick(props.text)}
     >
-      <Box
-        width="36px"
-        height="36px"
-        backgroundColor={props.backgroundColor}
-        borderRadius="4px"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
+      <Text
+        userSelect="none"
+        fontWeight="400"
+        fontSize="14px"
+        lineHeight="14px"
+        color={props.textColor}
       >
-        {props.icon}
-      </Box>
-      <Text userSelect="none" fontWeight="400" fontSize="10px" lineHeight="14px">
         {props.text}
       </Text>
     </Flex>
@@ -69,23 +54,8 @@ export default function NavBar() {
       button.active = button.text === id;
     });
 
-    const currentIndex = navButtons.findIndex((button) => button.page === pathname);
     const targetIndex = navButtons.findIndex((button) => button.text === id);
-
-    if (currentIndex !== -1 && targetIndex !== -1) {
-      // If moving to a higher index (right in the nav bar), slide right
-      // If moving to a lower index (left in the nav bar), slide left
-      const animation = targetIndex > currentIndex ? animations.slideRight : animations.slideLeft;
-
-      router.push(navButtons[targetIndex].page, {
-        onTransitionReady: animation,
-      });
-    } else {
-      // Fallback if we can't determine the direction
-      router.push(navButtons[targetIndex].page, {
-        onTransitionReady: animations.fadeInOut,
-      });
-    }
+    router.push(navButtons[targetIndex].page);
   };
 
   useEffect(() => {
@@ -116,33 +86,72 @@ export default function NavBar() {
                 key={index}
                 text={button.text}
                 onClick={handleButtonClick}
-                icon={button.icon(button.active ? ActiveIconColor : BaseIconColor)}
-                backgroundColor={button.active ? ActiveBackgroundColor : undefined}
+                textColor={button.active ? "green.500" : "gray.700"}
               />
             ))}
           </Flex>
         </Box>
       ) : (
-        <Box position="fixed" bottom="0" width="100%" mb="0.5rem">
+        <Flex
+          h="55px"
+          py="5px"
+          mx="1rem"
+          position="relative"
+          background="transparent"
+        >
+          <Flex position="absolute" left={0} h="100%" maxH="100%">
+            <Link href="https://aptoslayer.ai/">
+              <Box display={{ base: "none", md: "block" }} maxH="100%">
+                <Image
+                  src="/logo.png"
+                  alt="logo"
+                  style={{
+                    objectFit: "contain",
+                    height: "44px",
+                    width: "auto",
+                    maxHeight: "100%",
+                  }}
+                  height={100}
+                  width={100}
+                />
+              </Box>
+              <Box display={{ base: "block", md: "none" }}>
+                <Image
+                  src="/logo-mobile.png"
+                  alt="logo"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                  }}
+                  width={40}
+                  height={40}
+                  sizes="40px"
+                />
+              </Box>
+            </Link>
+          </Flex>
+
           <Flex
-            borderRadius="21px"
-            background="#3D3E3A1A"
+            align="center"
             justify="center"
-            justifySelf="center"
+            w="100%"
+            h="100%"
             padding="0.5rem"
-            gap="2rem"
+            gap="0.6rem"
           >
             {navButtons.map((button, index) => (
               <NavBarButton
                 key={index}
                 text={button.text}
                 onClick={handleButtonClick}
-                icon={button.icon(button.active ? ActiveIconColor : BaseIconColor)}
-                backgroundColor={button.active ? ActiveBackgroundColor : undefined}
+                textColor={button.active ? "green.500" : "gray.700"}
               />
             ))}
           </Flex>
-        </Box>
+          <Flex flexGrow={1} position="absolute" right={0} maxH="100%">
+            <ConnectWalletButton />
+          </Flex>
+        </Flex>
       )}
     </div>
   );
