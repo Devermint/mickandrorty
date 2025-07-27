@@ -6,7 +6,14 @@ import { ChatAdapter, ChatEntry } from "@/app/lib/chat";
 import { db } from "@/app/lib/firebase";
 import { getOrCreateSessionId } from "@/app/lib/sessionManager";
 import { Box, Flex, Input } from "@chakra-ui/react";
-import { addDoc, collection, limit, orderBy, query, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  limit,
+  orderBy,
+  query,
+  serverTimestamp,
+} from "firebase/firestore";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import ArrowIcon from "../../icons/arrow";
@@ -45,7 +52,10 @@ export default function AgentDirectChat({
   const sessionId = useMemo(() => getOrCreateSessionId(), []);
   // const sessionId = useMemo(() => getOrCreateSessionId(), []);
   // For react-firebase-hooks approach
-  const chatId = useMemo(() => chatIdProp ?? `public_${groupId}`, [groupId, chatIdProp]);
+  const chatId = useMemo(
+    () => chatIdProp ?? `public_${groupId}`,
+    [groupId, chatIdProp]
+  );
   // Use react-firebase-hooks to get messages
   const messagesRef = useMemo(() => {
     return collection(db, "chats", chatId, "messages");
@@ -132,7 +142,9 @@ export default function AgentDirectChat({
         attempts: 0,
         originalMessageId: null,
         createdAt: serverTimestamp(),
-        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
+        userId: account.isConnected
+          ? account?.account?.address?.toString()
+          : sessionId,
         sessionId: sessionId,
       });
       // TODO: Eikit nx jus visi kurva debilai. Pakeist reiks agentu id ir url. krw krw nx.
@@ -155,7 +167,9 @@ export default function AgentDirectChat({
       await addDoc(messagesRef, {
         chatId: chatId,
         text: parsedData.text,
-        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
+        userId: account.isConnected
+          ? account?.account?.address?.toString()
+          : sessionId,
         roomId: chatId,
         status: "processed",
         createdAt: serverTimestamp(),
@@ -167,6 +181,83 @@ export default function AgentDirectChat({
       console.error("Error sending message:", error);
       setErrorMessage(
         "An error occurred while processing your request. Please try again shortly..."
+      );
+    } finally {
+      setProcessingMessage(false);
+    }
+  };
+
+  const generateVideo = async () => {
+    if (processingMessage || !inputMessage.current) {
+      return;
+    }
+
+    const message = inputMessage.current.value.trim();
+    if (message === "") {
+      return;
+    }
+
+    inputMessage.current.value = "";
+    setProcessingMessage(true);
+    setErrorMessage(null);
+
+    // Scroll to bottom
+    bottomScroll.current?.scrollIntoView({ behavior: "smooth" });
+
+      try {
+        // Add a message to the agent's queue
+        const messagesRef = collection(db, "chats", chatId, "messages");
+
+        await addDoc(messagesRef, {
+          chatId: chatId,
+          text: message,
+          roomId: chatId,
+          status: "pending",
+          senderType: "user",
+          attempts: 0,
+          originalMessageId: null,
+          createdAt: serverTimestamp(),
+          userId: account.isConnected
+            ? account?.account?.address?.toString()
+            : sessionId,
+          sessionId: sessionId,
+        });
+
+        const response = await fetch("/api/generate-video", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ prompt: message }),
+        });
+        if (!response.ok) {
+          throw new Error("Failed to generate video");
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.videoUrl) {
+          console.log(data.videoUrl);
+          await addDoc(messagesRef, {
+            chatId: chatId,
+            text: data.videoUrl,
+            userId: account.isConnected
+              ? account?.account?.address?.toString()
+              : sessionId,
+            roomId: chatId,
+            status: "processed",
+            createdAt: serverTimestamp(),
+            senderType: "agent",
+            agentId: agent.id,
+            action: "CONTINUE",
+          });
+        } else {
+          throw new Error("Video generation failed");
+        }
+      } catch (error) {
+      console.error("Error generating video:", error);
+      setErrorMessage(
+        "An error occurred while generating video. Please try again shortly..."
       );
     } finally {
       setProcessingMessage(false);
@@ -187,7 +278,8 @@ export default function AgentDirectChat({
     }
     // TODO: AAAAAAAA KNX
     // const recipient = process.env.NEXT_PUBLIC_RECIPIENT; // Import from .env
-    const recipient = "0xc867d5c746677025807a9ce394dc095d0aac08e4e126472c10b02bbebf6bfa1f";
+    const recipient =
+      "0xc867d5c746677025807a9ce394dc095d0aac08e4e126472c10b02bbebf6bfa1f";
     console.log(recipient);
     if (!recipient) {
       alert("Recipient address is not configured.");
@@ -203,7 +295,9 @@ export default function AgentDirectChat({
 
     try {
       // console.log("Custom Context Account:", account.wallet.);
-      const pendingTxn = await account.wallet?.signAndSubmitTransaction(payload);
+      const pendingTxn = await account.wallet?.signAndSubmitTransaction(
+        payload
+      );
       //alert(`Transaction submitted! Hash: ${pendingTxn.hash}`);
       console.log("Pending transaction:", pendingTxn);
       // Add the transaction hash to the chat
@@ -211,7 +305,9 @@ export default function AgentDirectChat({
         text: `Transaction successful! Hash: ${pendingTxn?.hash}`,
         senderType: "user",
         createdAt: serverTimestamp(),
-        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
+        userId: account.isConnected
+          ? account?.account?.address?.toString()
+          : sessionId,
       });
 
       // Send the transaction message to the server and handle the response
@@ -241,14 +337,25 @@ export default function AgentDirectChat({
         text: serverResponse[0].text,
         senderType: "agent",
         createdAt: serverTimestamp(),
-        userId: account.isConnected ? account?.account?.address?.toString() : sessionId,
+        userId: account.isConnected
+          ? account?.account?.address?.toString()
+          : sessionId,
       });
     } catch (error: unknown) {
-      if (error instanceof Error && error.message.includes("Account not found")) {
-        alert("The account is not active on the blockchain. Please fund it first.");
+      if (
+        error instanceof Error &&
+        error.message.includes("Account not found")
+      ) {
+        alert(
+          "The account is not active on the blockchain. Please fund it first."
+        );
       } else {
         console.error("Transaction failed", error);
-        alert(`Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+        alert(
+          `Transaction failed: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
       }
     }
   };
@@ -262,8 +369,19 @@ export default function AgentDirectChat({
         background="linear-gradient(184.07deg, rgba(84, 203, 104, 0) 50.89%, rgba(175, 220, 41, 0.09) 97.9%)"
         padding="1rem"
       >
-        <Flex direction="column" gap="1rem" justify="space-between" height="100%">
-          <Flex direction="column" height="90%" overflowY="auto" gap="0.75rem" padding="0.25rem">
+        <Flex
+          direction="column"
+          gap="1rem"
+          justify="space-between"
+          height="100%"
+        >
+          <Flex
+            direction="column"
+            height="90%"
+            overflowY="auto"
+            gap="0.75rem"
+            padding="0.25rem"
+          >
             {loading ? (
               <Box textAlign="center" color="#AFDC29" padding="1rem">
                 Loading messages...
@@ -304,7 +422,10 @@ export default function AgentDirectChat({
                 disabled={processingMessage || loading}
                 borderWidth="0px"
                 color="#AFDC29"
-                css={{ "--focus-color": "transparent", "--focus-ring-color": "transparent" }}
+                css={{
+                  "--focus-color": "transparent",
+                  "--focus-ring-color": "transparent",
+                }}
                 placeholder={`Message ${displayName}`}
                 ref={inputMessage}
                 onKeyDown={reactToEnterKey}
@@ -312,11 +433,25 @@ export default function AgentDirectChat({
                 onBlur={onInputBlur}
               />
               <Box
-                cursor={processingMessage || loading ? "not-allowed" : "pointer"}
+                cursor={
+                  processingMessage || loading ? "not-allowed" : "pointer"
+                }
                 onClick={sendMessage}
                 justifyItems="center"
                 alignContent="center"
                 opacity={processingMessage || loading ? 0.5 : 1}
+              >
+                <ArrowIcon strokeColor="#AFDC29" />
+              </Box>
+              <Box
+                cursor={
+                  processingMessage || loading ? "not-allowed" : "pointer"
+                }
+                onClick={generateVideo}
+                justifyItems="center"
+                alignContent="center"
+                opacity={processingMessage || loading ? 0.5 : 1}
+                ml="0.5rem"
               >
                 <ArrowIcon strokeColor="#AFDC29" />
               </Box>
