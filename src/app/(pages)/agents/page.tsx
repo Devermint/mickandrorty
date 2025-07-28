@@ -1,13 +1,10 @@
 "use client";
 
 import { AgentCarousel } from "@/app/components/agent/AgentCarousel";
-import { colorTokens } from "@/app/components/theme";
 import { Agent } from "@/app/lib/agent";
 
-import { Box, Button, Flex, Textarea } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import { useEffect } from "react";
-import AnimatedBorderBox from "@/app/components/ui/AnimatedBorderBox/AnimatedBorderBox";
-import { ArrowUp } from "@/app/components/icons/arrowUp";
 import { AgentInput } from "@/app/components/agent/AgentInput";
 
 export default function AgentsPage() {
