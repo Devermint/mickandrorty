@@ -2,17 +2,17 @@ import { Box, BoxProps } from "@chakra-ui/react";
 import "./styles.css";
 
 interface Props extends BoxProps {
-  color: string;
+  animationColor: string;
   children: React.ReactNode;
 }
 
-const AnimatedBorderBox = ({ color, children, ...rest }: Props) => {
+const AnimatedBorderBox = ({ animationColor, children, ...rest }: Props) => {
   const borderGlowColors = {
     "--glow-color": `transparent 20%,
-      ${color} 30%,
-      ${color} 40%,
-      ${color} 50%,
-      ${color} 60%,
+      ${animationColor} 30%,
+      ${animationColor} 40%,
+      ${animationColor} 50%,
+      ${animationColor} 60%,
       transparent 70%`,
   } as React.CSSProperties;
 

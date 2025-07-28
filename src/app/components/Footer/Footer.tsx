@@ -4,7 +4,7 @@ import { Flex, Box, Button } from "@chakra-ui/react";
 import { useMobileBreak } from "../responsive";
 import Link from "next/link";
 import { colorTokens } from "../theme";
-import { GlobeIcon } from "../icons/globe";
+import { GlobeIcon } from "../Icons/globe";
 
 export default function Footer() {
   const isMobile = useMobileBreak();

@@ -1,13 +1,13 @@
-import { Button, Flex, Textarea } from "@chakra-ui/react";
+import { BoxProps, Button, Flex, Textarea } from "@chakra-ui/react";
 import { colorTokens } from "../theme";
-import AnimatedBorderBox from "../ui/AnimatedBorderBox/AnimatedBorderBox";
-import { ArrowUp } from "../icons/arrowUp";
+import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
+import { ArrowUp } from "../Icons/arrowUp";
 
-export const AgentInput = () => {
+export const AgentInput = ({ ...rest }: BoxProps) => {
   return (
     <AnimatedBorderBox
       mt={100}
-      color="rgba(0, 255, 109, 1)"
+      animationColor="rgba(0, 255, 109, 1)"
       borderColor="rgba(42, 189, 105, 0.6)"
       borderWidth={1}
       p={0}
@@ -15,13 +15,14 @@ export const AgentInput = () => {
       w="100%"
       h={100}
       bgColor={colorTokens.blackCustom.a1}
+      {...rest}
     >
       <Flex h="100%" p={3} align="flex-end">
         <Textarea
           h="100%"
           fontFamily="Sora"
           placeholder="Start generating..."
-          color={colorTokens.gray.timberwolf}
+          borderColor={colorTokens.gray.timberwolf}
           transition="box-shadow 0.3s ease"
           border="none"
           borderRadius={13}

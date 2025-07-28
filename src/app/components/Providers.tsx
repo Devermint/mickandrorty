@@ -3,9 +3,9 @@
 import { ChakraProvider, Box, Spinner } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { system } from "./theme";
-import NavBar from "./ui/NavBar";
+import NavBar from "./NavBar/NavBar";
 import { Suspense, useEffect } from "react";
-import Footer from "./ui/Footer";
+import Footer from "./Footer/Footer";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,7 +29,7 @@ function LoadingSpinner() {
       backgroundColor="#020909"
       zIndex={9999}
     >
-      <Spinner size="xl" color="#AFDC29" />
+      <Spinner size="xl" borderColor="#AFDC29" />
     </Box>
   );
 }

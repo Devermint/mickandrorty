@@ -1,8 +1,7 @@
-// components/AgentCard.tsx
 import { Box, Flex, Image, Text, Button } from "@chakra-ui/react";
-import { X } from "../icons/x";
-import { Telegram } from "../icons/telegram";
-import { Agent } from "@/app/lib/agent";
+import { X } from "../Icons/x";
+import { Telegram } from "../Icons/telegram";
+import { Agent } from "@/app/types/agent";
 import { colorTokens } from "../theme";
 
 type AgentCardProps = {
@@ -78,11 +77,11 @@ export const AgentCard = ({ isActive, agent }: AgentCardProps) => (
           <Text
             fontSize="sm"
             fontWeight="bold"
-            color={colorTokens.gray.timberwolf}
+            borderColor={colorTokens.gray.timberwolf}
           >
             {agent.name}
           </Text>
-          <Text fontSize="xs" color={colorTokens.gray.platinum}>
+          <Text fontSize="xs" borderColor={colorTokens.gray.platinum}>
             {agent.tag}
           </Text>
         </Box>

@@ -1,11 +1,11 @@
 "use client";
 
-import { AgentCarousel } from "@/app/components/agent/AgentCarousel";
-import { Agent } from "@/app/lib/agent";
+import { AgentCarousel } from "@/app/components/Agent/AgentCarousel";
+import { Agent } from "@/app/types/agent";
 
 import { Box, Flex } from "@chakra-ui/react";
 import { useEffect } from "react";
-import { AgentInput } from "@/app/components/agent/AgentInput";
+import { AgentInput } from "@/app/components/Agent/AgentInput";
 
 export default function AgentsPage() {
   useEffect(() => {

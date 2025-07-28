@@ -1,5 +1,6 @@
 "use client";
-import { Flex, Text } from "@chakra-ui/react";
+import Chat from "@/app/components/Chat/Chat";
+import { Flex } from "@chakra-ui/react";
 import { useEffect } from "react";
 
 export default function ChatPage() {
@@ -19,17 +20,11 @@ export default function ChatPage() {
         flexDirection="column"
         display={{ base: "none", md: "flex" }}
         alignItems="center"
-        mt={20}
+        mt={5}
+        mb={16}
+        h="100%"
       >
-        <Text
-          fontSize="20px"
-          textAlign="center"
-          lineHeight="26px"
-          fontWeight="700"
-          marginBottom="0.5rem"
-        >
-          Select AI agent
-        </Text>
+        <Chat />
       </Flex>
     </div>
   );

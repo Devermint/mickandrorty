@@ -1,5 +1,3 @@
-/* animated-pretitle.css */
-
 .animated-pretitle {
     display: inline-block;
     position: relative;
@@ -15,7 +13,6 @@
     backdrop-filter: blur(24px);
   }
   
-  /* Static animated border container */
   .animated-pretitle .animated-border {
     position: absolute;
     padding: 0.5px;
@@ -25,7 +22,6 @@
     pointer-events: none;
   }
   
-  /* Rotating conic‑gradient border */
   .animated-pretitle .animated-border:after {
     --angle: 0deg;
     --start-angle: 0deg;
@@ -52,8 +48,7 @@
     animation: border-animation 4s linear infinite;
   }
   
-  /* Soft blurred glow ring */
-  .animated-pretitle .animated-glow {
+   .animated-pretitle .animated-glow {
     position: absolute;
     padding: 0.5px;
     inset: -0.5px;
@@ -63,7 +58,6 @@
     filter: blur(9px);
   }
   
-  /* Blurred glow gradient */
   .animated-pretitle .animated-glow:after {
     --angle: 0deg;
     --start-angle: 0deg;
@@ -90,14 +84,12 @@
     animation: border-animation 4s linear infinite;
   }
   
-  /* Register the custom --angle property */
-  @property --angle {
+   @property --angle {
     syntax: '<angle>';
     inherits: false;
     initial-value: 0deg;
   }
   
-  /* Spin the gradient */
   @keyframes border-animation {
     to {
       --angle: 360deg;

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useMobileBreak } from "../responsive";
 import { useTransitionRouter } from "next-view-transitions";
-import ConnectWalletButton from "./ConnectWaletButton";
+import ConnectWalletButton from "../ConnectWalletButton/ConnectWaletButton";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -35,7 +35,7 @@ function NavBarButton(props: NavBarButtonProps) {
         fontWeight="400"
         fontSize="14px"
         lineHeight="14px"
-        color={props.textColor}
+        borderColor={props.textColor}
       >
         {props.text}
       </Text>

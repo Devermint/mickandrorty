@@ -1,6 +1,6 @@
 import { Button, Flex } from "@chakra-ui/react";
 import { colorTokens } from "../theme";
-import { WalletIcon } from "../icons/wallet";
+import { WalletIcon } from "../Icons/wallet";
 
 export default function ConnectWalletButton() {
   return (

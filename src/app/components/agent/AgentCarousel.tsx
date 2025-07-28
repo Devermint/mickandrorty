@@ -1,4 +1,3 @@
-// components/AgentCarousel.tsx
 "use client";
 
 import { useRef, useState } from "react";
@@ -6,10 +5,11 @@ import { Box, Button, Flex } from "@chakra-ui/react";
 import { useKeenSlider } from "keen-slider/react";
 import type { KeenSliderInstance } from "keen-slider";
 import "keen-slider/keen-slider.min.css";
+
+import { Agent } from "@/app/types/agent";
+import { ChevronLeftIcon } from "../Icons/chevronLeft";
+import { ChevronRightIcon } from "../Icons/chevronRight";
 import { AgentCard } from "./AgentCard";
-import { Agent } from "@/app/lib/agent";
-import { ChevronLeftIcon } from "../icons/chevronLeft";
-import { ChevronRightIcon } from "../icons/chevronRight";
 
 type AgentCarouselProps = {
   agents: Agent[];
