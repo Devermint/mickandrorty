@@ -19,7 +19,6 @@ export default function ConnectWalletButton() {
         px={4}
         py={3}
         lineHeight={1}
-        color={colorTokens.green.darkErin}
       >
         <WalletIcon w={5} />
         Connect wallet

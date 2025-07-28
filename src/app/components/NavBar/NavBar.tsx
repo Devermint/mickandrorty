@@ -35,7 +35,7 @@ function NavBarButton(props: NavBarButtonProps) {
         fontWeight="400"
         fontSize="14px"
         lineHeight="14px"
-        borderColor={props.textColor}
+        color={props.textColor}
       >
         {props.text}
       </Text>

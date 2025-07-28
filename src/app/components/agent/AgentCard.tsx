@@ -77,11 +77,11 @@ export const AgentCard = ({ isActive, agent }: AgentCardProps) => (
           <Text
             fontSize="sm"
             fontWeight="bold"
-            borderColor={colorTokens.gray.timberwolf}
+            color={colorTokens.gray.timberwolf}
           >
             {agent.name}
           </Text>
-          <Text fontSize="xs" borderColor={colorTokens.gray.platinum}>
+          <Text fontSize="xs" color={colorTokens.gray.platinum}>
             {agent.tag}
           </Text>
         </Box>

@@ -29,7 +29,7 @@ function LoadingSpinner() {
       backgroundColor="#020909"
       zIndex={9999}
     >
-      <Spinner size="xl" borderColor="#AFDC29" />
+      <Spinner size="xl" color="#AFDC29" />
     </Box>
   );
 }

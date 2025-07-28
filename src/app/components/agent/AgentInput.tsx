@@ -19,7 +19,7 @@ export const AgentInput = ({ ...rest }: BoxProps) => {
           h="100%"
           fontFamily="Sora"
           placeholder="Start generating..."
-          borderColor={colorTokens.gray.timberwolf}
+          color={colorTokens.gray.timberwolf}
           transition="box-shadow 0.3s ease"
           border="none"
           borderRadius={13}
