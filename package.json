@@ -22,6 +22,7 @@
     "express": "^5.1.0",
     "firebase": "^11.3.1",
     "heroku-ssl-redirect": "^0.1.1",
+    "keen-slider": "^6.8.6",
     "next": "15.2.3",
     "next-view-transitions": "^0.3.4",
     "pre-commit": "^1.2.2",

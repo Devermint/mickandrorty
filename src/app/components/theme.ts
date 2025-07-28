@@ -66,7 +66,7 @@ const customConfig = defineConfig({
         textGray: {
           value: "#B1B3B9",
         },
-        black: {
+        blackCustom: {
           a1: { value: "#090A0B" },
           a2: { value: "#121315" },
           a3: { value: "#1A1D1F" },
@@ -87,10 +87,10 @@ const customConfig = defineConfig({
 
 export const colorTokens = {
   textGray: "textGray",
-  black: {
-    a1: "black.a1",
-    a2: "black.a2",
-    a3: "black.a3",
+  blackCustom: {
+    a1: "blackCustom.a1",
+    a2: "blackCustom.a2",
+    a3: "blackCustom.a3",
   },
   green: {
     dark: "green.dark",

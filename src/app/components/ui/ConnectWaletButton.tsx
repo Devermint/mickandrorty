@@ -6,7 +6,7 @@ export default function ConnectWalletButton() {
   return (
     <Flex>
       <Button
-        bgColor={colorTokens.black.a2}
+        bgColor={colorTokens.blackCustom.a2}
         onClick={(e) => {
           e.preventDefault();
           e.nativeEvent.stopImmediatePropagation();
