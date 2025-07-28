@@ -6,14 +6,11 @@ import { ArrowUp } from "../Icons/arrowUp";
 export const AgentInput = ({ ...rest }: BoxProps) => {
   return (
     <AnimatedBorderBox
-      mt={100}
       animationColor="rgba(0, 255, 109, 1)"
       borderColor="rgba(42, 189, 105, 0.6)"
       borderWidth={1}
-      p={0}
       borderRadius={13}
       w="100%"
-      h={100}
       bgColor={colorTokens.blackCustom.a1}
       {...rest}
     >

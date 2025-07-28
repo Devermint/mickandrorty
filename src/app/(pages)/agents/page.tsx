@@ -43,7 +43,7 @@ export default function AgentsPage() {
       <Flex flexDirection="column" alignItems="center" mt={20} zIndex={1}>
         <Box maxW={760}>
           <AgentCarousel agents={agents} />
-          <AgentInput />
+          <AgentInput mt={100} h={100} p={0} />
         </Box>
       </Flex>
     </div>
