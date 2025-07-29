@@ -1,0 +1,86 @@
+body {
+  background-color: #020909;
+  z-index: -3;
+  background-image: url("/background2-min.webp"),
+    radial-gradient(
+      ellipse 30% 50% at 50% 40%,
+      rgba(13, 43, 24, 0.9) 0%,
+      rgba(13, 43, 24, 0.7) 30%,
+      rgba(2, 9, 9, 0.95) 60%
+    );
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  font-family: "JetBrains Mono";
+  overflow-x: hidden;
+  overflow-y: hidden;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* View Transitions API styles */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  will-change: transform, opacity;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* Animation keyframes */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Apply the animations to the view transitions */
+::view-transition-old(root) {
+  animation: fade-out 0.5s ease-in-out;
+}
+
+::view-transition-new(root) {
+  animation: fade-in 0.5s ease-in-out;
+}
+
+/* Add a class to the html element for transitions */
+html {
+  view-transition-name: root;
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #121315;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6A6B6A;
+  border-radius: 16px;
+}

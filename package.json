@@ -1,96 +1,44 @@
 {
-  "name": "rorty",
+  "name": "mickandrorty",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "vite",
-    "build": "tsc && vite build",
-    "dev": "vite",
-    "preview": "vite preview",
-    "lint": "eslint . --fix"
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint --fix"
   },
-  "engines": {
-    "node": "v20.10.0",
-    "yarn": "1.22.19"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
+  "pre-commit": [
+    "lint"
+  ],
   "dependencies": {
-    "@chakra-ui/icons": "^2.1.0",
-    "@chakra-ui/react": "^2.8.0",
-    "@coinbase/onchainkit": "^0.35.5",
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@rainbow-me/rainbowkit": "^2.2.0",
-    "@tanstack/react-query": "^5.60.5",
-    "buffer": "^6.0.3",
-    "chakra-react-select": "^4.7.6",
-    "chart.js": "^4.4.7",
-    "chartjs-adapter-date-fns": "^3.0.0",
-    "d3": "^7.9.0",
-    "date-fns": "^4.1.0",
-    "dayjs": "^1.11.13",
-    "env-cmd": "^10.1.0",
-    "ethers": "^6.7.1",
-    "framer-motion": "^10.16.1",
-    "jwt-decode": "^3.1.2",
-    "lightweight-charts": "^4.2.1",
-    "moment": "^2.30.1",
-    "react": "^18.2.0",
-    "react-blockies": "^1.4.1",
-    "react-chartjs-2": "^5.2.0",
-    "react-dom": "^18.2.0",
-    "react-dropzone": "^14.3.5",
-    "react-icons": "^5.4.0",
-    "react-router-dom": "^6.15.0",
-    "react-twitter-embed": "^4.0.4",
-    "react-twitter-widgets": "^1.11.0",
-    "serve": "^14.2.3",
-    "typescript": "^5.0.4",
-    "viem": "^2.21.45",
-    "wagmi": "^2.12.33",
-    "web3": "^4.13.0"
+    "@aptos-labs/wallet-adapter-core": "^3.5.0",
+    "@aptos-labs/wallet-adapter-react": "^4.1.0",
+    "@chakra-ui/react": "^3.23.0",
+    "@fal-ai/client": "^1.6.1",
+    "@fontsource/jetbrains-mono": "^5.1.2",
+    "@next/bundle-analyzer": "^15.2.4",
+    "@tanstack/react-query": "^5.67.1",
+    "deepmerge": "^4.3.1",
+    "express": "^5.1.0",
+    "firebase": "^11.3.1",
+    "heroku-ssl-redirect": "^0.1.1",
+    "keen-slider": "^6.8.6",
+    "next": "15.2.3",
+    "next-view-transitions": "^0.3.4",
+    "pre-commit": "^1.2.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-firebase-hooks": "^5.1.1",
+    "recharts": "^2.15.1"
   },
   "devDependencies": {
-    "@types/node": "^18.16.1",
-    "@types/react": "^18.2.12",
-    "@types/react-blockies": "^1.4.4",
-    "@types/react-dom": "^18.2.5",
-    "@typescript-eslint/eslint-plugin": "^5.59.11",
-    "@typescript-eslint/parser": "^5.59.11",
-    "@vitejs/plugin-react": "^4.3.4",
-    "cypress": "^13.8.1",
-    "cypress-localstorage-commands": "^2.2.5",
-    "dependency-cruiser": "^16.3.1",
-    "eslint": "^8.42.0",
-    "eslint-config-airbnb": "19.0.4",
-    "eslint-config-airbnb-typescript": "^17.0.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-jsx-a11y": "^6.7.1",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "prettier": "^2.8.8",
-    "vite": "^5.4.14"
-  },
-  "overrides": {
-    "typescript": "^5.0.4"
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.3",
+    "typescript": "^5"
   }
 }
