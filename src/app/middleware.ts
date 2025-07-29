@@ -8,13 +8,13 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host');
   const protocol = request.headers.get('x-forwarded-proto');
   const pathname = request.nextUrl.pathname;
-  
+
   // Handle Heroku's specific protocol header
   const isHttps = protocol ? protocol.includes('https') : false;
 
   // Check if we're at the root path and need to redirect to /home
   if (pathname === '/') {
-    const url = new URL('/home', request.url);
+    const url = new URL('/agents', request.url);
     return NextResponse.redirect(url);
   }
 

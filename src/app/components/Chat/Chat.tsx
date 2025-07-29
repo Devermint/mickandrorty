@@ -9,10 +9,16 @@ import {
   DemoVideoEntry,
   DefaultTransactionEntry,
 } from "./ChatEntry";
-import { AgentInput } from "../Agent/AgentInput";
+import { AgentInput } from "../agent/AgentInput";
 import { colorTokens } from "../theme";
 import { useSearchParams, useRouter } from "next/navigation";
 // import { useAptosWallet } from "@/app/context/AptosWalletContext";
+
+enum ChatState {
+  IDLE,
+  PROCESSING,
+  GENERATING_VIDEO,
+}
 
 const Chat = () => {
   // const account = useAptosWallet();
@@ -24,8 +30,9 @@ const Chat = () => {
   const searchParams = useSearchParams();
   const msg = searchParams.get("message") ?? "";
 
-  const [processing, setProcessing] = useState(false);
+  const [chatState, setChatState] = useState(ChatState.IDLE);
   const [messages, setMessages] = useState<ChatEntryProps[]>([]);
+  const [progress, setProgress] = useState<string | null>(null);
 
   const didInitialize = useRef(false);
 
@@ -33,25 +40,110 @@ const Chat = () => {
     bottomScroll.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const onMessageSend = useCallback(() => {
+  const onMessageSend = useCallback(async () => {
     const el = inputMessage.current;
-    if (!el || processing) return;
+    if (!el || chatState !== ChatState.IDLE) return;
 
     const text = el.value.trim();
     if (!text) return;
 
-    el.value = "";
-    el.blur();
-
-    setProcessing(true);
     setMessages((prev) => [
       ...prev,
       { sender: "You", message: text, isMyMessage: true },
-      { sender: "Agent", message: "Hello", isMyMessage: false },
     ]);
-    setProcessing(false);
-    el.focus();
-  }, [processing]);
+
+    el.value = "";
+    el.blur();
+
+    // If the message starts with "generate video", do something (e.g., log or handle differently)
+    if (text.toLowerCase().startsWith("generate video")) {
+      setChatState(ChatState.GENERATING_VIDEO);
+
+      const response = await fetch("/api/generate-video", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: text }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to generate video");
+      }
+
+      if (!response.body) {
+        throw new Error("No response body for streaming");
+      }
+
+      const { jobId } = await response.json();
+
+      const es = new EventSource(`/api/generate-video?id=${jobId}`);
+
+      es.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+
+        console.log(data);
+
+        if (data.status === "IN_QUEUE") {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: "Agent",
+              message: "Video is in queue...",
+              isMyMessage: false,
+            },
+          ]);
+        }
+
+        if (data.status === "IN_PROGRESS") {
+          setProgress(data.progress);
+        }
+
+        if (data.status === "COMPLETED") {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: "Agent",
+              videoUrl: data.videoUrl,
+              isMyMessage: false,
+            },
+          ]);
+          setProgress(null);
+          es.close();
+        }
+      };
+
+      es.onerror = (e) => {
+        console.error("SSE error", e);
+        es.close();
+      };
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "Agent",
+          message:
+            "Video generation is in progress... (this may take ~5 minutes)",
+          isMyMessage: false,
+        },
+      ]);
+
+      el.value = "";
+      el.focus();
+    } else {
+      setChatState(ChatState.PROCESSING);
+
+      // Regular message handling
+      setMessages((prev) => [
+        ...prev,
+        { sender: "You", message: text, isMyMessage: true },
+        { sender: "Agent", message: "Hello", isMyMessage: false },
+      ]);
+
+      setChatState(ChatState.IDLE);
+      el.value = "";
+      el.focus();
+    }
+  }, [chatState]);
 
   useEffect(() => {
     const el = inputMessage.current;
@@ -190,7 +282,12 @@ const Chat = () => {
               <DefaultTransactionEntry />
             </>
           ) : (
-            messages.map((m, i) => <ChatEntry key={i} {...m} />)
+            <>
+              {messages.map((m, i) => <ChatEntry key={i} {...m} />)}
+              {progress && (
+                <ChatEntry sender="Agent" message={progress} isMyMessage={false} />
+              )}
+            </>
           )}
           <div ref={bottomScroll} />
         </Flex>

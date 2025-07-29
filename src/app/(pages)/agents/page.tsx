@@ -1,11 +1,11 @@
 "use client";
 
-import { AgentCarousel } from "@/app/components/Agent/AgentCarousel";
+import { AgentCarousel } from "@/app/components/agent/AgentCarousel";
 import { testAgents } from "@/app/types/agent";
 
 import { Box, Flex } from "@chakra-ui/react";
 import { useEffect, useRef } from "react";
-import { AgentInput } from "@/app/components/Agent/AgentInput";
+import { AgentInput } from "@/app/components/agent/AgentInput";
 import { useRouter } from "next/navigation";
 
 export default function AgentsPage() {

@@ -71,7 +71,7 @@ export const ChatEntry = ({
           <Text lineHeight={1.5} fontSize={14} color={color}>
             {action === "WAIT_FOR_TOKEN" ? (
               <>
-                <p>{message}</p>
+                {message}
                 <Button
                   mt={2}
                   onClick={() => {}}
