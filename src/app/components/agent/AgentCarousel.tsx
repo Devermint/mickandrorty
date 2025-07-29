@@ -5,11 +5,11 @@ import { Box, Button, Flex } from "@chakra-ui/react";
 import { useKeenSlider } from "keen-slider/react";
 import type { KeenSliderInstance } from "keen-slider";
 import "keen-slider/keen-slider.min.css";
-
 import { Agent } from "@/app/types/agent";
-import { ChevronLeftIcon } from "../Icons/chevronLeft";
-import { ChevronRightIcon } from "../Icons/chevronRight";
+import { ChevronLeftIcon } from "../icons/chevronLeft";
+import { ChevronRightIcon } from "../icons/chevronRight";
 import { AgentCard } from "./AgentCard";
+import { useMobileBreak } from "../responsive";
 
 type AgentCarouselProps = {
   agents: Agent[];
@@ -18,6 +18,7 @@ type AgentCarouselProps = {
 export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
   const innerRefs = useRef<HTMLDivElement[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
+  const isMobile = useMobileBreak();
 
   const handleChange = (slider: KeenSliderInstance) => {
     const center = slider.track.details.rel;
@@ -27,8 +28,12 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
       const el = innerRefs.current[idx];
       if (!el) return;
       const isActive = idx === center;
-      el.style.transform = isActive ? "scale(1)" : "scale(0.8)";
-      el.style.opacity = isActive ? "1" : "0.5";
+      el.style.transform = isActive
+        ? "scale(1)"
+        : isMobile
+        ? "scale(0.4)"
+        : "scale(0.8)";
+      el.style.opacity = isActive ? "1" : isMobile ? "0.25" : "0.5";
       el.style.transition = "transform 0.3s ease, opacity 0.3s ease";
     });
   };
@@ -56,6 +61,9 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
         border="none"
         onClick={() => instanceRef.current?.prev()}
         userSelect="none"
+        padding={0}
+        position={isMobile ? "absolute" : "relative"}
+        left={0}
       >
         <ChevronLeftIcon h={6} />
       </Button>
@@ -71,7 +79,7 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
             maskImage:
               "linear-gradient(to right, transparent, black 15%, black 85%, transparent)",
             WebkitMaskImage:
-              "linear-gradient(to right, transparent, black 15%, black 85%, transparent)",
+              "linear-gradient(to right, transparent, black 1%, black 99%, transparent)",
           }}
         >
           {agents.map((agent, i) => (
@@ -84,6 +92,7 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
               alignItems="center"
               maxW="33% !important"
               mr={isLooped && i === agents.length - 1 ? 200 : 0}
+              zIndex={i === activeIdx ? 1 : 0}
             >
               <Box
                 ref={(el: HTMLDivElement) => {
@@ -104,6 +113,9 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
         border="none"
         onClick={() => instanceRef.current?.next()}
         userSelect="none"
+        padding={0}
+        position={isMobile ? "absolute" : "relative"}
+        right={0}
       >
         <ChevronRightIcon h={6} />
       </Button>

@@ -1,7 +1,7 @@
 import { BoxProps, Button, Flex, Textarea } from "@chakra-ui/react";
 import { colorTokens } from "../theme";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
-import { ArrowUp } from "../Icons/arrowUp";
+import { ArrowUp } from "../icons/arrowUp";
 
 interface Props extends BoxProps {
   inputRef: React.RefObject<HTMLTextAreaElement>;
