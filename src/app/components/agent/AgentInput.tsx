@@ -3,7 +3,19 @@ import { colorTokens } from "../theme";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
 import { ArrowUp } from "../Icons/arrowUp";
 
-export const AgentInput = ({ ...rest }: BoxProps) => {
+interface Props extends BoxProps {
+  inputRef: React.RefObject<HTMLTextAreaElement>;
+  onButtonClick: () => void;
+}
+
+export const AgentInput = ({ inputRef, onButtonClick, ...rest }: Props) => {
+  const onInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      onButtonClick();
+    }
+  };
+
   return (
     <AnimatedBorderBox
       animationColor="rgba(0, 255, 109, 1)"
@@ -12,14 +24,15 @@ export const AgentInput = ({ ...rest }: BoxProps) => {
       borderRadius={13}
       w="100%"
       bgColor={colorTokens.blackCustom.a1}
+      onKeyDown={onInputKeyDown}
       {...rest}
     >
       <Flex h="100%" p={3} align="flex-end">
         <Textarea
           h="100%"
-          fontFamily="Sora"
+          fontFamily="Jetbrains mono"
           placeholder="Start generating..."
-          color={colorTokens.gray.timberwolf}
+          color={colorTokens.gray.platinum}
           transition="box-shadow 0.3s ease"
           border="none"
           borderRadius={13}
@@ -28,9 +41,19 @@ export const AgentInput = ({ ...rest }: BoxProps) => {
             boxShadow: "none",
           }}
           resize="none"
+          p={1}
+          ref={inputRef}
+          autoFocus
         ></Textarea>
 
-        <Button borderRadius={22} maxH={35} maxW={35} p={0} border="none">
+        <Button
+          borderRadius={22}
+          maxH={35}
+          maxW={35}
+          p={0}
+          border="none"
+          onClick={onButtonClick}
+        >
           <ArrowUp h="full" w="full" />
         </Button>
       </Flex>

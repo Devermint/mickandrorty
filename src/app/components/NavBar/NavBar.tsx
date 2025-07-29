@@ -27,7 +27,6 @@ function NavBarButton(props: NavBarButtonProps) {
       direction="column"
       alignItems="center"
       cursor="pointer"
-      padding="0.6rem"
       onClick={() => props.onClick(props.text)}
     >
       <Text
@@ -75,6 +74,7 @@ export default function NavBar() {
           <Flex
             background="#1D311475"
             justify="center"
+            align="center"
             borderTopRadius="21px"
             borderTopLeftRadius="28px"
             justifySelf="center"
@@ -92,16 +92,10 @@ export default function NavBar() {
           </Flex>
         </Box>
       ) : (
-        <Flex
-          h="55px"
-          py="5px"
-          mx="1rem"
-          position="relative"
-          background="transparent"
-        >
-          <Flex position="absolute" left={0} h="100%" maxH="100%">
+        <Flex h="55px" mx="1rem" position="relative" align="center" pt={3}>
+          <Flex position="absolute" left={0}>
             <Link href="https://aptoslayer.ai/">
-              <Box display={{ base: "none", md: "block" }} maxH="100%">
+              <Box display={{ base: "none", md: "block" }}>
                 <Image
                   src="/logo.png"
                   alt="logo"
@@ -131,14 +125,7 @@ export default function NavBar() {
             </Link>
           </Flex>
 
-          <Flex
-            align="center"
-            justify="center"
-            w="100%"
-            h="100%"
-            padding="0.5rem"
-            gap="0.6rem"
-          >
+          <Flex align="center" justify="center" w="100%" gap="1.5rem">
             {navButtons.map((button, index) => (
               <NavBarButton
                 key={index}
@@ -148,7 +135,7 @@ export default function NavBar() {
               />
             ))}
           </Flex>
-          <Flex flexGrow={1} position="absolute" right={0} maxH="100%">
+          <Flex flexGrow={1} position="absolute" right={0} align="center">
             <ConnectWalletButton />
           </Flex>
         </Flex>

@@ -1,31 +1,17 @@
 "use client";
 import Chat from "@/app/components/Chat/Chat";
 import { Flex } from "@chakra-ui/react";
-import { useEffect } from "react";
 
 export default function ChatPage() {
-  // Redirect to HTTPS in production
-  useEffect(() => {
-    if (
-      process.env.NODE_ENV === "production" &&
-      window.location.protocol === "http:"
-    ) {
-      window.location.href = window.location.href.replace("http:", "https:");
-    }
-  }, []);
-
   return (
-    <div>
-      <Flex
-        flexDirection="column"
-        display={{ base: "none", md: "flex" }}
-        alignItems="center"
-        mt={5}
-        mb={16}
-        h="100%"
-      >
-        <Chat />
-      </Flex>
-    </div>
+    <Flex
+      flexDirection="column"
+      alignItems="center"
+      h="80vh"
+      justify="center"
+      my={5}
+    >
+      <Chat />
+    </Flex>
   );
 }

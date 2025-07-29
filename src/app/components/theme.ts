@@ -8,11 +8,11 @@ import deepmerge from "deepmerge";
 
 const buttonRecipe = defineRecipe({
   base: {
-    background: "#1D3114",
+    background: "#1A1D1F",
     borderWidth: "1px",
-    borderColor: "#AFDC296E",
+    borderColor: "#282A28",
     borderRadius: "14px",
-    color: "#AFDC29",
+    color: "#B1B3B9",
     fontWeight: 700,
     fontSize: "16px",
     lineHeight: "24px",
@@ -28,7 +28,7 @@ const buttonRecipe = defineRecipe({
 
 const textRecipe = defineRecipe({
   base: {
-    color: "#AFDC29",
+    color: "#B1B3B9",
   },
 });
 

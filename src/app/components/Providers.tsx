@@ -6,6 +6,8 @@ import { system } from "./theme";
 import NavBar from "./NavBar/NavBar";
 import { Suspense, useEffect } from "react";
 import Footer from "./Footer/Footer";
+import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
+import { AptosWalletProvider } from "../context/AptosWalletContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,13 +49,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={system}>
-        {/* <AptosWalletAdapterProvider> */} {/* 8 hour session */}
-        <Suspense fallback={<LoadingSpinner />}>
-          <NavBar />
-        </Suspense>
-        <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-        {/* </AptosWalletAdapterProvider> */}
-        <Footer />
+        <AptosWalletAdapterProvider>
+          <AptosWalletProvider sessionDuration={8 * 60 * 60 * 1000}>
+            <Suspense fallback={<LoadingSpinner />}>
+              <NavBar />
+            </Suspense>
+            <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+            <Footer />
+          </AptosWalletProvider>
+        </AptosWalletAdapterProvider>
       </ChakraProvider>
     </QueryClientProvider>
   );

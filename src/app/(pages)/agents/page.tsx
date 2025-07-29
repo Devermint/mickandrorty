@@ -1,13 +1,23 @@
 "use client";
 
 import { AgentCarousel } from "@/app/components/Agent/AgentCarousel";
-import { Agent } from "@/app/types/agent";
+import { testAgents } from "@/app/types/agent";
 
 import { Box, Flex } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AgentInput } from "@/app/components/Agent/AgentInput";
+import { useRouter } from "next/navigation";
 
 export default function AgentsPage() {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const router = useRouter();
+
+  const handleSend = () => {
+    const text = textareaRef.current?.value.trim();
+    if (!text) return;
+    router.push(`/chat?message=${encodeURIComponent(text)}`);
+  };
+
   useEffect(() => {
     if (
       process.env.NODE_ENV === "production" &&
@@ -17,33 +27,18 @@ export default function AgentsPage() {
     }
   }, []);
 
-  const agents: Agent[] = [
-    {
-      id: "1",
-      image: "/agents/agent3.png",
-      name: "Agent Medusa",
-      tag: "@AgentMedusa",
-    },
-    {
-      id: "2",
-      image: "/agents/agent1.png",
-      name: "Rorty Rick",
-      tag: "@RortyRick",
-    },
-    {
-      id: "3",
-      image: "/agents/agent2.png",
-      name: "Monica Rorty",
-      tag: "@MonicaRorty",
-    },
-  ];
-
   return (
     <div>
       <Flex flexDirection="column" alignItems="center" mt={20} zIndex={1}>
         <Box maxW={760}>
-          <AgentCarousel agents={agents} />
-          <AgentInput mt={100} h={100} p={0} />
+          <AgentCarousel agents={testAgents} />
+          <AgentInput
+            mt={100}
+            h={100}
+            p={0}
+            inputRef={textareaRef}
+            onButtonClick={handleSend}
+          />
         </Box>
       </Flex>
     </div>
