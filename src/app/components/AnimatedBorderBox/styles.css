@@ -1,0 +1,98 @@
+.animated-pretitle {
+    display: inline-block;
+    position: relative;
+    color: #ffffff;
+    padding: 7px 16px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0px 0px 12px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(24px);
+  }
+  
+  .animated-pretitle .animated-border {
+    position: absolute;
+    padding: 0.5px;
+    inset: -0.5px;
+    z-index: 4;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  
+  .animated-pretitle .animated-border:after {
+    --angle: 0deg;
+    --start-angle: 0deg;
+    --delay: 5s;
+  
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 0.5px;
+    background: conic-gradient(
+      from calc(var(--angle) + var(--start-angle)),
+      var(--glow-color)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: border-animation 4s linear infinite;
+  }
+  
+   .animated-pretitle .animated-glow {
+    position: absolute;
+    padding: 0.5px;
+    inset: -0.5px;
+    z-index: 4;
+    border-radius: inherit;
+    pointer-events: none;
+    filter: blur(9px);
+  }
+  
+  .animated-pretitle .animated-glow:after {
+    --angle: 0deg;
+    --start-angle: 0deg;
+    --delay: 5s;
+  
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from calc(var(--angle) + var(--start-angle)),
+      var(--glow-color)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: border-animation 4s linear infinite;
+  }
+  
+   @property --angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+  
+  @keyframes border-animation {
+    to {
+      --angle: 360deg;
+    }
+  }
+  

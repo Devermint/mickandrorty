@@ -1,6 +1,6 @@
 import "@fontsource/jetbrains-mono";
 // Import the polyfill first to ensure it's loaded before any other code
-import "./lib/viewTransitionsPolyfill";
+// import "./lib/viewTransitionsPolyfill";
 import Providers from "./components/Providers";
 import "./global.css";
 import { Suspense } from "react";
