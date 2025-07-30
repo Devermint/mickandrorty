@@ -1,6 +1,6 @@
 import { Box, Flex, Image, Text, Button } from "@chakra-ui/react";
-import { X } from "../Icons/x";
-import { Telegram } from "../Icons/telegram";
+import { X } from "../icons/x";
+import { Telegram } from "../icons/telegram";
 import { Agent } from "@/app/types/agent";
 import { colorTokens } from "../theme";
 

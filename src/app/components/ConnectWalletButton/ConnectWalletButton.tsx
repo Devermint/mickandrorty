@@ -1,10 +1,11 @@
 "use client";
 import { Button, Flex } from "@chakra-ui/react";
 import { colorTokens } from "../theme";
-import { WalletIcon } from "../Icons/wallet";
+import { WalletIcon } from "../icons/wallet";
 import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { useCallback } from "react";
 import dynamic from "next/dynamic";
+import { useMobileBreak } from "../responsive";
 
 const WalletMenu = dynamic(() => import("../../hooks/WalletMenu"), {
   loading: () => (
@@ -17,6 +18,7 @@ const WalletMenu = dynamic(() => import("../../hooks/WalletMenu"), {
 
 export default function ConnectWalletButton() {
   const { isConnected, connect } = useAptosWallet();
+  const isMobile = useMobileBreak();
 
   const handleConnect = useCallback(async () => {
     try {
@@ -30,6 +32,18 @@ export default function ConnectWalletButton() {
     <Flex>
       {isConnected ? (
         <WalletMenu />
+      ) : isMobile ? (
+        <Button
+          borderWidth="1px"
+          borderColor="gray.700"
+          rounded="md"
+          alignItems="center"
+          justifyContent="center"
+          px={6}
+          bg="transparent"
+        >
+          <WalletIcon w={5} />
+        </Button>
       ) : (
         <Button
           bgColor={colorTokens.blackCustom.a2}
