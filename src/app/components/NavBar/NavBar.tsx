@@ -1,13 +1,21 @@
 "use client";
 
-import { Flex, Text, Box } from "@chakra-ui/react";
+import {
+  Flex,
+  Text,
+  Box,
+  IconButton,
+  useDisclosure,
+  Separator,
+} from "@chakra-ui/react";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useMobileBreak } from "../responsive";
 import { useTransitionRouter } from "next-view-transitions";
-import ConnectWalletButton from "../ConnectWalletButton/ConnectWaletButton";
+import ConnectWalletButton from "../ConnectWalletButton/ConnectWalletButton";
 import Link from "next/link";
 import Image from "next/image";
+import { CloseIcon, HamburgerIcon } from "@chakra-ui/icons";
 
 const NavButtonsInitial = [
   { active: false, text: "Agents", page: "/agents" },
@@ -18,6 +26,8 @@ const NavButtonsInitial = [
 type NavBarButtonProps = {
   text: string;
   textColor?: string;
+  alignItems?: string;
+  ml?: number;
   onClick: (id: string) => void;
 };
 
@@ -25,7 +35,8 @@ function NavBarButton(props: NavBarButtonProps) {
   return (
     <Flex
       direction="column"
-      alignItems="center"
+      alignItems={props.alignItems ?? "center"}
+      ml={props.ml}
       cursor="pointer"
       onClick={() => props.onClick(props.text)}
     >
@@ -47,6 +58,7 @@ export default function NavBar() {
   const router = useTransitionRouter();
   const isMobile = useMobileBreak();
   const pathname = usePathname();
+  const { open, onToggle } = useDisclosure();
 
   const handleButtonClick = (id: string) => {
     navButtons.forEach((button) => {
@@ -70,32 +82,48 @@ export default function NavBar() {
   return (
     <div>
       {isMobile ? (
-        <Box position="fixed" bottom="0" width="100%">
-          <Flex
-            background="#1D311475"
-            justify="center"
-            align="center"
-            borderTopRadius="21px"
-            borderTopLeftRadius="28px"
-            justifySelf="center"
-            gap="1rem"
-            width="100%"
+        <Flex
+          position="sticky"
+          py={3}
+          top={0}
+          width="100%"
+          justifyContent="space-between"
+          alignItems="center"
+          px={6}
+        >
+          <IconButton
+            bg="none"
+            border="none"
+            color="gray.700"
+            size="2xl"
+            justifyContent="start"
+            onClick={onToggle}
           >
-            {navButtons.map((button, index) => (
-              <NavBarButton
-                key={index}
-                text={button.text}
-                onClick={handleButtonClick}
-                textColor={button.active ? "green.500" : "gray.700"}
+            {open ? <CloseIcon boxSize={5} /> : <HamburgerIcon />}
+          </IconButton>
+          <Link href="https://aptoslayer.ai/">
+            <Box maxH="100%">
+              <Image
+                src="/logo.png"
+                alt="logo"
+                style={{
+                  objectFit: "contain",
+                  height: "44px",
+                  width: "auto",
+                  maxHeight: "100%",
+                }}
+                height={100}
+                width={100}
               />
-            ))}
-          </Flex>
-        </Box>
+            </Box>
+          </Link>
+          <ConnectWalletButton />
+        </Flex>
       ) : (
         <Flex h="55px" mx="1rem" position="relative" align="center" pt={3}>
           <Flex position="absolute" left={0}>
             <Link href="https://aptoslayer.ai/">
-              <Box display={{ base: "none", md: "block" }}>
+              <Box>
                 <Image
                   src="/logo.png"
                   alt="logo"
@@ -109,22 +137,8 @@ export default function NavBar() {
                   width={100}
                 />
               </Box>
-              <Box display={{ base: "block", md: "none" }}>
-                <Image
-                  src="/logo-mobile.png"
-                  alt="logo"
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                  }}
-                  width={40}
-                  height={40}
-                  sizes="40px"
-                />
-              </Box>
             </Link>
           </Flex>
-
           <Flex align="center" justify="center" w="100%" gap="1.5rem">
             {navButtons.map((button, index) => (
               <NavBarButton
@@ -140,6 +154,30 @@ export default function NavBar() {
           </Flex>
         </Flex>
       )}
+      <Flex
+        flexDir="column"
+        justifyContent="start"
+        zIndex={20}
+        h="100vh"
+        top={0}
+        left={0}
+        bgColor="black"
+        display={open ? "flex" : "none"}
+        gap={5}
+      >
+        {navButtons.map((button, index) => (
+          <Box key={index} w="100%">
+            <NavBarButton
+              text={button.text}
+              onClick={handleButtonClick}
+              textColor={button.active ? "green.500" : "gray.700"}
+              alignItems="start"
+              ml={5}
+            />
+            <Separator borderColor="gray.700" mt={5} />
+          </Box>
+        ))}
+      </Flex>
     </div>
   );
 }
