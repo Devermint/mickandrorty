@@ -27,8 +27,9 @@ export default function Footer() {
               borderRadius={33}
               borderColor={colorTokens.green.dark}
               bg="transparent"
+              gap={5}
             >
-              <GlobeIcon h="1.2rem" /> Visit AptosLayerAI
+              <GlobeIcon h="1.5rem" /> Visit AptosLayerAI
             </Button>
           </Flex>
           <Flex

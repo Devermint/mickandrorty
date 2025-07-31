@@ -7,6 +7,7 @@ import {
   IconButton,
   useDisclosure,
   Separator,
+  Button,
 } from "@chakra-ui/react";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -16,6 +17,8 @@ import ConnectWalletButton from "../ConnectWalletButton/ConnectWalletButton";
 import Link from "next/link";
 import Image from "next/image";
 import { CloseIcon, HamburgerIcon } from "@chakra-ui/icons";
+import { colorTokens } from "../theme";
+import { GlobeIcon } from "../icons/globe";
 
 const NavButtonsInitial = [
   { active: false, text: "Agents", page: "/agents" },
@@ -156,9 +159,8 @@ export default function NavBar() {
       )}
       <Flex
         flexDir="column"
-        justifyContent="start"
         zIndex={20}
-        h="100vh"
+        h="calc(100dvh - 88px)"
         top={0}
         left={0}
         bgColor="black"
@@ -177,6 +179,45 @@ export default function NavBar() {
             <Separator borderColor="gray.700" mt={5} />
           </Box>
         ))}
+        <Flex flexGrow={1} justify="center" alignItems="end">
+          <Box
+            lineHeight={1.5}
+            color={colorTokens.gray.platinum}
+            textAlign="center"
+            fontSize={13}
+            w="85%"
+          >
+            <span>By messaging Aptos Layer, you agree to our </span>
+            <Link href="">
+              <Box as="span" color={colorTokens.gray.timberwolf}>
+                Terms
+              </Box>
+            </Link>
+            <Box as="span"> and have read our </Box>
+            <Link href="" target="_blank">
+              <Box as="span" color={colorTokens.gray.timberwolf}>
+                Privacy Policy
+              </Box>
+            </Link>
+            <br />
+            <Box as="span"> See cookie preferences.</Box>
+            <Button
+              fontSize={13}
+              color={colorTokens.green.darkErin}
+              borderRadius={33}
+              borderColor={colorTokens.green.dark}
+              bg="transparent"
+              w="100%"
+              gap={3}
+              mt={5}
+              mb={5}
+            >
+              <GlobeIcon h="1.5rem" />
+              Visit AptosLayerAI
+            </Button>
+            <span>© Copyrights reserved by blabla 2025</span>
+          </Box>
+        </Flex>
       </Flex>
     </div>
   );
