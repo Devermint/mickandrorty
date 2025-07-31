@@ -3,7 +3,7 @@
 import React from "react";
 import { Box, Flex, Text, Button, DownloadTrigger } from "@chakra-ui/react";
 import { colorTokens } from "../theme";
-import { ArrowUp } from "../Icons/arrowUp";
+import { ArrowUp } from "../icons/arrowUp";
 
 export type ChatEntryProps = {
   sender: string;

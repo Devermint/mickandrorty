@@ -4,7 +4,7 @@ import { AgentCarousel } from "@/app/components/agent/AgentCarousel";
 import { testAgents } from "@/app/types/agent";
 
 import { Box, Flex } from "@chakra-ui/react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { AgentInput } from "@/app/components/agent/AgentInput";
 import { useRouter } from "next/navigation";
 import { useMobileBreak } from "@/app/components/responsive";
@@ -19,15 +19,6 @@ export default function AgentsPage() {
     if (!text) return;
     router.push(`/chat?message=${encodeURIComponent(text)}`);
   };
-
-  useEffect(() => {
-    if (
-      process.env.NODE_ENV === "production" &&
-      window.location.protocol === "http:"
-    ) {
-      window.location.href = window.location.href.replace("http:", "https:");
-    }
-  }, []);
 
   return (
     <div>

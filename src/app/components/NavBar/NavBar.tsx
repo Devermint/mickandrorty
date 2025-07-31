@@ -16,7 +16,9 @@ import { useTransitionRouter } from "next-view-transitions";
 import ConnectWalletButton from "../ConnectWalletButton/ConnectWalletButton";
 import Link from "next/link";
 import Image from "next/image";
-import { CloseIcon, HamburgerIcon } from "@chakra-ui/icons";
+import { Icon } from "@chakra-ui/react";
+import { RxHamburgerMenu } from "react-icons/rx";
+import { IoClose } from "react-icons/io5";
 import { colorTokens } from "../theme";
 import { GlobeIcon } from "../icons/globe";
 
@@ -102,7 +104,13 @@ export default function NavBar() {
             justifyContent="start"
             onClick={onToggle}
           >
-            {open ? <CloseIcon boxSize={5} /> : <HamburgerIcon />}
+            {open ? (
+              <Icon size="2xl" ml={-1}>
+                <IoClose />
+              </Icon>
+            ) : (
+              <RxHamburgerMenu />
+            )}
           </IconButton>
           <Link href="https://aptoslayer.ai/">
             <Box maxH="100%">

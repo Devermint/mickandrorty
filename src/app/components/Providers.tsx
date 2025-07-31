@@ -4,7 +4,7 @@ import { ChakraProvider, Box, Spinner } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { system } from "./theme";
 import NavBar from "./NavBar/NavBar";
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import Footer from "./Footer/Footer";
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { AptosWalletProvider } from "../context/AptosWalletContext";
@@ -37,15 +37,6 @@ function LoadingSpinner() {
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      window.location.protocol === "http:" &&
-      process.env.NODE_ENV === "production"
-    ) {
-      window.location.href = window.location.href.replace("http:", "https:");
-    }
-  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={system}>
