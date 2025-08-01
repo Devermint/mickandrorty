@@ -3,11 +3,11 @@
 import { Box, Image } from "@chakra-ui/react";
 import Link from "next/link";
 
-type LogoProps = {
+type Props = {
   height?: string;
 };
 
-export const Logo = ({ height = "80px" }: LogoProps) => (
+export const Logo = ({ height = "80px" }: Props) => (
   <Link href="https://aptoslayer.ai/">
     <Box>
       <Image
