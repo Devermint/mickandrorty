@@ -8,10 +8,10 @@ import {
   useDisclosure,
   Separator,
   Button,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useMobileBreak } from "../responsive";
 import { useTransitionRouter } from "next-view-transitions";
 import ConnectWalletButton from "../ConnectWalletButton/ConnectWalletButton";
 import Link from "next/link";
@@ -61,7 +61,7 @@ function NavBarButton(props: NavBarButtonProps) {
 export default function NavBar() {
   const [navButtons, setNavButtons] = useState(NavButtonsInitial);
   const router = useTransitionRouter();
-  const isMobile = useMobileBreak();
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const pathname = usePathname();
   const { open, onToggle } = useDisclosure();
 
@@ -89,7 +89,7 @@ export default function NavBar() {
       {isMobile ? (
         <Flex
           position="sticky"
-          py={3}
+          py={0}
           top={0}
           width="100%"
           justifyContent="space-between"
@@ -168,7 +168,7 @@ export default function NavBar() {
       <Flex
         flexDir="column"
         zIndex={20}
-        h="calc(100dvh - 88px)"
+        h="calc(100dvh - 64px)"
         top={0}
         left={0}
         bgColor="black"

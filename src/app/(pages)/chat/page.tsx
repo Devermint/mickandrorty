@@ -7,9 +7,14 @@ export default function ChatPage() {
     <Flex
       flexDirection="column"
       alignItems="center"
-      h="80vh"
+      h={{
+        base: "calc(100vh - 88px)",
+        md: "calc(100vh - 190px)",
+        lg: "calc(100vh - 150px)",
+      }}
       justify="center"
-      my={5}
+      my={{ base: 0, md: 5 }}
+      w="100%"
     >
       <Chat />
     </Flex>

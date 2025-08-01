@@ -1,7 +1,7 @@
-import { Box, BoxProps } from "@chakra-ui/react";
+import { Flex, Box, FlexProps } from "@chakra-ui/react";
 import "./styles.css";
 
-interface Props extends BoxProps {
+interface Props extends FlexProps {
   animationColor: string;
   children: React.ReactNode;
 }
@@ -17,7 +17,7 @@ const AnimatedBorderBox = ({ animationColor, children, ...rest }: Props) => {
   } as React.CSSProperties;
 
   return (
-    <Box
+    <Flex
       className="animated-pretitle"
       fontFamily="clashDisplayVariable"
       fontWeight={500}
@@ -27,7 +27,7 @@ const AnimatedBorderBox = ({ animationColor, children, ...rest }: Props) => {
       {children}
       <Box as="span" className={"animated-border"} style={borderGlowColors} />
       <Box as="span" className={"animated-glow"} style={borderGlowColors} />
-    </Box>
+    </Flex>
   );
 };
 
