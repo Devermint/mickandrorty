@@ -12,7 +12,6 @@ import {
 } from "@chakra-ui/react";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useMobileBreak } from "../responsive";
 import { useTransitionRouter } from "next-view-transitions";
 import ConnectWalletButton from "../ConnectWalletButton/ConnectWalletButton";
 import Link from "next/link";
