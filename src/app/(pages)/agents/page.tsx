@@ -21,25 +21,30 @@ export default function AgentsPage() {
   };
 
   return (
-    <div>
-      <Flex
-        flexDirection="column"
+    <Flex
+      flexDirection="column"
+      alignItems="center"
+      mt={isMobile ? 5 : 20}
+      pb={{ base: 10, md: 20 }}
+      zIndex={1}
+      overflow={{ base: "hidden", md: "visible" }}
+    >
+      <Box
+        h="100%"
         alignItems="center"
-        mt={isMobile ? 5 : 20}
-        pb={20}
-        zIndex={1}
+        maxW={{ base: "100%", md: 760 }}
+        overflow={{ base: "hidden", md: "visible" }}
       >
-        <Box maxW={{ base: 380, md: 760 }} px={2}>
-          <AgentCarousel agents={testAgents} />
-          <AgentInput
-            mt={100}
-            h={100}
-            p={0}
-            inputRef={textareaRef}
-            onButtonClick={handleSend}
-          />
-        </Box>
-      </Flex>
-    </div>
+        <AgentCarousel agents={testAgents} />
+        <AgentInput
+          mt={100}
+          h={100}
+          p={0}
+          mx={2}
+          inputRef={textareaRef}
+          onButtonClick={handleSend}
+        />
+      </Box>
+    </Flex>
   );
 }

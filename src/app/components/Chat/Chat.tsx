@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AvatarIcon, Flex, Text } from "@chakra-ui/react";
+import { Flex, Icon, Text } from "@chakra-ui/react";
 import {
   ChatEntryProps,
   DefaultChatEntry,
@@ -13,6 +13,7 @@ import { AgentInput } from "../agent/AgentInput";
 import { colorTokens } from "../theme";
 import { useSearchParams, useRouter } from "next/navigation";
 // import { useAptosWallet } from "@/app/context/AptosWalletContext";
+import { RxAvatar } from "react-icons/rx";
 
 enum ChatState {
   IDLE,
@@ -107,6 +108,7 @@ const Chat = () => {
               isMyMessage: false,
             },
           ]);
+          console.log(data);
           setProgress(null);
           es.close();
         }
@@ -135,7 +137,6 @@ const Chat = () => {
       // Regular message handling
       setMessages((prev) => [
         ...prev,
-        { sender: "You", message: text, isMyMessage: true },
         { sender: "Agent", message: "Hello", isMyMessage: false },
       ]);
 
@@ -154,8 +155,6 @@ const Chat = () => {
       router.replace("/chat");
     }
   }, [msg, onMessageSend, router]);
-
-  //Čia transactiono funkcija iš dappso
 
   // const handleSendTransaction = async () => {
   //   if (!account || !account.wallet) {
@@ -186,17 +185,6 @@ const Chat = () => {
   //     );
   //     //alert(`Transaction submitted! Hash: ${pendingTxn.hash}`);
   //     console.log("Pending transaction:", pendingTxn);
-  //     // Add the transaction hash to the chat
-  //     await addDoc(messagesRef, {
-  //       text: `Transaction successful! Hash: ${pendingTxn?.hash}`,
-  //       senderType: "user",
-  //       createdAt: serverTimestamp(),
-  //       userId: account.isConnected
-  //         ? account?.account?.address?.toString()
-  //         : sessionId,
-  //     });
-
-  //     // Send the transaction message to the server and handle the response
 
   //     const apiUrl = `https://sandbox.sui-cluster.xyz/aptos.sandbox/message`;
 
@@ -215,18 +203,8 @@ const Chat = () => {
   //     if (!response.ok) {
   //       throw new Error("Failed to send transaction message to the server.");
   //     }
-
   //     const serverResponse = await response.json();
   //     console.log("Server response:", serverResponse);
-
-  //     await addDoc(messagesRef, {
-  //       text: serverResponse[0].text,
-  //       senderType: "agent",
-  //       createdAt: serverTimestamp(),
-  //       userId: account.isConnected
-  //         ? account?.account?.address?.toString()
-  //         : sessionId,
-  //     });
   //   } catch (error: unknown) {
   //     if (
   //       error instanceof Error &&
@@ -249,17 +227,25 @@ const Chat = () => {
   return (
     <Flex
       bg={colorTokens.blackCustom.a1}
-      borderRadius={20}
+      borderRadius={{ base: 0, md: 20 }}
       maxW={800}
-      w={800}
+      w={{ base: "100%", lg: 800 }}
       flexDirection="column"
       justify="space-between"
       h="100%"
+      overflow="hidden"
     >
-      <Flex flexDir="column" maxH="85%" h="85%">
-        <Flex h={50}>
-          <AvatarIcon />
-          <Text p={4} fontSize="lg">
+      <Flex flexDir="column" h="100%">
+        <Flex
+          bg={{ base: colorTokens.blackCustom.a2, md: "unset" }}
+          align="center"
+          px={3}
+          py={1}
+        >
+          <Icon size="lg">
+            <RxAvatar color="#C7CAC8" />
+          </Icon>
+          <Text p={{ base: 1, md: 4 }} fontSize="lg">
             Chat
           </Text>
         </Flex>
@@ -267,6 +253,7 @@ const Chat = () => {
         <Flex
           direction="column"
           overflowY="auto"
+          flex={1}
           p={4}
           mr="0.5rem"
           css={{
@@ -283,25 +270,29 @@ const Chat = () => {
             </>
           ) : (
             <>
-              {messages.map((m, i) => <ChatEntry key={i} {...m} />)}
+              {messages.map((m, i) => (
+                <ChatEntry key={i} {...m} />
+              ))}
               {progress && (
-                <ChatEntry sender="Agent" message={progress} isMyMessage={false} />
+                <ChatEntry
+                  sender="Agent"
+                  message={progress}
+                  isMyMessage={false}
+                />
               )}
             </>
           )}
           <div ref={bottomScroll} />
         </Flex>
+        <AgentInput
+          h={{ base: "17%", md: "17%" }}
+          m={3}
+          w="auto"
+          p={0}
+          inputRef={inputMessage}
+          onButtonClick={onMessageSend}
+        />
       </Flex>
-
-      <AgentInput
-        maxH="15%"
-        minH="15%"
-        m={3}
-        w="auto"
-        p={0}
-        inputRef={inputMessage}
-        onButtonClick={onMessageSend}
-      />
     </Flex>
   );
 };

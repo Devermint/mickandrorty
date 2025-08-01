@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Box, Button, Flex } from "@chakra-ui/react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { Box, Button, Flex, useBreakpointValue } from "@chakra-ui/react";
 import { useKeenSlider } from "keen-slider/react";
 import type { KeenSliderInstance } from "keen-slider";
 import "keen-slider/keen-slider.min.css";
@@ -9,7 +9,6 @@ import { Agent } from "@/app/types/agent";
 import { ChevronLeftIcon } from "../icons/chevronLeft";
 import { ChevronRightIcon } from "../icons/chevronRight";
 import { AgentCard } from "./AgentCard";
-import { useMobileBreak } from "../responsive";
 
 type AgentCarouselProps = {
   agents: Agent[];
@@ -18,9 +17,14 @@ type AgentCarouselProps = {
 export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
   const innerRefs = useRef<HTMLDivElement[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
-  const isMobile = useMobileBreak();
 
-  const handleChange = (slider: KeenSliderInstance) => {
+  const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
+
+  const sliderRefMobile = useRef<HTMLDivElement>(null);
+  const sliderRefDesktop = useRef<HTMLDivElement>(null);
+  const activeRef = isMobile ? sliderRefMobile : sliderRefDesktop;
+
+  const handleChangeBase = (slider: KeenSliderInstance, isMobile: boolean) => {
     const center = slider.track.details.rel;
     setActiveIdx(center);
 
@@ -38,9 +42,19 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
     });
   };
 
+  const handleChangeMobile = useCallback(
+    (slider: KeenSliderInstance) => handleChangeBase(slider, true),
+    []
+  );
+
+  const handleChangeDesktop = useCallback(
+    (slider: KeenSliderInstance) => handleChangeBase(slider, false),
+    []
+  );
+
   const isLooped = false;
 
-  const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
+  const [sliderRefM, instanceRefMobile] = useKeenSlider<HTMLDivElement>({
     loop: isLooped,
     initial: 1,
     slides: {
@@ -48,12 +62,43 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
       spacing: 2,
       origin: "center",
     },
-    detailsChanged: handleChange,
-    slideChanged: handleChange,
+    detailsChanged: handleChangeMobile,
+    slideChanged: handleChangeMobile,
+    created: handleChangeMobile,
   });
 
+  const [sliderRefD, instanceRefDesktop] = useKeenSlider<HTMLDivElement>({
+    loop: isLooped,
+    initial: 1,
+    slides: {
+      perView: 3,
+      spacing: 2,
+      origin: "center",
+    },
+    detailsChanged: handleChangeDesktop,
+    slideChanged: handleChangeDesktop,
+    created: handleChangeDesktop,
+  });
+
+  useEffect(() => {
+    const el = activeRef.current;
+    if (el) {
+      const assign = isMobile ? sliderRefM : sliderRefD;
+      assign(el);
+      console.log("Effect triggered");
+    }
+  }, [isMobile, sliderRefM, sliderRefD, activeRef]);
+
+  const instanceRef = isMobile ? instanceRefMobile : instanceRefDesktop;
+
   return (
-    <Flex justify="center" align="center" maxW="100%">
+    <Flex
+      justify="center"
+      align="center"
+      maxW={{ base: "100vw", md: "100%" }}
+      mx={{ base: 2, md: 0 }}
+      position="relative"
+    >
       <Button
         aria-label="Previous"
         zIndex={2}
@@ -62,19 +107,24 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
         onClick={() => instanceRef.current?.prev()}
         userSelect="none"
         padding={0}
-        position={isMobile ? "absolute" : "relative"}
-        left={0}
+        position={{ sm: "absolute", md: "relative" }}
+        left={6}
       >
         <ChevronLeftIcon h={6} />
       </Button>
 
-      <Flex justify="center" maxW="90%" px={4} h="300px">
+      <Flex
+        justify="center"
+        maxW={{ base: "99%", md: "100%" }}
+        px={{ base: 1, md: 4 }}
+        h="300px"
+      >
         <Box
-          ref={sliderRef}
+          ref={activeRef}
           className="keen-slider"
           overflow="visible"
           w="100%"
-          maxW="800px"
+          maxW={{ base: "unset", md: "800px" }}
           style={{
             maskImage:
               "linear-gradient(to right, transparent, black 15%, black 85%, transparent)",
@@ -106,6 +156,7 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
           ))}
         </Box>
       </Flex>
+
       <Button
         aria-label="Next"
         zIndex={2}
@@ -114,8 +165,8 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
         onClick={() => instanceRef.current?.next()}
         userSelect="none"
         padding={0}
-        position={isMobile ? "absolute" : "relative"}
-        right={0}
+        position={{ sm: "absolute", md: "relative" }}
+        right={6}
       >
         <ChevronRightIcon h={6} />
       </Button>

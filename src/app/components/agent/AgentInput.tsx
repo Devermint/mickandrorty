@@ -1,9 +1,9 @@
-import { BoxProps, Button, Flex, Textarea } from "@chakra-ui/react";
+import { BoxProps, Button, Flex, FlexProps, Textarea } from "@chakra-ui/react";
 import { colorTokens } from "../theme";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
 import { ArrowUp } from "../icons/arrowUp";
 
-interface Props extends BoxProps {
+interface Props extends FlexProps {
   inputRef: React.RefObject<HTMLTextAreaElement>;
   onButtonClick: () => void;
 }
@@ -22,12 +22,11 @@ export const AgentInput = ({ inputRef, onButtonClick, ...rest }: Props) => {
       borderColor="rgba(42, 189, 105, 0.6)"
       borderWidth={1}
       borderRadius={13}
-      w="100%"
       bgColor={colorTokens.blackCustom.a1}
       onKeyDown={onInputKeyDown}
       {...rest}
     >
-      <Flex h="100%" p={3} align="flex-end">
+      <Flex h="100%" p={{ base: 2, md: 3 }} align="flex-end" w="100%">
         <Textarea
           h="100%"
           fontFamily="Jetbrains mono"

@@ -70,10 +70,12 @@ export const ChatEntry = ({
         ) : (
           <Text lineHeight={1.5} fontSize={14} color={color}>
             {action === "WAIT_FOR_TOKEN" ? (
-              <>
+              <Box>
                 {message}
+                <br />
                 <Button
                   mt={2}
+                  mx={0}
                   onClick={() => {}}
                   borderWidth={1}
                   borderColor={colorTokens.blackCustom.a3}
@@ -88,7 +90,7 @@ export const ChatEntry = ({
                   <ArrowUp h={25} w={25} transform="rotate(90deg)" />
                   Send Transaction
                 </Button>
-              </>
+              </Box>
             ) : (
               message
             )}
