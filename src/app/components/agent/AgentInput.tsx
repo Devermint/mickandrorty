@@ -1,4 +1,4 @@
-import { BoxProps, Button, Flex, FlexProps, Textarea } from "@chakra-ui/react";
+import { Button, Flex, FlexProps, Textarea } from "@chakra-ui/react";
 import { colorTokens } from "../theme";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
 import { ArrowUp } from "../icons/arrowUp";
