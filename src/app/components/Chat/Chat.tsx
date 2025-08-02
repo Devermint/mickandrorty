@@ -2,13 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Flex, Icon, Text } from "@chakra-ui/react";
-import {
-  ChatEntryProps,
-  DefaultChatEntry,
-  ChatEntry,
-  DemoVideoEntry,
-  DefaultTransactionEntry,
-} from "./ChatEntry";
+import { ChatEntryProps, DefaultChatEntry, ChatEntry } from "./ChatEntry";
 import { AgentInput } from "../agent/AgentInput";
 import { colorTokens } from "../theme";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -108,7 +102,6 @@ const Chat = () => {
               isMyMessage: false,
             },
           ]);
-          console.log(data);
           setProgress(null);
           es.close();
         }
@@ -265,8 +258,6 @@ const Chat = () => {
           {messages.length === 0 ? (
             <>
               <DefaultChatEntry />
-              <DemoVideoEntry />
-              <DefaultTransactionEntry />
             </>
           ) : (
             <>
