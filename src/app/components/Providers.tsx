@@ -3,7 +3,7 @@
 import { ChakraProvider, Box, Spinner } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { system } from "./theme";
-import NavBar from "./NavBar/NavBar";
+import { NavBar } from "./NavBar/Main";
 import { Suspense } from "react";
 import Footer from "./Footer/Footer";
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
