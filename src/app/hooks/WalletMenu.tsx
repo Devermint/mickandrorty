@@ -66,7 +66,7 @@ export default function WalletMenu({
     <Menu.Root>
       <MenuTrigger asChild>
         <Button
-          size="lg"
+          size={{base: "sm", md: "xl"}}
           className="wallet-button"
           borderRadius="10px"
           borderColor={colorTokens.green.dark}
@@ -79,6 +79,7 @@ export default function WalletMenu({
               whiteSpace="nowrap"
               ml={2}
               color={colorTokens.gray.timberwolf}
+              fontSize={{ base: "2xs", md: "lg" }}
             >
               {truncateAddress(account?.address?.toString() || "") || "Unknown"}
             </Text>
