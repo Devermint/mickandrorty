@@ -155,7 +155,7 @@ const Chat = () => {
 
     el.value = "";
     el.focus();
-  }, [chatState]);
+  }, [chatState, messages]);
 
   useEffect(() => {
     const el = inputMessage.current;
