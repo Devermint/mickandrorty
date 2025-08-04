@@ -6,9 +6,10 @@ import { ArrowUp } from "../icons/arrowUp";
 interface Props extends FlexProps {
   inputRef: React.RefObject<HTMLTextAreaElement>;
   onButtonClick: () => void;
+  disabled?: boolean;
 }
 
-export const AgentInput = ({ inputRef, onButtonClick, ...rest }: Props) => {
+export const AgentInput = ({ inputRef, onButtonClick, disabled, ...rest }: Props) => {
   const onInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -52,6 +53,7 @@ export const AgentInput = ({ inputRef, onButtonClick, ...rest }: Props) => {
           p={0}
           border="none"
           onClick={onButtonClick}
+          disabled={inputRef.current?.value.length === 0 || disabled}
         >
           <ArrowUp h="full" w="full" />
         </Button>

@@ -44,22 +44,40 @@ const Chat = () => {
 
     setMessages((prev) => [
       ...prev,
-      { sender: "You", message: text, isMyMessage: true },
+      { role: "user", content: text, type: "text" },
     ]);
 
+    setChatState(ChatState.PROCESSING);
     el.value = "";
     el.blur();
 
-    // If the message starts with "generate video", do something (e.g., log or handle differently)
-    if (text.toLowerCase().startsWith("generate video")) {
-      setChatState(ChatState.GENERATING_VIDEO);
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: [...messages, { role: "user", content: text, type: "text" }],
+      }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to chat");
+    }
 
+    if (!response.body) {
+      throw new Error("No response body from chat");
+    }
+
+    const { message, action } = await response.json();
+
+    if (action === "GENERATE_VIDEO") {
+      setChatState(ChatState.GENERATING_VIDEO);
       const response = await fetch("/api/generate-video", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: text }),
+        body: JSON.stringify({ prompt: message }),
       });
       if (!response.ok) {
         throw new Error("Failed to generate video");
@@ -69,7 +87,7 @@ const Chat = () => {
         throw new Error("No response body for streaming");
       }
 
-      const { jobId } = await response.json();
+          const { jobId } = await response.json();
 
       const es = new EventSource(`/api/generate-video?id=${jobId}`);
 
@@ -82,9 +100,9 @@ const Chat = () => {
           setMessages((prev) => [
             ...prev,
             {
-              sender: "Agent",
-              message: "Video is in queue...",
-              isMyMessage: false,
+              role: "assistant",
+              content: "Video is in queue...",
+              type: "text",
             },
           ]);
         }
@@ -97,47 +115,47 @@ const Chat = () => {
           setMessages((prev) => [
             ...prev,
             {
-              sender: "Agent",
-              videoUrl: data.videoUrl,
-              isMyMessage: false,
+              role: "assistant",
+              content: data.videoUrl,
+              type: "video",
             },
           ]);
           setProgress(null);
+          setChatState(ChatState.IDLE);
           es.close();
         }
       };
 
       es.onerror = (e) => {
         console.error("SSE error", e);
+
+        setChatState(ChatState.IDLE);
         es.close();
       };
 
       setMessages((prev) => [
         ...prev,
         {
-          sender: "Agent",
-          message:
+          role: "assistant",
+          content:
             "Video generation is in progress... (this may take ~5 minutes)",
-          isMyMessage: false,
+          type: "text",
         },
       ]);
 
       el.value = "";
       el.focus();
     } else {
-      setChatState(ChatState.PROCESSING);
-
-      // Regular message handling
       setMessages((prev) => [
         ...prev,
-        { sender: "Agent", message: "Hello", isMyMessage: false },
+        { role: "assistant", content: message, type: "text" },
       ]);
-
       setChatState(ChatState.IDLE);
-      el.value = "";
-      el.focus();
     }
-  }, [chatState]);
+
+    el.value = "";
+    el.focus();
+  }, [chatState, messages]);
 
   useEffect(() => {
     const el = inputMessage.current;
@@ -264,13 +282,7 @@ const Chat = () => {
               {messages.map((m, i) => (
                 <ChatEntry key={i} {...m} />
               ))}
-              {progress && (
-                <ChatEntry
-                  sender="Agent"
-                  message={progress}
-                  isMyMessage={false}
-                />
-              )}
+              {progress && <ChatEntry role="assistant" content={progress} type="text"/>}
             </>
           )}
           <div ref={bottomScroll} />
@@ -281,6 +293,7 @@ const Chat = () => {
           w="auto"
           p={0}
           inputRef={inputMessage}
+          disabled={chatState !== ChatState.IDLE}
           onButtonClick={onMessageSend}
         />
       </Flex>
