@@ -9,8 +9,8 @@ export default function ChatPage() {
       alignItems="center"
       h={{
         base: "calc(100vh - 88px)",
-        md: "calc(100vh - 190px)",
-        lg: "calc(100vh - 150px)",
+        md: "calc(100vh - 275px)",
+        lg: "calc(100vh - 235px)",
       }}
       justify="center"
       my={{ base: 0, md: 5 }}
