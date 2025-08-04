@@ -1,6 +1,5 @@
 "use client";
 
-import { useDisclosure } from "@chakra-ui/react";
 import { Mobile } from "./Mobile";
 import { Desktop } from "./Desktop";
 import { useState, useEffect } from "react";
@@ -12,7 +11,6 @@ export const NavBar = () => {
   const [navButtons, setNavButtons] = useState(routes);
   const pathname = usePathname();
   const router = useTransitionRouter();
-  const { open, onToggle } = useDisclosure();
 
   const handleButtonClick = (id: string) => {
     navButtons.forEach((button) => {
@@ -21,7 +19,6 @@ export const NavBar = () => {
 
     const targetIndex = navButtons.findIndex((button) => button.text === id);
     router.push(navButtons[targetIndex].page);
-    onToggle();
   };
 
   useEffect(() => {
@@ -36,12 +33,7 @@ export const NavBar = () => {
 
   return (
     <>
-      <Mobile
-        open={open}
-        onToggle={onToggle}
-        navButtons={navButtons}
-        handleButtonClick={handleButtonClick}
-      />
+      <Mobile navButtons={navButtons} handleButtonClick={handleButtonClick} />
       <Desktop navButtons={navButtons} handleButtonClick={handleButtonClick} />
     </>
   );
