@@ -2,7 +2,7 @@ import { Box, Flex, Image, Text, Button } from "@chakra-ui/react";
 import { X } from "../icons/x";
 import { Telegram } from "../icons/telegram";
 import { Agent } from "@/app/types/agent";
-import { colorTokens } from "../theme";
+import { colorTokens } from "../theme/theme";
 
 type AgentCardProps = {
   agent: Agent;

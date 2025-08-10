@@ -1,13 +1,22 @@
 "use client";
 
 import React from "react";
-import { Box, Flex, Text, Button, DownloadTrigger } from "@chakra-ui/react";
-import { colorTokens } from "../theme";
+import {
+  Box,
+  Flex,
+  Text,
+  Button,
+  DownloadTrigger,
+  Spinner,
+} from "@chakra-ui/react";
+import { colorTokens } from "../theme/theme";
+import { AgentVideoLoader } from "../Agent/AgentVideoLoader";
+import { MarkdownView } from "../MarkdownView/MarkdownView";
 
 export type ChatEntryProps = {
   role: "user" | "assistant";
   content: string;
-  type?: "text" | "video";
+  type?: "text" | "video" | "video-loader" | "loader" | "error";
 };
 
 export const ChatEntry = ({ role, content, type }: ChatEntryProps) => {
@@ -29,7 +38,12 @@ export const ChatEntry = ({ role, content, type }: ChatEntryProps) => {
 
       <Box px={3} py={1} bgColor={bg} borderRadius={28} maxW="80%">
         {type === "text" && (
-          <Text lineHeight={1.5} fontSize={14} color={color}>
+          <MarkdownView color={color} lineHeight={1.5} fontSize={14}>
+            {content}
+          </MarkdownView>
+        )}
+        {type === "error" && (
+          <Text lineHeight={1.5} fontSize={14} color="red">
             {content}
           </Text>
         )}
@@ -59,6 +73,15 @@ export const ChatEntry = ({ role, content, type }: ChatEntryProps) => {
             </DownloadTrigger>
           </>
         )}
+        {type === "video-loader" && <AgentVideoLoader progress={content} />}
+        {type === "loader" && (
+          <Box mt={{ base: 1, md: 2 }}>
+            <Spinner
+              color={colorTokens.gray.timberwolf}
+              size={{ base: "md", md: "lg" }}
+            />
+          </Box>
+        )}
       </Box>
     </Flex>
   );
@@ -87,3 +110,9 @@ export const DefaultChatEntry = () => (
 //     action="WAIT_FOR_TOKEN"
 //   />
 // );
+
+// const json = {
+//   status: "IN_PROGRESS",
+//   requestId: "1b176226-3e04-4350-9c98-cba150285288",
+//   progress: "Progress: [##.................................] 20/35",
+// };

@@ -12,29 +12,53 @@ const openai = new OpenAI({
 });
 
 const decisionPrompt = `
-You are a chat analyzer. You are given a chat history and a user prompt. You need to figure out the action to take. The action can be one of the following:
-- GENERATE_VIDEO
-- TEXT
+You are a strict JSON-only chat analyzer.
 
-If you are not sure about the action, return "TEXT".
+Your job is to analyze a chat history and a user prompt, and decide which of the following actions best matches the intent.
 
-Here are some examples of actions (user prompt):
-- GENERATE_VIDEO:
-    - "Generate a video about..."
-    - "Generate me a video of that"
-- TEXT:
-    - "Can you help me generate a video of..."
-    - "Help me generate a video of..."
-    - "I don't like that"
-    - "I want to change the prompt"
-    - "I want to add a new scene"
-    - "new character"
-    - "new background"
+The allowed actions are (case-sensitive):
+- "GENERATE_VIDEO"
+- "TEXT"
 
-The response should be in the following format:
+Choose the most appropriate action.
+
+If you are uncertain, always choose "TEXT".
+
+⚠️ VERY IMPORTANT:
+You must return ONLY a single-line JSON object in **this exact format**:
 {
-  "action": "The action to take"
+  "action": "GENERATE_VIDEO"
 }
+
+Or:
+{
+  "action": "TEXT"
+}
+
+❌ DO NOT include explanations, markdown, extra fields, or formatting.
+❌ DO NOT return anything outside the JSON structure.
+
+--- Examples ---
+
+User prompt: "Generate a video about the solar system"
+→
+{ "action": "GENERATE_VIDEO" }
+
+User prompt: "Can you help me generate a video?"
+→
+{ "action": "TEXT" }
+
+User prompt: "I want to add a new background"
+→
+{ "action": "TEXT" }
+
+User prompt: "Generate me a video about rainforests"
+→
+{ "action": "GENERATE_VIDEO" }
+
+--- End of Examples ---
+
+Now return the JSON response based on the current user prompt.
 `;
 
 const agentPrompt = `You are a creative video prompt specialist for Veo3, an advanced AI video generation model and you act as a helpful assistant. Your role is to:
@@ -78,7 +102,6 @@ export async function POST(request: NextRequest) {
     }
 
     const agentAction = await getAgentAction(messages);
-    console.log("Agent action", agentAction);
     if (agentAction.action === "") {
       return NextResponse.json(
         { error: "Unknown action to take" },

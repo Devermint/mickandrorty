@@ -60,7 +60,6 @@ export async function GET(request: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       handle.on("data", async (status: QueueStatus) => {
-        console.log(status);
         if (status.status !== "IN_PROGRESS") {
           return;
         }

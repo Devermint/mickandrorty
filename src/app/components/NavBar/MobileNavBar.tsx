@@ -7,19 +7,19 @@ import {
   Box,
   Button,
   useDisclosure,
+  Portal,
 } from "@chakra-ui/react";
 import { IoClose } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { Logo } from "./Logo";
 import ConnectWalletButton from "../ConnectWalletButton/ConnectWalletButton";
 import NavBarButton from "./NavBarButton";
-import { colorTokens } from "../theme";
+import { colorTokens } from "../theme/theme";
 import { GlobeIcon } from "../icons/globe";
 import Link from "next/link";
 import { NavButton } from "@/app/types/navBar";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { CreateAgentMobile } from "../CreateAgent/CreateAgentMobile";
 
 type Props = {
   navButtons: NavButton[];
@@ -34,6 +34,7 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
     if (open) {
       onClose();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   return (
@@ -45,9 +46,10 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
         justifyContent="space-between"
         alignItems="center"
         px={6}
-        py={2}
+        py={0}
         zIndex={50}
         display={{ base: "flex", md: "none" }}
+        bg={{ base: colorTokens.blackCustom.a2, md: "transparent" }}
       >
         <IconButton
           bg="none"
@@ -71,72 +73,81 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
       </Flex>
 
       {open && (
-        <Flex
-          flexDir="column"
-          zIndex={20}
-          h="calc(100dvh - 80px)"
-          bgColor="black"
-          gap={5}
-          px={4}
-          pt={4}
-        >
-          {navButtons.map((button, index) => (
-            <Box key={index} w="100%">
-              <NavBarButton
-                text={button.text}
-                onClick={handleButtonClick}
-                textColor={button.active ? "green.500" : "gray.700"}
-                alignItems="start"
-                ml={1}
-              />
-              <Box borderBottom="1px solid" borderColor="gray.700" mt={5} />
-            </Box>
-          ))}
+        <Portal>
+          <Flex
+            position="fixed"
+            top={32}
+            left={0}
+            right={0}
+            bottom={0}
+            zIndex={21} // higher than your tabs/header (zIndex: 50/20)
+            bg="black"
+            flexDir="column"
+            gap={3}
+            pt={4}
+            overflowY="auto"
+            pb="calc(env(safe-area-inset-bottom) + 16px)"
+          >
+            {navButtons.map((button, index) => (
+              <Box key={index} w="100%">
+                <NavBarButton
+                  text={button.text}
+                  onClick={handleButtonClick}
+                  textColor={
+                    button.active ? colorTokens.green.erin : "gray.700"
+                  }
+                  alignItems="start"
+                  ml={5}
+                />
+                <Box
+                  borderBottom="1px solid"
+                  borderColor={colorTokens.green.dark}
+                  mt={3}
+                />
+              </Box>
+            ))}
 
-          <Flex>
-            <CreateAgentMobile></CreateAgentMobile>
-          </Flex>
-
-          <Flex flexGrow={1} justify="center" alignItems="end">
-            <Box
-              lineHeight={1.5}
-              color={colorTokens.gray.platinum}
-              textAlign="center"
-              fontSize={13}
-              w="85%"
-            >
-              <span>By messaging Aptos Layer, you agree to our </span>
-              <Link href="">
-                <Box as="span" color={colorTokens.gray.timberwolf}>
-                  Terms
-                </Box>
-              </Link>
-              <Box as="span"> and have read our </Box>
-              <Link href="" target="_blank">
-                <Box as="span" color={colorTokens.gray.timberwolf}>
-                  Privacy Policy
-                </Box>
-              </Link>
-              <br />
-              <Box as="span"> See cookie preferences.</Box>
-              <Button
+            <Flex flexGrow={1} justify="center" alignItems="end">
+              <Box
+                lineHeight={1.5}
+                color={colorTokens.gray.platinum}
+                textAlign="center"
                 fontSize={13}
-                color={colorTokens.green.darkErin}
-                borderRadius={33}
-                borderColor={colorTokens.green.dark}
-                bg="transparent"
-                w="100%"
-                gap={3}
-                mt={5}
-                mb={5}
+                w="85%"
+                mb={2}
               >
-                <GlobeIcon h="1.5rem" />
-                Visit AptosLayerAI
-              </Button>
-              <span>© Copyrights reserved by blabla 2025</span>
-            </Box>
+                <span>By messaging Aptos Layer, you agree to our </span>
+                <Link href="">
+                  <Box as="span" color={colorTokens.gray.timberwolf}>
+                    Terms
+                  </Box>
+                </Link>
+                <Box as="span"> and have read our </Box>
+                <Link href="" target="_blank">
+                  <Box as="span" color={colorTokens.gray.timberwolf}>
+                    Privacy Policy
+                  </Box>
+                </Link>
+                <br />
+                <Box as="span"> See cookie preferences.</Box>
+                <Button
+                  fontSize={13}
+                  borderRadius={33}
+                  borderColor={colorTokens.green.dark}
+                  bg="transparent"
+                  w="100%"
+                  mt={5}
+                  mb={5}
+                  gap={3}
+                >
+                  <GlobeIcon h="1.5rem" w="1.5rem" />
+                  Visit AptosLayerAI
+                </Button>
+                <span>© Copyrights reserved by blabla 2025</span>
+              </Box>
+            </Flex>
           </Flex>
-        </Flex>
+        </Portal>
       )}
     </>
   );

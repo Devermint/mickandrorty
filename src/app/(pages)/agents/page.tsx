@@ -1,11 +1,11 @@
 "use client";
 
-import { AgentCarousel } from "@/app/components/agent/AgentCarousel";
+import { AgentCarousel } from "@/app/components/Agent/AgentCarousel";
 import { testAgents } from "@/app/types/agent";
 
 import { Box, Flex } from "@chakra-ui/react";
 import { useRef } from "react";
-import { AgentInput } from "@/app/components/agent/AgentInput";
+import { AgentInput } from "@/app/components/Agent/AgentInput";
 import { useRouter } from "next/navigation";
 import { useMobileBreak } from "@/app/components/responsive";
 

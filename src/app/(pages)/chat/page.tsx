@@ -1,5 +1,4 @@
 "use client";
-import Chat from "@/app/components/Chat/Chat";
 import { Flex } from "@chakra-ui/react";
 
 export default function ChatPage() {
@@ -15,8 +14,6 @@ export default function ChatPage() {
       justify="center"
       my={{ base: 0, md: 5 }}
       w="100%"
-    >
-      <Chat />
-    </Flex>
+    ></Flex>
   );
 }

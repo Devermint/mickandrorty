@@ -3,19 +3,24 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Flex, Icon, Text } from "@chakra-ui/react";
 import { ChatEntryProps, DefaultChatEntry, ChatEntry } from "./ChatEntry";
-import { AgentInput } from "../agent/AgentInput";
-import { colorTokens } from "../theme";
+import { AgentInput } from "../Agent/AgentInput";
+import { colorTokens } from "../theme/theme";
 import { useSearchParams, useRouter } from "next/navigation";
 // import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { RxAvatar } from "react-icons/rx";
+import { ChatHelperButton } from "./ChatHelperButton";
+import { Agent, AgentType } from "@/app/types/agent";
 
 enum ChatState {
   IDLE,
   PROCESSING,
   GENERATING_VIDEO,
 }
+type ChatProps = {
+  agent: Agent;
+};
 
-const Chat = () => {
+const Chat = ({ agent }: ChatProps) => {
   // const account = useAptosWallet();
 
   const inputMessage = useRef<HTMLTextAreaElement>(null);
@@ -42,119 +47,160 @@ const Chat = () => {
     const text = el.value.trim();
     if (!text) return;
 
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", content: text, type: "text" },
-    ]);
+    try {
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: text, type: "text" },
+      ]);
 
-    setChatState(ChatState.PROCESSING);
-    el.value = "";
-    el.blur();
+      setChatState(ChatState.PROCESSING);
+      el.value = "";
+      el.blur();
 
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messages: [...messages, { role: "user", content: text, type: "text" }],
-      }),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to chat");
-    }
+      if (agent.type === AgentType.AgentCreator) {
+        const response = await fetch("/api/chat/create-agent", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages,
+              { role: "user", content: text, type: "text" },
+            ],
+          }),
+        });
+        const { markdown, notice } = await response.json();
 
-    if (!response.body) {
-      throw new Error("No response body from chat");
-    }
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: markdown ?? notice, type: "text" },
+        ]);
+        setChatState(ChatState.IDLE);
+      } else {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages,
+              { role: "user", content: text, type: "text" },
+            ],
+          }),
+        });
 
-    const { message, action } = await response.json();
+        if (!response.ok) {
+          throw new Error("Failed to chat");
+        }
 
-    if (action === "GENERATE_VIDEO") {
-      setChatState(ChatState.GENERATING_VIDEO);
-      const response = await fetch("/api/generate-video", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt: message }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to generate video");
-      }
+        if (!response.body) {
+          throw new Error("No response body from chat");
+        }
 
-      if (!response.body) {
-        throw new Error("No response body for streaming");
-      }
+        const { message, action } = await response.json();
+
+        if (action === "GENERATE_VIDEO") {
+          setChatState(ChatState.GENERATING_VIDEO);
+          const response = await fetch("/api/generate-video", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ prompt: message }),
+          });
+          if (!response.ok) {
+            throw new Error("Failed to generate video");
+          }
+
+          if (!response.body) {
+            throw new Error("No response body for streaming");
+          }
 
           const { jobId } = await response.json();
 
-      const es = new EventSource(`/api/generate-video?id=${jobId}`);
+          const es = new EventSource(`/api/generate-video?id=${jobId}`);
 
-      es.onmessage = (e) => {
-        const data = JSON.parse(e.data);
+          es.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            console.log("queueue???");
+            console.log(data);
 
-        console.log(data);
+            if (data.status === "IN_QUEUE") {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: "assistant",
+                  content: "Video is in queue...",
+                  type: "text",
+                },
+              ]);
+            }
 
-        if (data.status === "IN_QUEUE") {
+            if (data.status === "IN_PROGRESS") {
+              setProgress(data.progress);
+            }
+
+            if (data.status === "COMPLETED") {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: "assistant",
+                  content: data.videoUrl,
+                  type: "video",
+                },
+              ]);
+              setProgress(null);
+              setChatState(ChatState.IDLE);
+              es.close();
+            }
+          };
+
+          es.onerror = (e) => {
+            console.error("SSE error", e);
+
+            setChatState(ChatState.IDLE);
+            es.close();
+          };
+
           setMessages((prev) => [
             ...prev,
             {
               role: "assistant",
-              content: "Video is in queue...",
+              content:
+                "Video generation is in progress... (this may take ~5 minutes)",
               type: "text",
             },
           ]);
-        }
 
-        if (data.status === "IN_PROGRESS") {
-          setProgress(data.progress);
-        }
-
-        if (data.status === "COMPLETED") {
+          el.value = "";
+          el.focus();
+        } else {
           setMessages((prev) => [
             ...prev,
-            {
-              role: "assistant",
-              content: data.videoUrl,
-              type: "video",
-            },
+            { role: "assistant", content: message, type: "text" },
           ]);
-          setProgress(null);
           setChatState(ChatState.IDLE);
-          es.close();
         }
-      };
-
-      es.onerror = (e) => {
-        console.error("SSE error", e);
-
-        setChatState(ChatState.IDLE);
-        es.close();
-      };
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content:
-            "Video generation is in progress... (this may take ~5 minutes)",
-          type: "text",
-        },
-      ]);
-
+      }
       el.value = "";
       el.focus();
-    } else {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: message, type: "text" },
-      ]);
+    } catch (error) {
+      el.value = "";
+      el.focus();
       setChatState(ChatState.IDLE);
+      if (error instanceof Error) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: error.message,
+            type: "error",
+          },
+        ]);
+      }
     }
-
-    el.value = "";
-    el.focus();
   }, [chatState, messages]);
 
   useEffect(() => {
@@ -235,6 +281,13 @@ const Chat = () => {
   //   }
   // };
 
+  const handleHelperButtonClick = (chatMessage: string) => {
+    if (inputMessage.current === null) return;
+
+    inputMessage.current.value = chatMessage;
+    onMessageSend();
+  };
+
   return (
     <Flex
       bg={colorTokens.blackCustom.a1}
@@ -252,6 +305,7 @@ const Chat = () => {
           align="center"
           px={3}
           py={1}
+          display={{ base: "none", md: "flex" }}
         >
           <Icon size="lg">
             <RxAvatar color="#C7CAC8" />
@@ -282,10 +336,46 @@ const Chat = () => {
               {messages.map((m, i) => (
                 <ChatEntry key={i} {...m} />
               ))}
-              {progress && <ChatEntry role="assistant" content={progress} type="text"/>}
+              {chatState === ChatState.GENERATING_VIDEO && progress && (
+                <ChatEntry
+                  type="video-loader"
+                  role="assistant"
+                  content={progress}
+                />
+              )}
             </>
           )}
           <div ref={bottomScroll} />
+        </Flex>
+
+        <Flex
+          w="100%"
+          gap={2}
+          flexWrap="wrap-reverse"
+          mx="auto"
+          align="flex-end"
+          justify="center"
+        >
+          <ChatHelperButton
+            label="Video generator"
+            onButtonClick={handleHelperButtonClick}
+            chatEntry="Can you generate a video for me?"
+          />
+          <ChatHelperButton
+            label="Obtaining APTOS"
+            onButtonClick={handleHelperButtonClick}
+            chatEntry="How do I obtain APTOS?"
+          />
+          <ChatHelperButton
+            label="Agent creation"
+            onButtonClick={handleHelperButtonClick}
+            chatEntry="How do I create an agent?"
+          />
+          <ChatHelperButton
+            label="Token creation"
+            onButtonClick={handleHelperButtonClick}
+            chatEntry="How is my token created?"
+          />
         </Flex>
         <AgentInput
           h={{ base: "17%", md: "17%" }}

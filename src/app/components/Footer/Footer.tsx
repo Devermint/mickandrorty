@@ -2,7 +2,7 @@
 
 import { Flex, Box, Button } from "@chakra-ui/react";
 import Link from "next/link";
-import { colorTokens } from "../theme";
+import { colorTokens } from "../theme/theme";
 import { GlobeIcon } from "../icons/globe";
 
 export default function Footer() {
@@ -38,7 +38,7 @@ export default function Footer() {
             bg="transparent"
             gap={5}
           >
-            <GlobeIcon h="1.5rem" /> Visit AptosLayerAI
+            <GlobeIcon h="1.5rem" w="auto" /> Visit AptosLayerAI
           </Button>
         </Flex>
 

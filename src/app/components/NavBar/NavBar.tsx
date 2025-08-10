@@ -1,11 +1,11 @@
 "use client";
 
-import { Mobile } from "./Mobile";
-import { Desktop } from "./Desktop";
+import { DesktopNavBar } from "./DesktopNavBar";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useTransitionRouter } from "next-view-transitions";
 import { routes } from "./routes";
+import { MobileNavBar } from "./MobileNavBar";
 
 export const NavBar = () => {
   const [navButtons, setNavButtons] = useState(routes);
@@ -33,8 +33,14 @@ export const NavBar = () => {
 
   return (
     <>
-      <Mobile navButtons={navButtons} handleButtonClick={handleButtonClick} />
-      <Desktop navButtons={navButtons} handleButtonClick={handleButtonClick} />
+      <MobileNavBar
+        navButtons={navButtons}
+        handleButtonClick={handleButtonClick}
+      />
+      <DesktopNavBar
+        navButtons={navButtons}
+        handleButtonClick={handleButtonClick}
+      />
     </>
   );
 };
