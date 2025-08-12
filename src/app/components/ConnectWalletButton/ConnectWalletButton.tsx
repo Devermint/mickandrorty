@@ -43,7 +43,7 @@ export default function ConnectWalletButton() {
           bgColor={{ base: "transparent", md: colorTokens.blackCustom.a2 }}
           h="unset"
         >
-          <Text display={{ base: "none", md: "block" }}>Connect wallet</Text>
+          <Text display={{ base: "block", md: "block" }}>Connect wallet</Text>
           <WalletIcon w={5} color={colorTokens.green.erin} />
         </Button>
       )}

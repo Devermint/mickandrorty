@@ -18,27 +18,37 @@ enum ChatState {
 }
 type ChatProps = {
   agent: Agent;
+  messages: ChatEntryProps[];
+  setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
 };
 
-const Chat = ({ agent }: ChatProps) => {
+const Chat = ({ agent, messages, setMessages }: ChatProps) => {
   // const account = useAptosWallet();
 
   const inputMessage = useRef<HTMLTextAreaElement>(null);
-  const bottomScroll = useRef<HTMLDivElement>(null);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
   const searchParams = useSearchParams();
   const msg = searchParams.get("message") ?? "";
 
   const [chatState, setChatState] = useState(ChatState.IDLE);
-  const [messages, setMessages] = useState<ChatEntryProps[]>([]);
+
   const [progress, setProgress] = useState<string | null>(null);
 
   const didInitialize = useRef(false);
 
+  const count = messages?.length ?? 0;
+
   useEffect(() => {
-    bottomScroll.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const id = requestAnimationFrame(() => {
+      const el = containerRef.current;
+      if (!el) return;
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [count]);
 
   const onMessageSend = useCallback(async () => {
     const el = inputMessage.current;
@@ -124,8 +134,6 @@ const Chat = ({ agent }: ChatProps) => {
 
           es.onmessage = (e) => {
             const data = JSON.parse(e.data);
-            console.log("queueue???");
-            console.log(data);
 
             if (data.status === "IN_QUEUE") {
               setMessages((prev) => [
@@ -175,7 +183,7 @@ const Chat = ({ agent }: ChatProps) => {
           ]);
 
           el.value = "";
-          el.focus();
+          // el.focus();
         } else {
           setMessages((prev) => [
             ...prev,
@@ -185,10 +193,11 @@ const Chat = ({ agent }: ChatProps) => {
         }
       }
       el.value = "";
-      el.focus();
+      // el.focus();
+      setChatState(ChatState.IDLE);
     } catch (error) {
       el.value = "";
-      el.focus();
+      // el.focus();
       setChatState(ChatState.IDLE);
       if (error instanceof Error) {
         setMessages((prev) => [
@@ -209,7 +218,8 @@ const Chat = ({ agent }: ChatProps) => {
       didInitialize.current = true;
       el.value = msg;
       onMessageSend();
-      router.replace("/chat");
+
+      router.replace(window.location.pathname);
     }
   }, [msg, onMessageSend, router]);
 
@@ -296,10 +306,11 @@ const Chat = ({ agent }: ChatProps) => {
       w={{ base: "100%", lg: 800 }}
       flexDirection="column"
       justify="space-between"
-      h="100%"
       overflow="hidden"
+      maxH="100%"
+      h="100%"
     >
-      <Flex flexDir="column" h="100%">
+      <Flex flexDir="column" h="100%" maxH="100%" overflowY="hidden">
         <Flex
           bg={{ base: colorTokens.blackCustom.a2, md: "unset" }}
           align="center"
@@ -319,15 +330,20 @@ const Chat = ({ agent }: ChatProps) => {
           direction="column"
           overflowY="auto"
           flex={1}
-          p={4}
+          px={4}
+          pt={4}
+          pb={10}
           mr="0.5rem"
+          ref={containerRef}
+          overscrollBehaviorY="contain"
+          minH={0}
           css={{
             "&::-webkit-scrollbar": { width: "4px" },
             "&::-webkit-scrollbar-track": { width: "6px" },
             "&::-webkit-scrollbar-thumb": { borderRadius: "24px" },
           }}
         >
-          {messages.length === 0 ? (
+          {count === 0 ? (
             <>
               <DefaultChatEntry />
             </>
@@ -345,7 +361,6 @@ const Chat = ({ agent }: ChatProps) => {
               )}
             </>
           )}
-          <div ref={bottomScroll} />
         </Flex>
 
         <Flex
@@ -355,6 +370,7 @@ const Chat = ({ agent }: ChatProps) => {
           mx="auto"
           align="flex-end"
           justify="center"
+          flexShrink={0}
         >
           <ChatHelperButton
             label="Video generator"
@@ -385,6 +401,7 @@ const Chat = ({ agent }: ChatProps) => {
           inputRef={inputMessage}
           disabled={chatState !== ChatState.IDLE}
           onButtonClick={onMessageSend}
+          flexShrink={0}
         />
       </Flex>
     </Flex>

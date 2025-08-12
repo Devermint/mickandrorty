@@ -30,6 +30,7 @@ const buttonRecipe = defineRecipe({
 
 const textRecipe = defineRecipe({
   base: {
+    fontFamily: sora.style.fontFamily,
     color: "#B1B3B9",
   },
 });

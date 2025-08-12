@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTransitionRouter } from "next-view-transitions";
 import { routes } from "./routes";
 import { MobileNavBar } from "./MobileNavBar";
+import { Box } from "@chakra-ui/react";
 
 export const NavBar = () => {
   const [navButtons, setNavButtons] = useState(routes);
@@ -32,7 +33,7 @@ export const NavBar = () => {
   }, [pathname]);
 
   return (
-    <>
+    <Box>
       <MobileNavBar
         navButtons={navButtons}
         handleButtonClick={handleButtonClick}
@@ -41,6 +42,6 @@ export const NavBar = () => {
         navButtons={navButtons}
         handleButtonClick={handleButtonClick}
       />
-    </>
+    </Box>
   );
 };

@@ -1,3 +1,4 @@
+"use client";
 import { Button, Flex, FlexProps, Textarea } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
@@ -48,7 +49,7 @@ export const AgentInput = ({
           resize="none"
           p={1}
           ref={inputRef}
-          autoFocus
+          // autoFocus
         ></Textarea>
 
         <Button

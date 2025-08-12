@@ -9,8 +9,6 @@ export default function Footer() {
   return (
     <Flex
       display={{ base: "none", md: "flex" }}
-      position="absolute"
-      bottom={0}
       w="100%"
       mt={{ md: 5, lg: 10 }}
     >

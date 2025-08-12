@@ -1,42 +1,43 @@
-import MobileAgentView from "@/app/components/Agent/mobile/MobileAgentView";
-import Chat from "@/app/components/Chat/Chat";
-import { Agent, AgentType } from "@/app/types/agent";
-import { Box } from "@chakra-ui/react";
-
-const RESERVED_AGENTS: Record<AgentType, Agent> = {
-  [AgentType.AgentCreator]: {
-    id: "agentCreator",
-    name: "Agent Creator",
-    image: "/",
-    tag: "",
-    type: AgentType.AgentCreator,
-  },
-  [AgentType.Agent]: {
-    id: "agent",
-    name: "Agent",
-    image: "/",
-    tag: "",
-    type: AgentType.Agent,
-  },
-};
+import { Agent, AgentType, testAgents } from "@/app/types/agent";
+import { Box, Flex } from "@chakra-ui/react";
+import FullHeightLayout from "@/app/components/Layout/FullHeightLayout";
+import { MobileAgentView } from "@/app/components/Agent/mobile/MobileAgentView";
+import { AgentView } from "@/app/components/Agent/AgentView";
 
 function resolveAgent(slug: string): Agent {
-  return (
-    (RESERVED_AGENTS as Record<string, Agent>)[slug] ??
-    RESERVED_AGENTS[AgentType.Agent]
-  );
+  const agent = testAgents.find((x) => x.id === slug);
+  if (agent) return agent;
+
+  return {
+    id: "",
+    image: "",
+    name: "",
+    tag: "",
+    type: AgentType.AgentCreator,
+  };
 }
 
-export default function Page({ params }: { params: { agent: string } }) {
-  const agent = resolveAgent(params.agent);
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ agent: string }>;
+}) {
+  const { agent: slug } = await params;
+  const agent = resolveAgent(slug);
 
   return (
-    <>
-      <Box style={{ display: "none" }}>
-        <Chat agent={agent} />
+    <FullHeightLayout>
+      <Box as="main" flex="1" overflow="auto" position="relative">
+        <Flex
+          w="100%"
+          h="100%"
+          justify="center"
+          display={{ base: "none", md: "flex" }}
+        >
+          <AgentView agent={agent} />
+        </Flex>
+        <MobileAgentView agent={agent} />
       </Box>
-
-      <MobileAgentView agent={agent} />
-    </>
+    </FullHeightLayout>
   );
 }

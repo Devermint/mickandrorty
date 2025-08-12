@@ -7,23 +7,36 @@ import { InfoIcon } from "../../icons/info";
 import { ChartIcon } from "../../icons/chart";
 import { ChatIcon } from "../../icons/chat";
 import { colorTokens } from "../../theme/theme";
-import TokenSwapForm from "../../Token/TokenSwapForm";
+import { MobileAgentInfoView } from "./MobileAgentInfoView";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { ChatEntryProps } from "../../Chat/ChatEntry";
 
-type TabKey = "info" | "chart" | "chat";
+export type TabKey = "info" | "chart" | "chat";
 
-export default function MobileAgentView({ agent }: { agent: Agent }) {
+interface Props {
+  agent: Agent;
+}
+
+export const MobileAgentView = ({ agent }: Props) => {
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get("defaultTab") ?? "";
+
+  const [messages, setMessages] = useState<ChatEntryProps[]>([]);
+
   return (
     <Tabs.Root
-      defaultValue="info"
+      defaultValue={defaultTab ?? "info"}
       lazyMount
       unmountOnExit
       variant="plain"
       display={{ base: "block", md: "none" }}
+      h="100%"
     >
-      <Flex minH="100dvh" maxW="100dvw" w="100%" flexDirection="column">
-        <Flex flex="1 1 0%" w="100%" mt={16}>
+      <Flex h="100%" maxW="100dvw" w="100%" flexDirection="column">
+        <Flex flex="1 1 0%" w="100%" overflow="hidden" maxH="100%">
           <Tabs.Content value="info" p={0}>
-            <InfoPane agent={agent} />
+            <MobileAgentInfoView agent={agent} />
           </Tabs.Content>
 
           <Tabs.Content value="chart" p={0}>
@@ -31,7 +44,11 @@ export default function MobileAgentView({ agent }: { agent: Agent }) {
           </Tabs.Content>
 
           <Tabs.Content value="chat" p={0}>
-            <Chat agent={agent} />
+            <Chat
+              agent={agent}
+              messages={messages ?? []}
+              setMessages={setMessages}
+            />
           </Tabs.Content>
         </Flex>
 
@@ -52,7 +69,7 @@ export default function MobileAgentView({ agent }: { agent: Agent }) {
       </Flex>
     </Tabs.Root>
   );
-}
+};
 
 function TabTrigger({
   value,
@@ -83,19 +100,6 @@ function TabTrigger({
     </Tabs.Trigger>
   );
 }
-
-const InfoPane = ({ agent }: { agent: Agent }) => {
-  return (
-    <Box p={4} bg={colorTokens.blackCustom.a1} h="100%">
-      <Box
-        borderRadius={13}
-        bg="linear-gradient(rgba(81, 254, 83, 0.09), rgba(81, 254, 83, 0))"
-        h="50%"
-      ></Box>
-      <TokenSwapForm agent={agent} />
-    </Box>
-  );
-};
 
 function ChartPane({ agent }: { agent: Agent }) {
   console.log(agent);

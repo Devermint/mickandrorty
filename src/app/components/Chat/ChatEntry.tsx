@@ -36,7 +36,13 @@ export const ChatEntry = ({ role, content, type }: ChatEntryProps) => {
         </Text>
       )}
 
-      <Box px={3} py={1} bgColor={bg} borderRadius={28} maxW="80%">
+      <Box
+        px={3}
+        py={1}
+        bgColor={bg}
+        borderRadius={{ base: 16, md: 28 }}
+        maxW="80%"
+      >
         {type === "text" && (
           <MarkdownView color={color} lineHeight={1.5} fontSize={14}>
             {content}

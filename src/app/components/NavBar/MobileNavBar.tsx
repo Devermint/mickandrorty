@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Flex,
-  IconButton,
-  Icon,
-  Box,
-  Button,
-  useDisclosure,
-  Portal,
-} from "@chakra-ui/react";
+import { Flex, IconButton, Icon, Box, Button, Portal } from "@chakra-ui/react";
 import { IoClose } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { Logo } from "./Logo";
@@ -18,7 +10,7 @@ import { colorTokens } from "../theme/theme";
 import { GlobeIcon } from "../icons/globe";
 import Link from "next/link";
 import { NavButton } from "@/app/types/navBar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 type Props = {
@@ -27,8 +19,11 @@ type Props = {
 };
 
 export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
-  const { open, onToggle, onClose } = useDisclosure();
+  const [open, setOpen] = useState(false);
   const pathname = usePathname();
+
+  const onToggle = () => setOpen(!open);
+  const onClose = () => setOpen(false);
 
   useEffect(() => {
     if (open) {
@@ -40,8 +35,6 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
   return (
     <>
       <Flex
-        position="sticky"
-        top={0}
         width="100%"
         justifyContent="space-between"
         alignItems="center"
@@ -76,17 +69,17 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
         <Portal>
           <Flex
             position="fixed"
-            top={32}
+            top={16}
             left={0}
             right={0}
             bottom={0}
-            zIndex={21} // higher than your tabs/header (zIndex: 50/20)
+            zIndex={25}
             bg="black"
             flexDir="column"
             gap={3}
-            pt={4}
+            pt={3}
             overflowY="auto"
-            pb="calc(env(safe-area-inset-bottom) + 16px)"
+            maxH="calc(100dvh - 64px)"
           >
             {navButtons.map((button, index) => (
               <Box key={index} w="100%">
@@ -107,7 +100,7 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
               </Box>
             ))}
 
-            <Flex flexGrow={1} justify="center" alignItems="end">
+            <Flex maxH="100%" flexGrow={1} justify="center" alignItems="end">
               <Box
                 lineHeight={1.5}
                 color={colorTokens.gray.platinum}
