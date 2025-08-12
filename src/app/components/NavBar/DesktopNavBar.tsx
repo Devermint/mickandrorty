@@ -3,7 +3,7 @@
 import { Flex } from "@chakra-ui/react";
 import { Logo } from "./Logo";
 import ConnectWalletButton from "../ConnectWalletButton/ConnectWalletButton";
-import NavBarButton from "./Button";
+import NavBarButton from "./NavBarButton";
 import { NavButton } from "@/app/types/navBar";
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
   handleButtonClick: (id: string) => void;
 };
 
-export const Desktop = ({ navButtons, handleButtonClick }: Props) => (
+export const DesktopNavBar = ({ navButtons, handleButtonClick }: Props) => (
   <Flex
     h="100px"
     mx="1rem"

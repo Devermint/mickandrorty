@@ -12,13 +12,35 @@ import { AgentCard } from "./AgentCard";
 
 type AgentCarouselProps = {
   agents: Agent[];
+  activeId: string | null;
+  setActiveId: (id: string | null) => void;
 };
 
-export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
+export const AgentCarousel = ({
+  agents,
+  activeId,
+  setActiveId,
+}: AgentCarouselProps) => {
   const innerRefs = useRef<HTMLDivElement[]>([]);
-  const [activeIdx, setActiveIdx] = useState(0);
 
   const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
+
+  const initialIndex = 1;
+  const [activeIdx, setActiveIdx] = useState(initialIndex);
+
+  useEffect(() => {
+    if (!agents.length) {
+      setActiveId(null);
+      setActiveIdx(0);
+      return;
+    }
+
+    if (!activeId || !agents.some((a) => a.id === activeId)) {
+      const idx = Math.min(initialIndex, Math.max(0, agents.length - 1));
+      setActiveIdx(idx);
+      setActiveId(agents[idx]?.id ?? agents[0]?.id ?? null);
+    }
+  }, [agents]);
 
   const sliderRefMobile = useRef<HTMLDivElement>(null);
   const sliderRefDesktop = useRef<HTMLDivElement>(null);
@@ -27,6 +49,9 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
   const handleChangeBase = (slider: KeenSliderInstance, isMobile: boolean) => {
     const center = slider.track.details.rel;
     setActiveIdx(center);
+
+    const newId = agents[center]?.id ?? null;
+    setActiveId(newId);
 
     slider.track.details.slides.forEach((_, idx) => {
       const el = innerRefs.current[idx];
@@ -56,7 +81,7 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
 
   const [sliderRefM, instanceRefMobile] = useKeenSlider<HTMLDivElement>({
     loop: isLooped,
-    initial: 1,
+    initial: initialIndex,
     slides: {
       perView: 3,
       spacing: 2,
@@ -69,7 +94,7 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
 
   const [sliderRefD, instanceRefDesktop] = useKeenSlider<HTMLDivElement>({
     loop: isLooped,
-    initial: 1,
+    initial: initialIndex,
     slides: {
       perView: 3,
       spacing: 2,
@@ -85,7 +110,6 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
     if (el) {
       const assign = isMobile ? sliderRefM : sliderRefD;
       assign(el);
-      console.log("Effect triggered");
     }
   }, [isMobile, sliderRefM, sliderRefD, activeRef]);
 
@@ -132,28 +156,30 @@ export const AgentCarousel = ({ agents }: AgentCarouselProps) => {
               "linear-gradient(to right, transparent, black 1%, black 99%, transparent)",
           }}
         >
-          {agents.map((agent, i) => (
-            <Box
-              key={i}
-              className="keen-slider__slide"
-              overflow="visible !important"
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              maxW="33% !important"
-              mr={isLooped && i === agents.length - 1 ? 200 : 0}
-              zIndex={i === activeIdx ? 1 : 0}
-            >
+          {agents.map((agent, i) => {
+            return (
               <Box
-                ref={(el: HTMLDivElement) => {
-                  if (el) innerRefs.current[i] = el;
-                }}
-                transformOrigin="center"
+                key={agent.id}
+                className="keen-slider__slide"
+                overflow="visible !important"
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                maxW="33% !important"
+                mr={isLooped && i === agents.length - 1 ? 200 : 0}
+                zIndex={activeIdx === i ? 1 : 0}
               >
-                <AgentCard isActive={i === activeIdx} agent={agent} />
+                <Box
+                  ref={(el: HTMLDivElement) => {
+                    if (el) innerRefs.current[i] = el;
+                  }}
+                  transformOrigin="center"
+                >
+                  <AgentCard isActive={activeIdx === i} agent={agent} />
+                </Box>
               </Box>
-            </Box>
-          ))}
+            );
+          })}
         </Box>
       </Flex>
 

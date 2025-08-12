@@ -1,5 +1,6 @@
+"use client";
 import { Button, Flex, FlexProps, Textarea } from "@chakra-ui/react";
-import { colorTokens } from "../theme";
+import { colorTokens } from "../theme/theme";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
 import { ArrowUp } from "../icons/arrowUp";
 
@@ -9,7 +10,12 @@ interface Props extends FlexProps {
   disabled?: boolean;
 }
 
-export const AgentInput = ({ inputRef, onButtonClick, disabled, ...rest }: Props) => {
+export const AgentInput = ({
+  inputRef,
+  onButtonClick,
+  disabled,
+  ...rest
+}: Props) => {
   const onInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -43,7 +49,7 @@ export const AgentInput = ({ inputRef, onButtonClick, disabled, ...rest }: Props
           resize="none"
           p={1}
           ref={inputRef}
-          autoFocus
+          // autoFocus
         ></Textarea>
 
         <Button

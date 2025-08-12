@@ -11,7 +11,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { useAptosWallet } from "../context/AptosWalletContext";
-import { colorTokens } from "../components/theme";
+import { colorTokens } from "../components/theme/theme";
 
 type WalletMenuProps = {
   handleNavigate?: () => void;
@@ -66,7 +66,7 @@ export default function WalletMenu({
     <Menu.Root>
       <MenuTrigger asChild>
         <Button
-          size={{base: "sm", md: "xl"}}
+          size={{ base: "sm", md: "xl" }}
           className="wallet-button"
           borderRadius="10px"
           borderColor={colorTokens.green.dark}

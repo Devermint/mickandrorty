@@ -2,10 +2,8 @@
 
 import { ChakraProvider, Box, Spinner } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { system } from "./theme";
-import { NavBar } from "./NavBar/Main";
+import { system } from "./theme/theme";
 import { Suspense } from "react";
-import Footer from "./Footer/Footer";
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { AptosWalletProvider } from "../context/AptosWalletContext";
 
@@ -42,11 +40,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <ChakraProvider value={system}>
         <AptosWalletAdapterProvider>
           <AptosWalletProvider sessionDuration={8 * 60 * 60 * 1000}>
-            <Suspense fallback={<LoadingSpinner />}>
-              <NavBar />
-            </Suspense>
+            <Suspense fallback={<LoadingSpinner />}></Suspense>
             <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-            <Footer />
           </AptosWalletProvider>
         </AptosWalletAdapterProvider>
       </ChakraProvider>

@@ -1,11 +1,12 @@
 "use client";
 
-import { Mobile } from "./Mobile";
-import { Desktop } from "./Desktop";
+import { DesktopNavBar } from "./DesktopNavBar";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useTransitionRouter } from "next-view-transitions";
 import { routes } from "./routes";
+import { MobileNavBar } from "./MobileNavBar";
+import { Box } from "@chakra-ui/react";
 
 export const NavBar = () => {
   const [navButtons, setNavButtons] = useState(routes);
@@ -32,9 +33,15 @@ export const NavBar = () => {
   }, [pathname]);
 
   return (
-    <>
-      <Mobile navButtons={navButtons} handleButtonClick={handleButtonClick} />
-      <Desktop navButtons={navButtons} handleButtonClick={handleButtonClick} />
-    </>
+    <Box>
+      <MobileNavBar
+        navButtons={navButtons}
+        handleButtonClick={handleButtonClick}
+      />
+      <DesktopNavBar
+        navButtons={navButtons}
+        handleButtonClick={handleButtonClick}
+      />
+    </Box>
   );
 };

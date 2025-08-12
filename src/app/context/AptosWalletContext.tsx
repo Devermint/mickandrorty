@@ -110,7 +110,7 @@ export function AptosWalletProvider({
 
       // --- Event Listeners ---
       const handleAccountChange = (newAccount: PetraAccountInfo) => {
-        console.log("Petra account changed:", newAccount);
+        // console.log("Petra account changed:", newAccount);
         setAccount(newAccount);
         setIsConnected(!!newAccount?.address); // Update connected status based on account presence
       };
@@ -169,7 +169,7 @@ export function AptosWalletProvider({
       const accountInfo = await petraWallet.account();
       setAccount(accountInfo);
       setIsConnected(true);
-      console.log("Petra wallet connected:", accountInfo);
+      // console.log("Petra wallet connected:", accountInfo);
     } catch (error) {
       console.error("Failed to connect Petra wallet:", error);
       // Reset state on failure
@@ -195,7 +195,7 @@ export function AptosWalletProvider({
       await petraWallet.disconnect();
       setAccount(null);
       setIsConnected(false);
-      console.log("Petra wallet disconnected");
+      // console.log("Petra wallet disconnected");
     } catch (error) {
       console.error("Failed to disconnect Petra wallet:", error);
       // Even on error, try to reset the state

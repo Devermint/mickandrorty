@@ -1,6 +1,6 @@
 "use client";
 import { Button, Flex, Text } from "@chakra-ui/react";
-import { colorTokens } from "../theme";
+import { colorTokens } from "../theme/theme";
 import { WalletIcon } from "../icons/wallet";
 import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { useCallback } from "react";
@@ -43,8 +43,8 @@ export default function ConnectWalletButton() {
           bgColor={{ base: "transparent", md: colorTokens.blackCustom.a2 }}
           h="unset"
         >
-          <Text display={{ base: "none", md: "block" }}>Connect wallet</Text>
-          <WalletIcon w={5} />
+          <Text display={{ base: "block", md: "block" }}>Connect wallet</Text>
+          <WalletIcon w={5} color={colorTokens.green.erin} />
         </Button>
       )}
     </Flex>
