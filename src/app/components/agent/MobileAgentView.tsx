@@ -3,14 +3,14 @@
 import { Box, Icon, Tabs, Flex } from "@chakra-ui/react";
 import Chat from "@/app/components/Chat/Chat";
 import type { Agent } from "@/app/types/agent";
-import { InfoIcon } from "../../icons/info";
-import { ChartIcon } from "../../icons/chart";
-import { ChatIcon } from "../../icons/chat";
-import { colorTokens } from "../../theme/theme";
+import { InfoIcon } from "../icons/info";
+import { ChartIcon } from "../icons/chart";
+import { ChatIcon } from "../icons/chat";
+import { colorTokens } from "../theme/theme";
 import { MobileAgentInfoView } from "./MobileAgentInfoView";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ChatEntryProps } from "../../Chat/ChatEntry";
+import { ChatEntryProps } from "../Chat/ChatEntry";
 
 export type TabKey = "info" | "chart" | "chat";
 

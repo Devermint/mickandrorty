@@ -1,5 +1,5 @@
 import { SimpleGrid, SimpleGridProps } from "@chakra-ui/react";
-import { colorTokens } from "../../theme/theme";
+import { colorTokens } from "../theme/theme";
 import { AgentMarketCard } from "./AgentMarketCard";
 
 interface Props extends SimpleGridProps {

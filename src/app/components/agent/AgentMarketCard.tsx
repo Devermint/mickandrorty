@@ -1,5 +1,5 @@
 import { Box, BoxProps, Text } from "@chakra-ui/react";
-import { colorTokens } from "../../theme/theme";
+import { colorTokens } from "../theme/theme";
 
 interface Props extends BoxProps {
   title: string;
