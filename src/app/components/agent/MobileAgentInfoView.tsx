@@ -1,13 +1,13 @@
 "use client";
 import { Agent } from "@/app/types/agent";
-import { colorTokens } from "../../theme/theme";
+import { colorTokens } from "../theme/theme";
 import { Box, Button, Flex, IconButton, Image, Text } from "@chakra-ui/react";
-import TokenSwapForm from "../../Token/TokenSwapForm";
+import TokenSwapForm from "../Token/TokenSwapForm";
 import { IoChevronBackOutline } from "react-icons/io5";
-import { Telegram } from "../../icons/telegram";
-import { X } from "../../icons/x";
-import { AgentMarketInfo } from "./AgentMarketInfo";
+import { Telegram } from "../icons/telegram";
+import { X } from "../icons/x";
 import { useRouter } from "next/navigation";
+import { AgentMarketInfo } from "./AgentMarketInfo";
 
 export const MobileAgentInfoView = ({ agent }: { agent: Agent }) => {
   const router = useRouter();
