@@ -10,7 +10,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
-import { AgentVideoLoader } from "../Agent/AgentVideoLoader";
+import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
 import { MarkdownView } from "../MarkdownView/MarkdownView";
 
 export type ChatEntryProps = {
