@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Flex, Icon, Text } from "@chakra-ui/react";
 import { ChatEntryProps, DefaultChatEntry, ChatEntry } from "./ChatEntry";
-import { AgentInput } from "../Agent/AgentInput";
+import { AgentInput } from "../Agents/AgentInput";
 import { colorTokens } from "../theme/theme";
 import { useSearchParams, useRouter } from "next/navigation";
 // import { useAptosWallet } from "@/app/context/AptosWalletContext";

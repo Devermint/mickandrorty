@@ -1,8 +1,8 @@
 import { Agent, AgentType, testAgents } from "@/app/types/agent";
 import { Box, Flex } from "@chakra-ui/react";
 import FullHeightLayout from "@/app/components/Layout/FullHeightLayout";
-import { AgentView } from "@/app/components/Agent/AgentView";
-import { MobileAgentView } from "@/app/components/Agent/MobileAgentView";
+import { AgentView } from "@/app/components/Agents/AgentView";
+import { MobileAgentView } from "@/app/components/Agents/MobileAgentView";
 
 function resolveAgent(slug: string): Agent {
   const agent = testAgents.find((x) => x.id === slug);
