@@ -3,6 +3,7 @@ import { Button, Flex, FlexProps, Textarea } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
 import { ArrowUp } from "../icons/arrowUp";
+import { ChangeEvent, useState } from "react";
 
 interface Props extends FlexProps {
   inputRef: React.RefObject<HTMLTextAreaElement>;
@@ -16,6 +17,7 @@ export const AgentInput = ({
   disabled,
   ...rest
 }: Props) => {
+  const [inputValue, setInputValue] = useState("");
   const onInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -49,6 +51,9 @@ export const AgentInput = ({
           resize="none"
           p={1}
           ref={inputRef}
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+            setInputValue(e.target.value)
+          }
           // autoFocus
         ></Textarea>
 
@@ -59,7 +64,7 @@ export const AgentInput = ({
           p={0}
           border="none"
           onClick={onButtonClick}
-          disabled={inputRef.current?.value.length === 0 || disabled}
+          disabled={inputValue.length === 0 || disabled}
         >
           <ArrowUp h="full" w="full" />
         </Button>

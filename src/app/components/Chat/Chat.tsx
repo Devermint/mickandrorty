@@ -86,7 +86,6 @@ const Chat = ({ agent, messages, setMessages }: ChatProps) => {
           ...prev,
           { role: "assistant", content: markdown ?? notice, type: "text" },
         ]);
-        setChatState(ChatState.IDLE);
       } else {
         const response = await fetch("/api/chat", {
           method: "POST",
@@ -160,15 +159,13 @@ const Chat = ({ agent, messages, setMessages }: ChatProps) => {
                 },
               ]);
               setProgress(null);
-              setChatState(ChatState.IDLE);
+
               es.close();
             }
           };
 
           es.onerror = (e) => {
             console.error("SSE error", e);
-
-            setChatState(ChatState.IDLE);
             es.close();
           };
 
@@ -189,16 +186,14 @@ const Chat = ({ agent, messages, setMessages }: ChatProps) => {
             ...prev,
             { role: "assistant", content: message, type: "text" },
           ]);
-          setChatState(ChatState.IDLE);
         }
       }
       el.value = "";
       // el.focus();
-      setChatState(ChatState.IDLE);
     } catch (error) {
       el.value = "";
       // el.focus();
-      setChatState(ChatState.IDLE);
+
       if (error instanceof Error) {
         setMessages((prev) => [
           ...prev,
@@ -209,6 +204,8 @@ const Chat = ({ agent, messages, setMessages }: ChatProps) => {
           },
         ]);
       }
+    } finally {
+      setChatState(ChatState.IDLE);
     }
   }, [chatState, messages]);
 
