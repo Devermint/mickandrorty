@@ -11,6 +11,11 @@ const nextConfig = {
         destination: '/agents',
         permanent: true,
       },
+      {
+        source: '/home',
+        destination: '/agents',
+        permanent: true,
+      },
     ];
   },
   images: {

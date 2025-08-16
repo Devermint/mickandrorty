@@ -3,21 +3,19 @@
 import { useEffect, useState } from "react";
 
 export function useMobileBreak(): boolean {
-    const [shouldBreak, setShouldBreak] = useState(false);
+  const [shouldBreak, setShouldBreak] = useState(false);
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            setShouldBreak(window.innerWidth <= 768);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const update = () => setShouldBreak(window.innerWidth <= 768);
+      update();
 
-            function handleResize() {
-                setShouldBreak(window.innerWidth <= 768);
-            }
+      window.addEventListener("resize", update);
+      return () => window.removeEventListener("resize", update);
+    }
+  }, []);
 
-            window.window.addEventListener('resize', handleResize);
-        }
-    }, []);
-
-    return shouldBreak;
+  return shouldBreak;
 }
 
 // TODO: React to resize

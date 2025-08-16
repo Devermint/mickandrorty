@@ -1,44 +1,54 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AvatarIcon, Flex, Text } from "@chakra-ui/react";
-import {
-  ChatEntryProps,
-  DefaultChatEntry,
-  ChatEntry,
-  DemoVideoEntry,
-  DefaultTransactionEntry,
-} from "./ChatEntry";
-import { AgentInput } from "../agent/AgentInput";
-import { colorTokens } from "../theme";
+import { Flex, Icon, Text } from "@chakra-ui/react";
+import { ChatEntryProps, DefaultChatEntry, ChatEntry } from "./ChatEntry";
+import { AgentInput } from "../Agents/AgentInput";
+import { colorTokens } from "../theme/theme";
 import { useSearchParams, useRouter } from "next/navigation";
 // import { useAptosWallet } from "@/app/context/AptosWalletContext";
+import { RxAvatar } from "react-icons/rx";
+import { ChatHelperButton } from "./ChatHelperButton";
+import { Agent, AgentType } from "@/app/types/agent";
 
 enum ChatState {
   IDLE,
   PROCESSING,
   GENERATING_VIDEO,
 }
+type ChatProps = {
+  agent: Agent;
+  messages: ChatEntryProps[];
+  setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
+};
 
-const Chat = () => {
+const Chat = ({ agent, messages, setMessages }: ChatProps) => {
   // const account = useAptosWallet();
 
   const inputMessage = useRef<HTMLTextAreaElement>(null);
-  const bottomScroll = useRef<HTMLDivElement>(null);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
   const searchParams = useSearchParams();
   const msg = searchParams.get("message") ?? "";
 
   const [chatState, setChatState] = useState(ChatState.IDLE);
-  const [messages, setMessages] = useState<ChatEntryProps[]>([]);
+
   const [progress, setProgress] = useState<string | null>(null);
 
   const didInitialize = useRef(false);
 
+  const count = messages?.length ?? 0;
+
   useEffect(() => {
-    bottomScroll.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const id = requestAnimationFrame(() => {
+      const el = containerRef.current;
+      if (!el) return;
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [count]);
 
   const onMessageSend = useCallback(async () => {
     const el = inputMessage.current;
@@ -47,103 +57,157 @@ const Chat = () => {
     const text = el.value.trim();
     if (!text) return;
 
-    setMessages((prev) => [
-      ...prev,
-      { sender: "You", message: text, isMyMessage: true },
-    ]);
-
-    el.value = "";
-    el.blur();
-
-    // If the message starts with "generate video", do something (e.g., log or handle differently)
-    if (text.toLowerCase().startsWith("generate video")) {
-      setChatState(ChatState.GENERATING_VIDEO);
-
-      const response = await fetch("/api/generate-video", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt: text }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to generate video");
-      }
-
-      if (!response.body) {
-        throw new Error("No response body for streaming");
-      }
-
-      const { jobId } = await response.json();
-
-      const es = new EventSource(`/api/generate-video?id=${jobId}`);
-
-      es.onmessage = (e) => {
-        const data = JSON.parse(e.data);
-
-        console.log(data);
-
-        if (data.status === "IN_QUEUE") {
-          setMessages((prev) => [
-            ...prev,
-            {
-              sender: "Agent",
-              message: "Video is in queue...",
-              isMyMessage: false,
-            },
-          ]);
-        }
-
-        if (data.status === "IN_PROGRESS") {
-          setProgress(data.progress);
-        }
-
-        if (data.status === "COMPLETED") {
-          setMessages((prev) => [
-            ...prev,
-            {
-              sender: "Agent",
-              videoUrl: data.videoUrl,
-              isMyMessage: false,
-            },
-          ]);
-          setProgress(null);
-          es.close();
-        }
-      };
-
-      es.onerror = (e) => {
-        console.error("SSE error", e);
-        es.close();
-      };
-
+    try {
       setMessages((prev) => [
         ...prev,
-        {
-          sender: "Agent",
-          message:
-            "Video generation is in progress... (this may take ~5 minutes)",
-          isMyMessage: false,
-        },
+        { role: "user", content: text, type: "text" },
       ]);
 
-      el.value = "";
-      el.focus();
-    } else {
       setChatState(ChatState.PROCESSING);
-
-      // Regular message handling
-      setMessages((prev) => [
-        ...prev,
-        { sender: "You", message: text, isMyMessage: true },
-        { sender: "Agent", message: "Hello", isMyMessage: false },
-      ]);
-
-      setChatState(ChatState.IDLE);
       el.value = "";
-      el.focus();
+      el.blur();
+
+      if (agent.type === AgentType.AgentCreator) {
+        const response = await fetch("/api/chat/create-agent", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages,
+              { role: "user", content: text, type: "text" },
+            ],
+          }),
+        });
+        const { markdown, notice } = await response.json();
+
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: markdown ?? notice, type: "text" },
+        ]);
+      } else {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages,
+              { role: "user", content: text, type: "text" },
+            ],
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to chat");
+        }
+
+        if (!response.body) {
+          throw new Error("No response body from chat");
+        }
+
+        const { message, action } = await response.json();
+
+        if (action === "GENERATE_VIDEO") {
+          setChatState(ChatState.GENERATING_VIDEO);
+          const response = await fetch("/api/generate-video", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ prompt: message }),
+          });
+          if (!response.ok) {
+            throw new Error("Failed to generate video");
+          }
+
+          if (!response.body) {
+            throw new Error("No response body for streaming");
+          }
+
+          const { jobId } = await response.json();
+
+          const es = new EventSource(`/api/generate-video?id=${jobId}`);
+
+          es.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+
+            if (data.status === "IN_QUEUE") {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: "assistant",
+                  content: "Video is in queue...",
+                  type: "text",
+                },
+              ]);
+            }
+
+            if (data.status === "IN_PROGRESS") {
+              setProgress(data.progress);
+            }
+
+            if (data.status === "COMPLETED") {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: "assistant",
+                  content: data.videoUrl,
+                  type: "video",
+                },
+              ]);
+              setProgress(null);
+
+              es.close();
+            }
+          };
+
+          es.onerror = (e) => {
+            console.error("SSE error", e);
+            es.close();
+          };
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content:
+                "Video generation is in progress... (this may take ~5 minutes)",
+              type: "text",
+            },
+          ]);
+
+          el.value = "";
+          // el.focus();
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: message, type: "text" },
+          ]);
+        }
+      }
+      el.value = "";
+      // el.focus();
+    } catch (error) {
+      el.value = "";
+      // el.focus();
+
+      if (error instanceof Error) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: error.message,
+            type: "error",
+          },
+        ]);
+      }
+    } finally {
+      setChatState(ChatState.IDLE);
     }
-  }, [chatState]);
+  }, [chatState, messages]);
 
   useEffect(() => {
     const el = inputMessage.current;
@@ -151,11 +215,10 @@ const Chat = () => {
       didInitialize.current = true;
       el.value = msg;
       onMessageSend();
-      router.replace("/chat");
+
+      router.replace(window.location.pathname);
     }
   }, [msg, onMessageSend, router]);
-
-  //Čia transactiono funkcija iš dappso
 
   // const handleSendTransaction = async () => {
   //   if (!account || !account.wallet) {
@@ -186,17 +249,6 @@ const Chat = () => {
   //     );
   //     //alert(`Transaction submitted! Hash: ${pendingTxn.hash}`);
   //     console.log("Pending transaction:", pendingTxn);
-  //     // Add the transaction hash to the chat
-  //     await addDoc(messagesRef, {
-  //       text: `Transaction successful! Hash: ${pendingTxn?.hash}`,
-  //       senderType: "user",
-  //       createdAt: serverTimestamp(),
-  //       userId: account.isConnected
-  //         ? account?.account?.address?.toString()
-  //         : sessionId,
-  //     });
-
-  //     // Send the transaction message to the server and handle the response
 
   //     const apiUrl = `https://sandbox.sui-cluster.xyz/aptos.sandbox/message`;
 
@@ -215,18 +267,8 @@ const Chat = () => {
   //     if (!response.ok) {
   //       throw new Error("Failed to send transaction message to the server.");
   //     }
-
   //     const serverResponse = await response.json();
   //     console.log("Server response:", serverResponse);
-
-  //     await addDoc(messagesRef, {
-  //       text: serverResponse[0].text,
-  //       senderType: "agent",
-  //       createdAt: serverTimestamp(),
-  //       userId: account.isConnected
-  //         ? account?.account?.address?.toString()
-  //         : sessionId,
-  //     });
   //   } catch (error: unknown) {
   //     if (
   //       error instanceof Error &&
@@ -246,20 +288,37 @@ const Chat = () => {
   //   }
   // };
 
+  const handleHelperButtonClick = (chatMessage: string) => {
+    if (inputMessage.current === null) return;
+
+    inputMessage.current.value = chatMessage;
+    onMessageSend();
+  };
+
   return (
     <Flex
       bg={colorTokens.blackCustom.a1}
-      borderRadius={20}
+      borderRadius={{ base: 0, md: 20 }}
       maxW={800}
-      w={800}
+      w={{ base: "100%", lg: 800 }}
       flexDirection="column"
       justify="space-between"
+      overflow="hidden"
+      maxH="100%"
       h="100%"
     >
-      <Flex flexDir="column" maxH="85%" h="85%">
-        <Flex h={50}>
-          <AvatarIcon />
-          <Text p={4} fontSize="lg">
+      <Flex flexDir="column" h="100%" maxH="100%" overflowY="hidden">
+        <Flex
+          bg={{ base: colorTokens.blackCustom.a2, md: "unset" }}
+          align="center"
+          px={3}
+          py={1}
+          display={{ base: "none", md: "flex" }}
+        >
+          <Icon size="lg">
+            <RxAvatar color="#C7CAC8" />
+          </Icon>
+          <Text p={{ base: 1, md: 4 }} fontSize="lg">
             Chat
           </Text>
         </Flex>
@@ -267,41 +326,81 @@ const Chat = () => {
         <Flex
           direction="column"
           overflowY="auto"
-          p={4}
+          flex={1}
+          px={4}
+          pt={4}
+          pb={10}
           mr="0.5rem"
+          ref={containerRef}
+          overscrollBehaviorY="contain"
+          minH={0}
           css={{
             "&::-webkit-scrollbar": { width: "4px" },
             "&::-webkit-scrollbar-track": { width: "6px" },
             "&::-webkit-scrollbar-thumb": { borderRadius: "24px" },
           }}
         >
-          {messages.length === 0 ? (
+          {count === 0 ? (
             <>
               <DefaultChatEntry />
-              <DemoVideoEntry />
-              <DefaultTransactionEntry />
             </>
           ) : (
             <>
-              {messages.map((m, i) => <ChatEntry key={i} {...m} />)}
-              {progress && (
-                <ChatEntry sender="Agent" message={progress} isMyMessage={false} />
+              {messages.map((m, i) => (
+                <ChatEntry key={i} {...m} />
+              ))}
+              {chatState === ChatState.GENERATING_VIDEO && progress && (
+                <ChatEntry
+                  type="video-loader"
+                  role="assistant"
+                  content={progress}
+                />
               )}
             </>
           )}
-          <div ref={bottomScroll} />
         </Flex>
-      </Flex>
 
-      <AgentInput
-        maxH="15%"
-        minH="15%"
-        m={3}
-        w="auto"
-        p={0}
-        inputRef={inputMessage}
-        onButtonClick={onMessageSend}
-      />
+        <Flex
+          w="100%"
+          gap={2}
+          flexWrap="wrap-reverse"
+          mx="auto"
+          align="flex-end"
+          justify="center"
+          flexShrink={0}
+        >
+          <ChatHelperButton
+            label="Video generator"
+            onButtonClick={handleHelperButtonClick}
+            chatEntry="Can you generate a video for me?"
+          />
+          <ChatHelperButton
+            label="Obtaining APTOS"
+            onButtonClick={handleHelperButtonClick}
+            chatEntry="How do I obtain APTOS?"
+          />
+          <ChatHelperButton
+            label="Agent creation"
+            onButtonClick={handleHelperButtonClick}
+            chatEntry="How do I create an agent?"
+          />
+          <ChatHelperButton
+            label="Token creation"
+            onButtonClick={handleHelperButtonClick}
+            chatEntry="How is my token created?"
+          />
+        </Flex>
+        <AgentInput
+          h={{ base: "17%", md: "17%" }}
+          m={3}
+          w="auto"
+          p={0}
+          inputRef={inputMessage}
+          disabled={chatState !== ChatState.IDLE}
+          onButtonClick={onMessageSend}
+          flexShrink={0}
+        />
+      </Flex>
     </Flex>
   );
 };

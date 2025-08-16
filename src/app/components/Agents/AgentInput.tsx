@@ -1,14 +1,23 @@
-import { BoxProps, Button, Flex, Textarea } from "@chakra-ui/react";
-import { colorTokens } from "../theme";
+"use client";
+import { Button, Flex, FlexProps, Textarea } from "@chakra-ui/react";
+import { colorTokens } from "../theme/theme";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
 import { ArrowUp } from "../icons/arrowUp";
+import { ChangeEvent, useState } from "react";
 
-interface Props extends BoxProps {
+interface Props extends FlexProps {
   inputRef: React.RefObject<HTMLTextAreaElement>;
   onButtonClick: () => void;
+  disabled?: boolean;
 }
 
-export const AgentInput = ({ inputRef, onButtonClick, ...rest }: Props) => {
+export const AgentInput = ({
+  inputRef,
+  onButtonClick,
+  disabled,
+  ...rest
+}: Props) => {
+  const [inputValue, setInputValue] = useState("");
   const onInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -22,12 +31,11 @@ export const AgentInput = ({ inputRef, onButtonClick, ...rest }: Props) => {
       borderColor="rgba(42, 189, 105, 0.6)"
       borderWidth={1}
       borderRadius={13}
-      w="100%"
       bgColor={colorTokens.blackCustom.a1}
       onKeyDown={onInputKeyDown}
       {...rest}
     >
-      <Flex h="100%" p={3} align="flex-end">
+      <Flex h="100%" p={{ base: 2, md: 3 }} align="flex-end" w="100%">
         <Textarea
           h="100%"
           fontFamily="Jetbrains mono"
@@ -43,7 +51,10 @@ export const AgentInput = ({ inputRef, onButtonClick, ...rest }: Props) => {
           resize="none"
           p={1}
           ref={inputRef}
-          autoFocus
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+            setInputValue(e.target.value)
+          }
+          // autoFocus
         ></Textarea>
 
         <Button
@@ -53,6 +64,7 @@ export const AgentInput = ({ inputRef, onButtonClick, ...rest }: Props) => {
           p={0}
           border="none"
           onClick={onButtonClick}
+          disabled={inputValue.length === 0 || disabled}
         >
           <ArrowUp h="full" w="full" />
         </Button>

@@ -1,48 +1,62 @@
 "use client";
 
 import React from "react";
-import { Box, Flex, Text, Button, DownloadTrigger } from "@chakra-ui/react";
-import { colorTokens } from "../theme";
-import { ArrowUp } from "../Icons/arrowUp";
+import {
+  Box,
+  Flex,
+  Text,
+  Button,
+  DownloadTrigger,
+  Spinner,
+} from "@chakra-ui/react";
+import { colorTokens } from "../theme/theme";
+import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
+import { MarkdownView } from "../MarkdownView/MarkdownView";
 
 export type ChatEntryProps = {
-  sender: string;
-  message?: string;
-  videoUrl?: string;
-  isMyMessage: boolean;
-  action?: string;
+  role: "user" | "assistant";
+  content: string;
+  type?: "text" | "video" | "video-loader" | "loader" | "error";
 };
 
-export const ChatEntry = ({
-  sender,
-  action,
-  message,
-  videoUrl,
-  isMyMessage,
-}: ChatEntryProps) => {
+export const ChatEntry = ({ role, content, type }: ChatEntryProps) => {
+  const isMyMessage = role === "user";
   const align = isMyMessage ? "flex-end" : "flex-start";
   const bg = isMyMessage ? colorTokens.blackCustom.a3 : "transparent";
   const color = isMyMessage
     ? colorTokens.gray.platinum
     : colorTokens.gray.timberwolf;
-
-  const proxyUrl = videoUrl
-    ? `/api/video?url=${encodeURIComponent(videoUrl)}`
-    : undefined;
+  const name = role === "user" ? "You" : "Agent";
 
   return (
     <Flex direction="column" alignItems={align} mb="10px">
-      {sender && !isMyMessage && (
+      {role && !isMyMessage && (
         <Text fontSize="12px" mb="2px">
-          {sender}
+          {name}
         </Text>
       )}
 
-      <Box px={3} py={1} bgColor={bg} borderRadius={28} maxW="80%">
-        {videoUrl ? (
+      <Box
+        px={3}
+        py={1}
+        bgColor={bg}
+        borderRadius={{ base: 16, md: 28 }}
+        maxW="80%"
+      >
+        {type === "text" && (
+          <MarkdownView color={color} lineHeight={1.5} fontSize={14}>
+            {content}
+          </MarkdownView>
+        )}
+        {type === "error" && (
+          <Text lineHeight={1.5} fontSize={14} color="red">
+            {content}
+          </Text>
+        )}
+        {type === "video" && (
           <>
             <video
-              src={videoUrl}
+              src={content}
               controls
               aria-label="Generated video"
               style={{
@@ -50,49 +64,29 @@ export const ChatEntry = ({
                 borderRadius: "0.375rem",
               }}
             />
-
-            {proxyUrl && (
-              <DownloadTrigger
-                data={async () => {
-                  const blob = await fetch(proxyUrl).then((r) => r.blob());
-                  return blob;
-                }}
-                fileName={videoUrl.split("/").pop() || "video.mp4"}
-                mimeType="video/mp4"
-                asChild
-              >
-                <Button size="sm" mt={2} colorScheme="teal">
-                  Download Video
-                </Button>
-              </DownloadTrigger>
-            )}
+            <DownloadTrigger
+              data={async () => {
+                const blob = await fetch(content).then((r) => r.blob());
+                return blob;
+              }}
+              fileName={content.split("/").pop() || "video.mp4"}
+              mimeType="video/mp4"
+              asChild
+            >
+              <Button size="sm" mt={2} colorScheme="teal">
+                Download Video
+              </Button>
+            </DownloadTrigger>
           </>
-        ) : (
-          <Text lineHeight={1.5} fontSize={14} color={color}>
-            {action === "WAIT_FOR_TOKEN" ? (
-              <>
-                {message}
-                <Button
-                  mt={2}
-                  onClick={() => {}}
-                  borderWidth={1}
-                  borderColor={colorTokens.blackCustom.a3}
-                  bg="transparent"
-                  fontSize={12}
-                  color={colorTokens.green.erin}
-                  p="5px"
-                  pr={3}
-                  h="auto"
-                  borderRadius={25}
-                >
-                  <ArrowUp h={25} w={25} transform="rotate(90deg)" />
-                  Send Transaction
-                </Button>
-              </>
-            ) : (
-              message
-            )}
-          </Text>
+        )}
+        {type === "video-loader" && <AgentVideoLoader progress={content} />}
+        {type === "loader" && (
+          <Box mt={{ base: 1, md: 2 }}>
+            <Spinner
+              color={colorTokens.gray.timberwolf}
+              size={{ base: "md", md: "lg" }}
+            />
+          </Box>
         )}
       </Box>
     </Flex>
@@ -101,25 +95,30 @@ export const ChatEntry = ({
 
 export const DemoVideoEntry = () => (
   <ChatEntry
-    sender="Agent"
-    videoUrl="https://www.w3schools.com/html/mov_bbb.mp4"
-    isMyMessage={false}
+    role="assistant"
+    content="https://www.w3schools.com/html/mov_bbb.mp4"
+    type="video"
   />
 );
 
 export const DefaultChatEntry = () => (
   <ChatEntry
-    sender="Info"
-    message="Here you will see your conversation with the agent... Go ahead and ask it something."
-    isMyMessage={false}
+    role="assistant"
+    content="Here you will see your conversation with the agent... Go ahead and ask it something."
+    type="text"
   />
 );
 
-export const DefaultTransactionEntry = () => (
-  <ChatEntry
-    sender="Agent"
-    message="I'm happy to generate something for you. Please send me APT token first."
-    isMyMessage={false}
-    action="WAIT_FOR_TOKEN"
-  />
-);
+// export const DefaultTransactionEntry = () => (
+//   <ChatEntry
+//     role="assistant"
+//     content="I'm happy to generate something for you. Please send me APT token first."
+//     action="WAIT_FOR_TOKEN"
+//   />
+// );
+
+// const json = {
+//   status: "IN_PROGRESS",
+//   requestId: "1b176226-3e04-4350-9c98-cba150285288",
+//   progress: "Progress: [##.................................] 20/35",
+// };

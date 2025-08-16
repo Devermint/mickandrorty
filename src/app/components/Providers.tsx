@@ -2,10 +2,8 @@
 
 import { ChakraProvider, Box, Spinner } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { system } from "./theme";
-import NavBar from "./NavBar/NavBar";
-import { Suspense, useEffect } from "react";
-import Footer from "./Footer/Footer";
+import { system } from "./theme/theme";
+import { Suspense } from "react";
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { AptosWalletProvider } from "../context/AptosWalletContext";
 
@@ -37,25 +35,13 @@ function LoadingSpinner() {
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      window.location.protocol === "http:" &&
-      process.env.NODE_ENV === "production"
-    ) {
-      window.location.href = window.location.href.replace("http:", "https:");
-    }
-  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={system}>
         <AptosWalletAdapterProvider>
           <AptosWalletProvider sessionDuration={8 * 60 * 60 * 1000}>
-            <Suspense fallback={<LoadingSpinner />}>
-              <NavBar />
-            </Suspense>
+            <Suspense fallback={<LoadingSpinner />}></Suspense>
             <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-            <Footer />
           </AptosWalletProvider>
         </AptosWalletAdapterProvider>
       </ChakraProvider>

@@ -5,15 +5,17 @@ import {
   defineRecipe,
 } from "@chakra-ui/react";
 import deepmerge from "deepmerge";
+import { sora } from "./fonts";
 
 const buttonRecipe = defineRecipe({
   base: {
+    fontFamily: sora.style.fontFamily,
     background: "#1A1D1F",
     borderWidth: "1px",
     borderColor: "#282A28",
     borderRadius: "14px",
     color: "#B1B3B9",
-    fontWeight: 700,
+    fontWeight: 400,
     fontSize: "16px",
     lineHeight: "24px",
   },
@@ -28,6 +30,7 @@ const buttonRecipe = defineRecipe({
 
 const textRecipe = defineRecipe({
   base: {
+    fontFamily: sora.style.fontFamily,
     color: "#B1B3B9",
   },
 });
@@ -80,7 +83,15 @@ const customConfig = defineConfig({
           timberwolf: { value: "#C7CAC8" },
           platinum: { value: "#6A6B6A" },
         },
+        blue: {
+          dark: { value: "#393C46" },
+        },
       },
+      // ...({
+      //   typography: {
+      //     textStyles,
+      //   },
+      // } as any),
     },
   },
 });
@@ -100,6 +111,10 @@ export const colorTokens = {
   gray: {
     timberwolf: "gray.timberwolf",
     platinum: "gray.platinum",
+    dark: "gray.dark",
+  },
+  blue: {
+    dark: "blue.dark",
   },
 } as const;
 
