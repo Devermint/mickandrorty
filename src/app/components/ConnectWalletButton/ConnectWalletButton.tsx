@@ -7,11 +7,11 @@ import { useCallback } from "react";
 import dynamic from "next/dynamic";
 
 const WalletMenu = dynamic(() => import("../../hooks/WalletMenu"), {
-  loading: () => (
-    <Button mr="2rem" background="#1D3114">
-      Loading...
-    </Button>
-  ),
+  // loading: () => (
+  //   <Button mr="2rem" background="#1D3114">
+  //     Loading...
+  //   </Button>
+  // ),
   ssr: false,
 });
 

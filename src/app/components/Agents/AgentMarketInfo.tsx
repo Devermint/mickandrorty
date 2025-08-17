@@ -1,6 +1,7 @@
 import { SimpleGrid, SimpleGridProps } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import { AgentMarketCard } from "./AgentMarketCard";
+import { AptosSwapDemo } from "./AgentMarketInfoSwapDemo";
 
 interface Props extends SimpleGridProps {
   priceUsd: string;
@@ -29,6 +30,7 @@ export const AgentMarketInfo = ({
       <AgentMarketCard title={"PRICE"} value={price} />
       <AgentMarketCard title={"LIQUIDITY"} value={liquidity} />
       <AgentMarketCard title={"MKT CAP"} value={mktCap} />
+      <AptosSwapDemo></AptosSwapDemo>
     </SimpleGrid>
   );
 };
