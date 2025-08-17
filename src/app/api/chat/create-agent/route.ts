@@ -83,8 +83,8 @@ export async function POST(req: NextRequest) {
 
   if (msg.tool_calls?.length) {
     const call = msg.tool_calls[0];
-    if (call.function.name === "submit_agent") {
-      let args: unknown;
+    if (call.type === "function" && call.function.name === "submit_agent") {
+      let args;
       try {
         args = JSON.parse(call.function.arguments || "{}");
       } catch {
