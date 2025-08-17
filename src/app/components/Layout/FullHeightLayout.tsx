@@ -15,8 +15,10 @@ export default function FullHeightLayout({ children }: LayoutProps) {
       flexDirection="column"
       position="relative"
       overflow="hidden"
+      css={{ minHeight: ["-webkit-fill-available", "100dvh"] }}
     >
       <NavBar />
+
       {children}
       <Footer />
     </Flex>

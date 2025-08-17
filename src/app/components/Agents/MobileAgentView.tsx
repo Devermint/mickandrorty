@@ -7,10 +7,11 @@ import { InfoIcon } from "../icons/info";
 import { ChartIcon } from "../icons/chart";
 import { ChatIcon } from "../icons/chat";
 import { colorTokens } from "../theme/theme";
-import { MobileAgentInfoView } from "./MobileAgentInfoView";
+import { MobileAgentInfoView } from "./AgentInfoView";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ChatEntryProps } from "../Chat/ChatEntry";
+import { Chart } from "../Chart/Chart";
 
 export type TabKey = "info" | "chart" | "chat";
 
@@ -20,7 +21,7 @@ interface Props {
 
 export const MobileAgentView = ({ agent }: Props) => {
   const searchParams = useSearchParams();
-  const defaultTab = searchParams.get("defaultTab") ?? "";
+  const defaultTab = searchParams.get("defaultTab") ?? null;
 
   const [messages, setMessages] = useState<ChatEntryProps[]>([]);
 
@@ -40,7 +41,7 @@ export const MobileAgentView = ({ agent }: Props) => {
           </Tabs.Content>
 
           <Tabs.Content value="chart" p={0}>
-            <ChartPane agent={agent} />
+            <Chart />
           </Tabs.Content>
 
           <Tabs.Content value="chat" p={0}>
@@ -98,20 +99,5 @@ function TabTrigger({
       <Icon as={icon} boxSize={4} />
       <Box fontSize="xs">{label}</Box>
     </Tabs.Trigger>
-  );
-}
-
-function ChartPane({ agent }: { agent: Agent }) {
-  console.log(agent);
-  return (
-    <Box
-      overflowX="hidden"
-      bgImage="url(/img/chart.png)"
-      minH="100%"
-      minW="100%"
-      bgSize="cover"
-      bgPos="center"
-      bgRepeat="no-repeat"
-    ></Box>
   );
 }
