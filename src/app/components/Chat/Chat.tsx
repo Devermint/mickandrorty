@@ -310,16 +310,19 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
     >
       <Flex flexDir="column" h="100%" maxH="100%" overflowY="hidden">
         <Flex
-          bg={{ base: colorTokens.blackCustom.a2, md: "unset" }}
+          bg={{
+            base: colorTokens.blackCustom.a1,
+            md: colorTokens.blackCustom.a3,
+          }}
           align="center"
           px={3}
-          py={1}
+          py={{ base: 1, md: 2 }}
           display={{ base: "none", md: "flex" }}
         >
-          <Icon size="lg">
-            <StarsIcon color="#C7CAC8" />
+          <Icon size="md">
+            <StarsIcon />
           </Icon>
-          <Text p={{ base: 1, md: 4 }} fontSize="lg">
+          <Text pt={1} px={{ base: 1, md: 2 }} fontSize="lg">
             Chat
           </Text>
         </Flex>

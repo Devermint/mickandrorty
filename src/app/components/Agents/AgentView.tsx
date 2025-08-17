@@ -19,7 +19,7 @@ export const AgentView = ({ agent }: Props) => {
   const [messages, setMessages] = useState<ChatEntryProps[]>([]);
 
   return (
-    <Grid templateColumns="repeat(4, 1fr)" w="100%" gap={4} pb={4}>
+    <Grid templateColumns="repeat(4, 1fr)" w="100%" gap={4} pb={4} px={4}>
       <GridItem colSpan={1}>
         <Chat
           agent={agent}
