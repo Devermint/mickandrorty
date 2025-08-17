@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
+    "@types/node": "^22.17.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/socket.io-client": "^1.4.36",
