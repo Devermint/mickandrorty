@@ -12,7 +12,8 @@ export const AgentMarketCard = ({ title, value, ...rest }: Props) => {
       borderColor={colorTokens.green.dark}
       borderWidth={1}
       textAlign="center"
-      p={3}
+      px={3}
+      py={2}
       {...rest}
     >
       <Text color={colorTokens.gray.platinum}>{title}</Text>

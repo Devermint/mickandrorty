@@ -10,7 +10,7 @@ export default function Footer() {
     <Flex
       display={{ base: "none", md: "flex" }}
       w="100%"
-      mt={{ md: 5, lg: 10 }}
+      mt={{ md: 5, lg: "auto" }}
     >
       <Flex
         wrap={{ base: "nowrap", md: "wrap", lg: "nowrap" }}

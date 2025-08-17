@@ -1,7 +1,15 @@
 "use client";
 import { Agent } from "@/app/types/agent";
 import { colorTokens } from "../theme/theme";
-import { Box, Button, Flex, IconButton, Image, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  IconButton,
+  Image,
+  Spacer,
+  Text,
+} from "@chakra-ui/react";
 import TokenSwapForm from "../Token/TokenSwapForm";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { Telegram } from "../icons/telegram";
@@ -16,7 +24,14 @@ export const MobileAgentInfoView = ({ agent }: { agent: Agent }) => {
     router.push("/agents");
   };
   return (
-    <Box p={4} bg={colorTokens.blackCustom.a1} h="100%" overflow="auto">
+    <Flex
+      flexDir="column"
+      p={{ base: 4, md: 0 }}
+      bg={{ base: colorTokens.blackCustom.a1, md: colorTokens.blackCustom.a2 }}
+      h="100%"
+      overflow="auto"
+      borderRadius={{ base: "none", md: 11 }}
+    >
       <Flex
         direction="column"
         align="flex-start"
@@ -30,6 +45,7 @@ export const MobileAgentInfoView = ({ agent }: { agent: Agent }) => {
           color={colorTokens.gray.timberwolf}
           bg="transparent"
           onClick={handleBackClick}
+          display={{ base: "block", md: "none" }}
         >
           <IoChevronBackOutline />
         </IconButton>
@@ -116,7 +132,8 @@ export const MobileAgentInfoView = ({ agent }: { agent: Agent }) => {
           mt={5}
         />
       </Flex>
+      <Spacer />
       <TokenSwapForm agent={agent} />
-    </Box>
+    </Flex>
   );
 };
