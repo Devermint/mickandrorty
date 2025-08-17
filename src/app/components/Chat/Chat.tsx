@@ -1,28 +1,28 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Flex, Icon, Text } from "@chakra-ui/react";
+import { Flex, FlexProps, Icon, Text } from "@chakra-ui/react";
 import { ChatEntryProps, DefaultChatEntry, ChatEntry } from "./ChatEntry";
 import { AgentInput } from "../Agents/AgentInput";
 import { colorTokens } from "../theme/theme";
 import { useSearchParams, useRouter } from "next/navigation";
 // import { useAptosWallet } from "@/app/context/AptosWalletContext";
-import { RxAvatar } from "react-icons/rx";
 import { ChatHelperButton } from "./ChatHelperButton";
 import { Agent, AgentType } from "@/app/types/agent";
+import { StarsIcon } from "../icons/stars";
 
 enum ChatState {
   IDLE,
   PROCESSING,
   GENERATING_VIDEO,
 }
-type ChatProps = {
+interface ChatProps extends FlexProps {
   agent: Agent;
   messages: ChatEntryProps[];
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
-};
+}
 
-const Chat = ({ agent, messages, setMessages }: ChatProps) => {
+const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
   // const account = useAptosWallet();
 
   const inputMessage = useRef<HTMLTextAreaElement>(null);
@@ -306,6 +306,7 @@ const Chat = ({ agent, messages, setMessages }: ChatProps) => {
       overflow="hidden"
       maxH="100%"
       h="100%"
+      {...rest}
     >
       <Flex flexDir="column" h="100%" maxH="100%" overflowY="hidden">
         <Flex
@@ -316,7 +317,7 @@ const Chat = ({ agent, messages, setMessages }: ChatProps) => {
           display={{ base: "none", md: "flex" }}
         >
           <Icon size="lg">
-            <RxAvatar color="#C7CAC8" />
+            <StarsIcon color="#C7CAC8" />
           </Icon>
           <Text p={{ base: 1, md: 4 }} fontSize="lg">
             Chat

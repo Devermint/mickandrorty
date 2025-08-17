@@ -13,14 +13,14 @@ type Props = {
 
 export const DesktopNavBar = ({ navButtons, handleButtonClick }: Props) => (
   <Flex
-    h="100px"
+    height={20}
     mx="1rem"
     position="relative"
     align="center"
-    pt={3}
+    py={3}
     display={{ base: "none", md: "flex" }}
   >
-    <Flex position="absolute" left={0}>
+    <Flex position="absolute" h="100%" left={0} top={0}>
       <Logo />
     </Flex>
     <Flex align="center" justify="center" w="100%" gap="1.5rem">
