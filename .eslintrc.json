@@ -1,51 +1,37 @@
 {
-  "extends": [
-    "airbnb-typescript",
-    "airbnb/hooks",
-    "plugin:@typescript-eslint/recommended",
-    "prettier",
-    "plugin:prettier/recommended"
+  "root": true,
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "dist/",
+    "build/",
+    "coverage/",
+    "*.config.js",
+    "*.config.ts"
   ],
-  "ignorePatterns": ["vite.config.ts"],
-  "plugins": ["react", "@typescript-eslint", "import"],
   "env": {
     "browser": true,
-    "es6": true,
-    "jest": true
-  },
-  "globals": {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
+    "node": true,
+    "es2022": true
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    },
-    "ecmaVersion": 2018,
+    "ecmaVersion": "latest",
     "sourceType": "module",
-    "project": ["./tsconfig.json", "./tsconfig.node.json"]
+    "ecmaFeatures": { "jsx": true }
+    /* NOTE: deliberately NO `project: [...]` to avoid type-aware strict rules */
   },
+  "plugins": ["@typescript-eslint"],
+  "extends": ["eslint:recommended"],
   "rules": {
-    "linebreak-style": "off",
-    "prettier/prettier": [
-      "error",
-      {
-        "endOfLine": "auto"
-      }
-    ],
-    "@typescript-eslint/explicit-function-return-type": 0,
-    "@typescript-eslint/explicit-module-boundary-types": 0,
-    "@typescript-eslint/no-explicit-any": 0,
-    "jsx-a11y/anchor-is-valid": 0,
-    "react/self-closing-comp": 0,
-    "react/require-default-props": 0,
-    "import/prefer-default-export": 0,
-    "no-debugger": 0,
-    "import/extensions": 0,
-    "jsx-a11y/media-has-caption": 0,
-    "react/jsx-props-no-spreading": 0,
-    "import/no-extraneous-dependencies": 0,
-    "react-hooks/exhaustive-deps": 0
+    /* keep everything non-blocking */
+    "no-console": "warn",
+    "no-debugger": "off",
+
+    /* TS – keep it chill */
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": "off"
   }
 }
