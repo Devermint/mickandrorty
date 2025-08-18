@@ -81,6 +81,7 @@ export class AptosSwapSDK {
     readonly moduleAddress: string;
     readonly interfaceModule: `${string}::${string}`;
     readonly implementsModule: `${string}::${string}`;
+    readonly agentCreatorModule: `${string}::${string}`;
     readonly defaultSlippageBps: number;
     readonly emitter = new Emitter();
 
@@ -98,6 +99,7 @@ export class AptosSwapSDK {
         this.moduleAddress = normalizeAddr(opts.moduleAddress);
         this.interfaceModule = `${this.moduleAddress}::interface`;
         this.implementsModule = `${this.moduleAddress}::implements`;
+        this.agentCreatorModule = `${this.moduleAddress}::agent_creator`;
         this.defaultSlippageBps = opts.defaultSlippageBps ?? 100;
     }
 
@@ -416,6 +418,42 @@ export class AptosSwapSDK {
         };
 
         return { payload, computed: { expectedOut: amountOut, minOut } };
+    }
+    async fetchCreatedAgentMeta(
+        txHash: string,
+    ): Promise<string | null> {
+        const tx = await this.aptos.waitForTransaction({ transactionHash: txHash });
+        if (!("events" in tx)) return null;
+
+        const createdEventType = `${this.agentCreatorModule}::CreatedEvent`;
+
+        const evt = tx.events.find(
+            (e: any) => e.type === createdEventType
+        );
+        if (!evt) return null;
+        console.log({evt});
+        // `meta` is the FA metadata object address in event.data
+        return evt.data.meta as string;
+    }
+
+    async buildCreateAgentTx(
+        name: string,
+        symbol: string,
+        iconUri: string,
+        sender: string,
+    ): Promise<{ payload: InputTransactionData; }> {
+        const payload: InputTransactionData = {
+            ...(sender ? { sender } : {}),
+            data: {
+                function: `${this.agentCreatorModule}::create_agent`,
+                typeArguments: [],
+                functionArguments: [ // Name, symbol, icon uri
+                    name.toString(), symbol.toString(), iconUri.toString()
+                ],
+            },
+        };
+
+        return { payload };
     }
 
     async submitWithWallet(wallet: PetraWallet, payload: InputTransactionData) {
