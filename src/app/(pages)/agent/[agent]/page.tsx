@@ -27,10 +27,12 @@ export default async function Page({
 
   return (
     <FullHeightLayout>
-      <Box as="main" flex="1" overflow="auto" position="relative">
+      <Box as="main" flex="1" overflow="auto" position="relative" minH={0}>
         <Flex
-          w="100%"
-          h="100%"
+          w="full"
+          h="full"
+          maxH="100%"
+          minH={0}
           justify="center"
           display={{ base: "none", md: "flex" }}
         >

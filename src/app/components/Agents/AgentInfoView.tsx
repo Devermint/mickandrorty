@@ -17,7 +17,7 @@ import { X } from "../icons/x";
 import { useRouter } from "next/navigation";
 import { AgentMarketInfo } from "./AgentMarketInfo";
 
-export const MobileAgentInfoView = ({ agent }: { agent: Agent }) => {
+export const AgentInfoView = ({ agent }: { agent: Agent }) => {
   const router = useRouter();
 
   const handleBackClick = () => {

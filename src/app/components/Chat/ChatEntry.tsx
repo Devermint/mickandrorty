@@ -44,7 +44,7 @@ export const ChatEntry = ({ role, content, type }: ChatEntryProps) => {
         maxW="80%"
       >
         {type === "text" && (
-          <MarkdownView color={color} lineHeight={1.5} fontSize={14}>
+          <MarkdownView color={color} lineHeight={1.5} fontSize={14} p={1}>
             {content}
           </MarkdownView>
         )}
