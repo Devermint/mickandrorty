@@ -14,7 +14,8 @@ export type TabKey = "info" | "chart" | "chat";
 interface Props {
   agent: Agent;
 }
-
+//todo will need to have data for OHLC pricing integrated from backend
+// also will need to wire
 export const AgentView = ({ agent }: Props) => {
   const [messages, setMessages] = useState<ChatEntryProps[]>([]);
 
