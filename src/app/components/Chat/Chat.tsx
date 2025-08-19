@@ -227,13 +227,13 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
     }
   }, [msg, onMessageSend, router]);
 
-  function useEvent<T extends (...args: any[]) => any>(fn: T) {
-    const ref = useRef(fn);
-    useEffect(() => {
-      ref.current = fn;
-    }, [fn]);
-    return useCallback((...args: Parameters<T>) => ref.current(...args), []);
-  }
+  // function useEvent<T extends (...args: any[]) => any>(fn: T) {
+  //   const ref = useRef(fn);
+  //   useEffect(() => {
+  //     ref.current = fn;
+  //   }, [fn]);
+  //   return useCallback((...args: Parameters<T>) => ref.current(...args), []);
+  // }
 
   // useEffect(() => {
   //   // Only revoke URLs when component unmounts or when we have new ones
@@ -248,24 +248,56 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
 
   const handleTokenImageUploaded = useCallback(
     async (ref: ClientRef) => {
-      const file = getClientFile(ref.id);
-      if (!file) {
+      try {
+        const file = getClientFile(ref.id);
+        if (!file) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: "Could not read the selected file. Please try again.",
+              type: "error",
+            },
+          ]);
+          return;
+        }
+
+        const okTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+        const maxBytes = 5_000_000; // 5MB
+        if (!okTypes.has(file.type)) throw new Error("Unsupported file type.");
+        if (file.size === 0) throw new Error("Empty file.");
+        if (file.size > maxBytes) throw new Error("File too large.");
+
+        const fd = new FormData();
+        fd.append("file", file, file.name || "upload");
+
+        const res = await fetch("/api/upload-image", {
+          method: "POST",
+          body: fd,
+        });
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          throw new Error(errText || `Upload failed with ${res.status}`);
+        }
+
+        const json = (await res.json()) as { url?: string };
+        if (!json?.url)
+          throw new Error("Upload succeeded but no URL returned.");
+
+        if (inputMessage.current) {
+          inputMessage.current.value = `Here is the tokenImage: ![Image](${json.url})`;
+          await onMessageSend();
+        }
+      } catch (e: any) {
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: "Could not read the selected file. Please try again.",
+            content: e?.message ?? "Upload failed",
             type: "error",
           },
         ]);
-        return;
-      }
-
-      const nextUrl = URL.createObjectURL(file);
-
-      if (inputMessage.current) {
-        inputMessage.current.value = `Here is the tokenImage: ![Image](${nextUrl})`;
-        await onMessageSend();
       }
     },
     [onMessageSend, setMessages]

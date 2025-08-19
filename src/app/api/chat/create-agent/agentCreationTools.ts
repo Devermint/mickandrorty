@@ -18,7 +18,7 @@ export const tools = [
     function: {
       name: "request_token_image",
       description:
-        "Ask the UI to prompt the user to upload the token image. Use when tokenName, tokenTicker, tokenDescription are known but tokenImage is missing. The uploaded image will be returned as a blob URL that can be displayed inline in markdown.",
+        "Ask the UI to prompt the user to upload the token image. Use when tokenName, tokenTicker, tokenDescription are known but tokenImage is missing. The uploaded image will be returned as a URL that can be displayed inline in markdown.",
       parameters: {
         type: "object",
         properties: {
@@ -30,8 +30,8 @@ export const tools = [
             type: "array",
             items: { type: "string" },
             description:
-              "Accepted MIME types and blob URLs (e.g., image/png, image/jpeg, image/webp, blob:).",
-            default: ["image/png", "image/jpeg", "image/webp", "blob:"],
+              "Accepted MIME types (e.g., image/png, image/jpeg, image/webp).",
+            default: ["image/png", "image/jpeg", "image/webp"],
           },
           maxSizeBytes: {
             type: "integer",
@@ -50,10 +50,9 @@ export const tools = [
           },
           returnFormat: {
             type: "string",
-            enum: ["blob", "dataUrl", "both"],
-            description:
-              "How to return the uploaded image - as blob URL, data URL, or both.",
-            default: "blob",
+            enum: ["dataUrl"],
+            description: "How to return the uploaded image - as data URL",
+            default: "dataUrl",
           },
           includeInResponse: {
             type: "boolean",

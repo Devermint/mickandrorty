@@ -35,6 +35,7 @@ export default async function Page({
           minH={0}
           justify="center"
           display={{ base: "none", md: "flex" }}
+          px={4}
         >
           <AgentView agent={agent} />
         </Flex>

@@ -1,7 +1,6 @@
 "use client";
 import { AgentCarousel } from "@/app/components/Agents/AgentCarousel";
 import { testAgents } from "@/app/types/agent";
-
 import { Box, Flex } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { AgentInput } from "@/app/components/Agents/AgentInput";

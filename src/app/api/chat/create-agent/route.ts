@@ -3,7 +3,6 @@ import OpenAI from "openai";
 import { tools } from "./agentCreationTools";
 import { AgentSchema } from "@/app/types/AgentCreationSchema";
 import z from "zod";
-import { FileUploadUtils } from "@/app/lib/utils/FileUploadUtils";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
@@ -163,8 +162,6 @@ const submitAgentToolCall = async (
   let args;
   try {
     args = JSON.parse(call.function.arguments || "{}");
-    console.log("arguments");
-    console.log(args);
   } catch {
     const env: Envelope = {
       kind: "validation_error",
@@ -175,6 +172,10 @@ const submitAgentToolCall = async (
   }
 
   const parsed = AgentSchema.safeParse(args);
+  console.log(
+    "----------------------------IMAGE----------------------------------"
+  );
+  console.log(parsed);
   if (!parsed.success) {
     const env: Envelope = {
       kind: "validation_error",
@@ -184,35 +185,20 @@ const submitAgentToolCall = async (
     return NextResponse.json(env);
   }
 
-  console.log(parsed.data.tokenImage);
-  const response: Response = await fetch(parsed.data.tokenImage as string);
-  const blob: Blob = await response.blob();
-  const file: File = new File([blob], "token-image.png", { type: blob.type });
-
-  const imageForm: FormData = new FormData();
-  imageForm.append("image", file);
-
-  const imageUrl = await FileUploadUtils.upload(file);
-
-  console.log(
-    "----------------------------IMAGE----------------------------------"
-  );
-  console.log(imageUrl);
-
   // Create agent
   const agentForm: FormData = new FormData();
   agentForm.set("tokenName", parsed.data.tokenName);
   agentForm.set("tokenTicker", parsed.data.tokenTicker);
   agentForm.set("tokenDescription", parsed.data.tokenDescription);
-  agentForm.set("imageUrl", imageUrl);
+  agentForm.set("imageUrl", parsed.data.tokenImage);
 
-  const agentRes: Response = await fetch(
-    `${process.env.BACKEND_BASE_URL}/agents`,
-    {
-      method: "POST",
-      body: agentForm,
-    }
-  );
+  // const agentRes: Response = await fetch(
+  //   `${process.env.NEXT_PUBLIC_API_URL}/agents`,
+  //   {
+  //     method: "POST",
+  //     body: agentForm,
+  //   }
+  // );
 
   const resultPayload = { status: "ok", ...parsed.data };
 
