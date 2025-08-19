@@ -29,7 +29,6 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
     if (open) {
       onClose();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   return (

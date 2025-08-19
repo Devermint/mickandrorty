@@ -10,7 +10,6 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import rehypeRaw from "rehype-raw";
 
 interface Props extends BoxProps {
   children: string;
@@ -25,7 +24,6 @@ export const MarkdownView = ({
     <Box {...rest}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
-        rehypePlugins={[rehypeRaw]}
         components={{
           p: (props) => <chakra.p pt={isMyMessage ? 0 : 2} {...props} />,
           ul: (props) => <chakra.ul pt={2} listStyleType="disc" {...props} />,

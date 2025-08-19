@@ -254,7 +254,7 @@ const submitAgentToolCall = async (
   return NextResponse.json(env);
 };
 
-export const uploadImageToolCall = async (
+const uploadImageToolCall = async (
   call: OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall,
   _msg: OpenAI.Chat.Completions.ChatCompletionMessage,
   _messages: any
