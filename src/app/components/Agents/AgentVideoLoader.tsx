@@ -12,17 +12,14 @@ export const AgentVideoLoader = ({ progress }: JsonProgressProps) => {
   const max = match ? parseInt(match[2], 10) : 100;
   const pct = (done / max) * 100;
 
-  console.log("done", done);
-  console.log("pct", pct);
-
   return (
-    <VStack align="stretch" mt={2} w="100%">
+    <VStack align="stretch" flex={1} mt={2} w="100%">
       <Progress.Root
         value={pct}
         min={0}
         max={100}
         size="sm"
-        w={{ base: 100, md: 500 }}
+        w={{ base: 100, md: "100%" }}
         striped
         animated
         style={
@@ -37,7 +34,7 @@ export const AgentVideoLoader = ({ progress }: JsonProgressProps) => {
       </Progress.Root>
 
       <Text fontWeight="bold" color={colorTokens.gray.platinum}>
-        {`Loading… ${pct.toPrecision(2)}%`}
+        {`Generating... ${pct.toPrecision(2)}%`}
       </Text>
       <Text fontSize="xs" color="gray.500"></Text>
     </VStack>

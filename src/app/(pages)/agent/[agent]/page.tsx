@@ -27,7 +27,7 @@ export default async function Page({
 
   return (
     <FullHeightLayout>
-      <Box as="main" flex="1" overflow="auto" position="relative" minH={0}>
+      <Box as="main" flex="1" overflow="hidden" position="relative" minH={0}>
         <Flex
           w="full"
           h="full"

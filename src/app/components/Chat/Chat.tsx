@@ -10,6 +10,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ChatHelperButton } from "./ChatHelperButton";
 import { Agent, AgentType } from "@/app/types/agent";
 import { StarsIcon } from "../icons/stars";
+import { ClientRef, getClientFile } from "@/app/lib/clientImageStore";
 
 enum ChatState {
   IDLE,
@@ -34,11 +35,9 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
   const msg = searchParams.get("message") ?? "";
 
   const [chatState, setChatState] = useState(ChatState.IDLE);
-
   const [progress, setProgress] = useState<string | null>(null);
 
   const didInitialize = useRef(false);
-
   const count = messages?.length ?? 0;
 
   useEffect(() => {
@@ -56,6 +55,8 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
 
     const text = el.value.trim();
     if (!text) return;
+
+    let holdStateForVideo = false;
 
     try {
       setMessages((prev) => [
@@ -80,11 +81,16 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
             ],
           }),
         });
-        const { markdown, notice } = await response.json();
+        const body = await response.json();
+        const { markdown, notice, kind } = body;
 
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: markdown ?? notice, type: "text" },
+          {
+            role: "assistant",
+            content: markdown ?? notice,
+            type: kind === "upload_request" ? "image-upload" : "text",
+          },
         ]);
       } else {
         const response = await fetch("/api/chat", {
@@ -111,6 +117,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
         const { message, action } = await response.json();
 
         if (action === "GENERATE_VIDEO") {
+          holdStateForVideo = true;
           setChatState(ChatState.GENERATING_VIDEO);
           const response = await fetch("/api/generate-video", {
             method: "POST",
@@ -133,6 +140,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
 
           es.onmessage = (e) => {
             const data = JSON.parse(e.data);
+            console.log(data);
 
             if (data.status === "IN_QUEUE") {
               setMessages((prev) => [
@@ -159,7 +167,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
                 },
               ]);
               setProgress(null);
-
+              setChatState(ChatState.IDLE);
               es.close();
             }
           };
@@ -178,9 +186,6 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
               type: "text",
             },
           ]);
-
-          el.value = "";
-          // el.focus();
         } else {
           setMessages((prev) => [
             ...prev,
@@ -205,7 +210,9 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
         ]);
       }
     } finally {
-      setChatState(ChatState.IDLE);
+      if (!holdStateForVideo) {
+        setChatState(ChatState.IDLE);
+      }
     }
   }, [chatState, messages]);
 
@@ -220,6 +227,49 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
     }
   }, [msg, onMessageSend, router]);
 
+  function useEvent<T extends (...args: any[]) => any>(fn: T) {
+    const ref = useRef(fn);
+    useEffect(() => {
+      ref.current = fn;
+    }, [fn]);
+    return useCallback((...args: Parameters<T>) => ref.current(...args), []);
+  }
+
+  // useEffect(() => {
+  //   // Only revoke URLs when component unmounts or when we have new ones
+  //   return () => {
+  //     Object.values(inlineMedia).forEach((url) => {
+  //       if (url.startsWith("blob:")) {
+  //         URL.revokeObjectURL(url);
+  //       }
+  //     });
+  //   };
+  // }, []);
+
+  const handleTokenImageUploaded = useCallback(
+    async (ref: ClientRef) => {
+      const file = getClientFile(ref.id);
+      if (!file) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Could not read the selected file. Please try again.",
+            type: "error",
+          },
+        ]);
+        return;
+      }
+
+      const nextUrl = URL.createObjectURL(file);
+
+      if (inputMessage.current) {
+        inputMessage.current.value = `Here is the tokenImage: ![Image](${nextUrl})`;
+        await onMessageSend();
+      }
+    },
+    [onMessageSend, setMessages]
+  );
   // const handleSendTransaction = async () => {
   //   if (!account || !account.wallet) {
   //     alert("Please connect your Petra wallet first.");
@@ -335,6 +385,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
           ref={containerRef}
           overscrollBehaviorY="contain"
           minH={0}
+          maxH="100%"
           css={{
             "&::-webkit-scrollbar": { width: "4px" },
             "&::-webkit-scrollbar-track": { width: "6px" },
@@ -348,7 +399,15 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
           ) : (
             <>
               {messages.map((m, i) => (
-                <ChatEntry key={i} {...m} />
+                <ChatEntry
+                  key={i}
+                  onTokenImageUploaded={
+                    m.type === "image-upload"
+                      ? handleTokenImageUploaded
+                      : undefined
+                  }
+                  {...m}
+                />
               ))}
               {chatState === ChatState.GENERATING_VIDEO && progress && (
                 <ChatEntry
@@ -392,14 +451,14 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
           />
         </Flex>
         <AgentInput
-          h={{ base: "17%", md: "17%" }}
+          h="17%"
+          flexShrink={0}
           m={3}
           w="auto"
           p={0}
           inputRef={inputMessage}
           disabled={chatState !== ChatState.IDLE}
           onButtonClick={onMessageSend}
-          flexShrink={0}
         />
       </Flex>
     </Flex>

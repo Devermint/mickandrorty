@@ -12,14 +12,28 @@ import {
 import { colorTokens } from "../theme/theme";
 import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
 import { MarkdownView } from "../MarkdownView/MarkdownView";
+import { ImageUpload } from "../ImageUpload/ImageUpload";
+import { ClientRef } from "@/app/lib/clientImageStore";
 
 export type ChatEntryProps = {
   role: "user" | "assistant";
   content: string;
-  type?: "text" | "video" | "video-loader" | "loader" | "error";
+  type?:
+    | "text"
+    | "video"
+    | "video-loader"
+    | "loader"
+    | "error"
+    | "image-upload";
+  onTokenImageUploaded?: (ref: ClientRef) => void | Promise<void>;
 };
 
-export const ChatEntry = ({ role, content, type }: ChatEntryProps) => {
+export const ChatEntry = ({
+  role,
+  content,
+  type,
+  onTokenImageUploaded,
+}: ChatEntryProps) => {
   const isMyMessage = role === "user";
   const align = isMyMessage ? "flex-end" : "flex-start";
   const bg = isMyMessage ? colorTokens.blackCustom.a3 : "transparent";
@@ -42,11 +56,30 @@ export const ChatEntry = ({ role, content, type }: ChatEntryProps) => {
         bgColor={bg}
         borderRadius={{ base: 16, md: 28 }}
         maxW="80%"
+        overflow="hidden"
       >
         {type === "text" && (
-          <MarkdownView color={color} lineHeight={1.5} fontSize={14} p={1}>
+          <MarkdownView
+            color={color}
+            lineHeight={1.5}
+            fontSize={14}
+            p={1}
+            isMyMessage={isMyMessage}
+          >
             {content}
           </MarkdownView>
+        )}
+        {type === "image-upload" && (
+          <>
+            <MarkdownView color={color} lineHeight={1.5} fontSize={14} p={1}>
+              {content}
+            </MarkdownView>
+            <ImageUpload
+              onUploaded={(ref) => {
+                void onTokenImageUploaded?.(ref);
+              }}
+            />
+          </>
         )}
         {type === "error" && (
           <Text lineHeight={1.5} fontSize={14} color="red">
@@ -116,9 +149,3 @@ export const DefaultChatEntry = () => (
 //     action="WAIT_FOR_TOKEN"
 //   />
 // );
-
-// const json = {
-//   status: "IN_PROGRESS",
-//   requestId: "1b176226-3e04-4350-9c98-cba150285288",
-//   progress: "Progress: [##.................................] 20/35",
-// };
