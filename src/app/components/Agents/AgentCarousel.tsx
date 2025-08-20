@@ -12,7 +12,7 @@ import { AgentCard } from "./AgentCard";
 
 type AgentCarouselProps = {
   agents: Agent[];
-  activeId: string | null;
+  activeId: string | null | undefined;
   setActiveId: (id: string | null) => void;
 };
 
@@ -35,10 +35,10 @@ export const AgentCarousel = ({
       return;
     }
 
-    if (!activeId || !agents.some((a) => a.id === activeId)) {
+    if (!activeId || !agents.some((a) => a.fa_id === activeId)) {
       const idx = Math.min(initialIndex, Math.max(0, agents.length - 1));
       setActiveIdx(idx);
-      setActiveId(agents[idx]?.id ?? agents[0]?.id ?? null);
+      setActiveId(agents[idx]?.fa_id ?? agents[0]?.fa_id ?? null);
     }
   }, [agents]);
 
@@ -50,7 +50,7 @@ export const AgentCarousel = ({
     const center = slider.track.details.rel;
     setActiveIdx(center);
 
-    const newId = agents[center]?.id ?? null;
+    const newId = agents[center]?.fa_id ?? null;
     setActiveId(newId);
 
     slider.track.details.slides.forEach((_, idx) => {
@@ -159,7 +159,7 @@ export const AgentCarousel = ({
           {agents.map((agent, i) => {
             return (
               <Box
-                key={agent.id}
+                key={agent.fa_id}
                 className="keen-slider__slide"
                 overflow="visible !important"
                 display="flex"

@@ -1,6 +1,7 @@
-import { Box, BoxProps } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
+import TradingViewWidget from "./trading-view-widget";
 
-export const Chart = ({agent }: any) => {
+export const Chart = ({ agent }: any) => {
   return (
     <Box
       overflowX="hidden"
@@ -10,7 +11,6 @@ export const Chart = ({agent }: any) => {
       bgSize="cover"
       bgPos="center"
       bgRepeat="no-repeat"
-     
     >
       <TradingViewWidget token={agent}></TradingViewWidget>
     </Box>
