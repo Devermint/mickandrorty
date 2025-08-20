@@ -36,7 +36,7 @@ export default function AgentsPage() {
       <Box
         h="100%"
         alignItems="center"
-        maxW={{ base: "100%", md: 760 }}
+        maxW={{ base: "100%", md: 750 }}
         overflow={{ base: "hidden", md: "visible" }}
       >
         <AgentCarousel
