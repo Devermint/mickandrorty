@@ -10,14 +10,16 @@ export default function AgentsPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
 
-  const [activeId, setActiveId] = useState<string | null>(testAgents[1].id);
+  const [activeId, setActiveId] = useState<string | null | undefined>(
+    testAgents[1].fa_id
+  );
 
   const handleSend = () => {
     const text = textareaRef.current?.value.trim();
     if (!text) return;
     router.push(
       `/agent/${
-        testAgents.find((x) => x.id === activeId)?.id
+        testAgents.find((x) => x.fa_id === activeId)?.fa_id
       }?message=${encodeURIComponent(text)}&defaultTab=chat`
     );
   };

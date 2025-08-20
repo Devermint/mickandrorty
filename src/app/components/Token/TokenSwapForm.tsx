@@ -70,7 +70,7 @@ export default function TokenSwapForm({
         mt={4}
       >
         <Text color="white">Receive</Text>
-        <Text color="white">{agent.name}</Text>
+        <Text color="white">{agent.agent_name}</Text>
       </Flex>
 
       <Input
