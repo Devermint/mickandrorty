@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
 
   // Check if we're at the root path and need to redirect to /home
   if (pathname === '/') {
-    const url = new URL('/agents', request.url);
+    const url = new URL('/', request.url);
     return NextResponse.redirect(url);
   }
 
