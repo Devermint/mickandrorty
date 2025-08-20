@@ -45,14 +45,14 @@ export const AgentCard = ({ isActive, agent }: AgentCardProps) => (
       />
 
       <Image
-        src={agent.image}
+        src={agent.agent_icon_url}
         alt="overlay icon"
         position="absolute"
         top="5"
         left="0"
         width="100%"
         height="100%"
-        objectFit="contain"
+        objectFit="cover"
         pointerEvents="none"
         scale={1.2}
       />
@@ -80,7 +80,7 @@ export const AgentCard = ({ isActive, agent }: AgentCardProps) => (
             fontWeight="bold"
             color={colorTokens.gray.timberwolf}
           >
-            {agent.name}
+            {agent.agent_name}
           </Text>
           <Text fontSize="xs" color={colorTokens.gray.platinum}>
             {agent.tag}

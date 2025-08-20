@@ -13,7 +13,8 @@ export const AgentMarketCard = ({ title, value, ...rest }: Props) => {
       borderWidth={1}
       textAlign="center"
       px={3}
-      py={2}
+      py={{ base: 1, xl: 2 }}
+      fontSize={{ base: 16, md: 14, lg: 15, xl: 16 }}
       {...rest}
     >
       <Text color={colorTokens.gray.platinum}>{title}</Text>

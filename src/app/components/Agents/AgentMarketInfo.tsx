@@ -1,63 +1,54 @@
-"use client";
-
-import { SimpleGrid, SimpleGridProps, Box, Spinner } from "@chakra-ui/react";
+import { SimpleGrid, SimpleGridProps, Spinner, Text } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import { AgentMarketCard } from "./AgentMarketCard";
 import { AptosSwapDemo } from "./AgentMarketInfoSwapDemo";
-import { StrictMode } from "react";
+import { Agent } from "@/app/types/agent";
+import { useMarketSummary } from "@/app/hooks/useMarketSummary";
 
 interface Props extends SimpleGridProps {
-  priceUsd: string;
-  price: string;
-  liquidity: string;
-  mktCap: string;
-  /** optional: show spinners near values while refreshing */
-  loading?: boolean;
+  agent: Agent;
 }
 
 export const AgentMarketInfo = ({
-                                  priceUsd,
-                                  price,
-                                  liquidity,
-                                  mktCap,
-                                  loading = false,
-                                  ...rest
-                                }: Props) => {
-  const Tile = ({ title, value }: { title: string; value: string }) => (
-      <Box position="relative">
-        <AgentMarketCard title={title} value={value} />
-        {loading && (
-            <Spinner
-                size="xs"
-                position="absolute"
-                top="6px"
-                right="8px"
-            />
-        )}
-      </Box>
-  );
+  agent,
+  ...rest
+}: Props) => {
+  const faId = agent?.fa_id?.trim();
+
+  const { data, isLoading, isError } = useMarketSummary(faId ?? "");
+
+  if (!faId) {
+    return <Text color="orange.400">Token metadata is missing</Text>;
+  }
+
+  if (isLoading) {
+    return <Spinner size="lg" color={colorTokens.green.dark} />;
+  }
+
+  if (isError || !data) {
+    return <Text color="red.500">Failed to load market data</Text>;
+  }
+
+  const priceUsd = data.price_usd?.toFixed(4);
+  const price = data.price_apt?.toFixed(4);
+  const liquidity = data.liquidity_usd?.toLocaleString();
+  const mktCap = data.market_cap_usd?.toLocaleString();
 
   return (
-      <SimpleGrid
-          borderRadius={8}
-          borderColor={colorTokens.green.dark}
-          width="100%"
-          flex={1}
-          columns={2}
-          gap={3}
-          {...rest}
-      >
-        <Tile title="PRICE USD" value={priceUsd} />
-        <Tile title="PRICE" value={price} />
-        <Tile title="LIQUIDITY" value={liquidity} />
-        <Tile title="MKT CAP" value={mktCap} />
-
-        {/*/!* Keep your demo mount untouched *!/*/}
-        {/*<StrictMode>*/}
-        {/*  <AptosSwapDemo />*/}
-        {/*</StrictMode>*/}
-      </SimpleGrid>
+    <SimpleGrid
+      borderRadius={8}
+      borderColor={colorTokens.green.dark}
+      width="100%"
+      flex={1}
+      columns={2}
+      gap={3}
+      {...rest}
+    >
+      <AgentMarketCard title="PRICE USD" value={`$${priceUsd}`} />
+      <AgentMarketCard title="PRICE" value={`${price} APT`} />
+      <AgentMarketCard title="LIQUIDITY" value={`$${liquidity}`} />
+      <AgentMarketCard title="MKT CAP" value={`$${mktCap}`} />
+      <AptosSwapDemo />
+    </SimpleGrid>
   );
 };
-
-export default AgentMarketInfo;

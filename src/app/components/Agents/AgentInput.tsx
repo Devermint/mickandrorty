@@ -18,13 +18,16 @@ export const AgentInput = ({
   ...rest
 }: Props) => {
   const [inputValue, setInputValue] = useState("");
-  const onInputKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      onButtonClick();
-    }
-  };
 
+  const onInputKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+    const isPlainEnter =
+      e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey;
+
+    if (!isPlainEnter) return;
+
+    e.preventDefault();
+    onButtonClick();
+  };
   return (
     <AnimatedBorderBox
       animationColor="rgba(0, 255, 109, 1)"
@@ -32,10 +35,16 @@ export const AgentInput = ({
       borderWidth={1}
       borderRadius={13}
       bgColor={colorTokens.blackCustom.a1}
-      onKeyDown={onInputKeyDown}
+      onKeyDown={(e) => onInputKeyDown(e)}
       {...rest}
     >
-      <Flex h="100%" p={{ base: 2, md: 3 }} align="flex-end" w="100%">
+      <Flex
+        h="100%"
+        p={{ base: 2, md: 3 }}
+        align="flex-end"
+        w="100%"
+        maxH="100%"
+      >
         <Textarea
           h="100%"
           fontFamily="Jetbrains mono"
@@ -54,8 +63,7 @@ export const AgentInput = ({
           onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
             setInputValue(e.target.value)
           }
-          // autoFocus
-        ></Textarea>
+        />
 
         <Button
           borderRadius={22}

@@ -7,7 +7,7 @@ import { InfoIcon } from "../icons/info";
 import { ChartIcon } from "../icons/chart";
 import { ChatIcon } from "../icons/chat";
 import { colorTokens } from "../theme/theme";
-import { MobileAgentInfoView } from "./AgentInfoView";
+import { AgentInfoView } from "./AgentInfoView";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ChatEntryProps } from "../Chat/ChatEntry";
@@ -37,7 +37,7 @@ export const MobileAgentView = ({ agent }: Props) => {
       <Flex h="100%" maxW="100dvw" w="100%" flexDirection="column">
         <Flex flex="1 1 0%" w="100%" overflow="hidden" maxH="100%">
           <Tabs.Content value="info" p={0}>
-            <MobileAgentInfoView agent={agent} />
+            <AgentInfoView agent={agent} />
           </Tabs.Content>
 
           <Tabs.Content value="chart" p={0}>
