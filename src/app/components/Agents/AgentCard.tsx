@@ -52,7 +52,7 @@ export const AgentCard = ({ isActive, agent }: AgentCardProps) => (
         left="0"
         width="100%"
         height="100%"
-        objectFit="contain"
+        objectFit="cover"
         pointerEvents="none"
         scale={1.2}
       />

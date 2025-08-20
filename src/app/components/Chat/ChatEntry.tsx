@@ -49,10 +49,6 @@ export const ChatEntry = ({
     : colorTokens.gray.timberwolf;
   const name = role === "user" ? "You" : "Agent";
 
-  console.log(content);
-  console.log(type);
-  console.log(data);
-  console.log(onAgentCreate);
   return (
     <Flex direction="column" alignItems={align} mb="10px">
       {role && !isMyMessage && (

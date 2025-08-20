@@ -240,7 +240,8 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
 
           es.onmessage = (e) => {
             const data = JSON.parse(e.data);
-            console.log(data);
+            console.log("Hello");
+            console.log(data.status);
 
             if (data.status === "IN_QUEUE") {
               setMessages((prev) => [
@@ -463,6 +464,9 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
                   role="assistant"
                   content={progress}
                 />
+              )}
+              {chatState === ChatState.PROCESSING && (
+                <ChatEntry type="loader" role="assistant" content={""} />
               )}
             </>
           )}

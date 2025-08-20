@@ -21,6 +21,7 @@ export const AgentCarousel = ({
   activeId,
   setActiveId,
 }: AgentCarouselProps) => {
+  console.log("Inner agents", agents);
   const innerRefs = useRef<HTMLDivElement[]>([]);
 
   const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
@@ -69,12 +70,12 @@ export const AgentCarousel = ({
 
   const handleChangeMobile = useCallback(
     (slider: KeenSliderInstance) => handleChangeBase(slider, true),
-    []
+    [agents]
   );
 
   const handleChangeDesktop = useCallback(
     (slider: KeenSliderInstance) => handleChangeBase(slider, false),
-    []
+    [agents]
   );
 
   const isLooped = false;
@@ -104,6 +105,15 @@ export const AgentCarousel = ({
     slideChanged: handleChangeDesktop,
     created: handleChangeDesktop,
   });
+
+  useEffect(() => {
+    if (instanceRefMobile.current) {
+      instanceRefMobile.current.update();
+    }
+    if (instanceRefDesktop.current) {
+      instanceRefDesktop.current.update();
+    }
+  }, [agents, instanceRefMobile, instanceRefDesktop]);
 
   useEffect(() => {
     const el = activeRef.current;
