@@ -61,120 +61,120 @@ export function AptosSwapDemo() {
 
     (async () => {
       console.log("[DEMO] Wallet connected:", account.address);
-      try {
-        const { payload } = await swapSDK.buildCreateAgentTx(
-          name,
-          symbol,
-          iconUri,
-          account.address.toString()
-        );
-        console.log(payload, wallet);
-        const res = await swapSDK.submitWithWallet(wallet, payload);
-        const agentMeta = await swapSDK.fetchCreatedAgentMeta(res.hash);
-        if (agentMeta) {
-          // replacing constant meta address with recently created one
-          xMeta = agentMeta;
-        }
-
-        console.log("[DEMO] create_agent tx:", res.hash, agentMeta);
-        console.log({ res });
-      } catch (e) {
-        console.warn(
-          "[DEMO] create_agent  failed (agent may already exist for this wallet):",
-          e
-        );
-      }
-
-      // 1) CREATE POOL
-      try {
-        const payload = swapSDK.buildRegisterPoolTx(
-          xMeta,
-          yMeta,
-          account.address.toString()
-        );
-        console.log(payload, wallet);
-        const res = await swapSDK.submitWithWallet(wallet, payload);
-        console.log("[DEMO] create_pool tx:", res.hash);
-      } catch (e) {
-        console.warn(
-          "[DEMO] create_pool skipped or failed (pool may already exist):",
-          e
-        );
-      }
-
-      // 2) ADD LIQUIDITY
-      try {
-        const { payload, computed } = await swapSDK.buildAddLiquidityTx(
-          xMeta,
-          yMeta,
-          xDesired,
-          yDesired,
-          account.address.toString()
-        );
-        console.log("[DEMO] add_liquidity computed:", computed);
-        console.log({ payload, computed });
-        const res = await swapSDK.submitWithWallet(wallet, payload);
-        console.log("[DEMO] add_liquidity tx:", res.hash);
-      } catch (e) {
-        console.error("[DEMO] add_liquidity failed:", e);
-      }
-
-      // 3) RESERVES (after add)
-      try {
-        const { reserves } = await swapSDK.getReserves(xMeta, yMeta, {
-          refresh: true,
-        });
-        console.log("[DEMO] reserves (after add):", reserves);
-      } catch (e) {
-        console.error("[DEMO] reserves fetch failed:", e);
-      }
-
-      // 4) SWAP
-      try {
-        const { payload, computed } = await swapSDK.buildSwapTx(
-          xMeta,
-          yMeta,
-          amountIn,
-          account.address.toString()
-        );
-        console.log({ payload, computed });
-        console.log("[DEMO] swap expectedOut/minOut:", computed);
-        const res = await swapSDK.submitWithWallet(wallet, payload);
-        console.log("[DEMO] swap tx:", res.hash);
-      } catch (e) {
-        console.error("[DEMO] swap failed:", e);
-      }
-
-      // 5) RESERVES (after swap)
-      try {
-        const { reserves } = await swapSDK.getReserves(xMeta, yMeta, {
-          refresh: true,
-        });
-        console.log("[DEMO] reserves (after swap):", reserves);
-      } catch (e) {
-        console.error("[DEMO] reserves fetch failed:", e);
-      }
-
-      // 6) REMOVE LIQUIDITY
-      try {
-        const lpBalance = await swapSDK.getWalletLPBalance(
-          account.address.toString(),
-          xMeta,
-          yMeta
-        );
-        const { payload, computed } = await swapSDK.buildRemoveLiquidityTx(
-          xMeta,
-          yMeta,
-          lpBalance.lpBalance,
-          account.address.toString()
-        );
-        console.log("[DEMO]:", payload);
-        console.log("[DEMO] remove_liquidity expected/min:", computed);
-        const res = await swapSDK.submitWithWallet(wallet, payload);
-        console.log("[DEMO] remove_liquidity tx:", res.hash);
-      } catch (e) {
-        console.error("[DEMO] remove_liquidity failed:", e);
-      }
+      // try {
+      //   const { payload } = await swapSDK.buildCreateAgentTx(
+      //     name,
+      //     symbol,
+      //     iconUri,
+      //     account.address.toString()
+      //   );
+      //   console.log(payload, wallet);
+      //   const res = await swapSDK.submitWithWallet(wallet, payload);
+      //   const agentMeta = await swapSDK.fetchCreatedAgentMeta(res.hash);
+      //   if (agentMeta) {
+      //     // replacing constant meta address with recently created one
+      //     xMeta = agentMeta;
+      //   }
+      //
+      //   console.log("[DEMO] create_agent tx:", res.hash, agentMeta);
+      //   console.log({ res });
+      // } catch (e) {
+      //   console.warn(
+      //     "[DEMO] create_agent  failed (agent may already exist for this wallet):",
+      //     e
+      //   );
+      // }
+      //
+      // // 1) CREATE POOL
+      // try {
+      //   const payload = swapSDK.buildRegisterPoolTx(
+      //     xMeta,
+      //     yMeta,
+      //     account.address.toString()
+      //   );
+      //   console.log(payload, wallet);
+      //   const res = await swapSDK.submitWithWallet(wallet, payload);
+      //   console.log("[DEMO] create_pool tx:", res.hash);
+      // } catch (e) {
+      //   console.warn(
+      //     "[DEMO] create_pool skipped or failed (pool may already exist):",
+      //     e
+      //   );
+      // }
+      //
+      // // 2) ADD LIQUIDITY
+      // try {
+      //   const { payload, computed } = await swapSDK.buildAddLiquidityTx(
+      //     xMeta,
+      //     yMeta,
+      //     xDesired,
+      //     yDesired,
+      //     account.address.toString()
+      //   );
+      //   console.log("[DEMO] add_liquidity computed:", computed);
+      //   console.log({ payload, computed });
+      //   const res = await swapSDK.submitWithWallet(wallet, payload);
+      //   console.log("[DEMO] add_liquidity tx:", res.hash);
+      // } catch (e) {
+      //   console.error("[DEMO] add_liquidity failed:", e);
+      // }
+      //
+      // // 3) RESERVES (after add)
+      // try {
+      //   const { reserves } = await swapSDK.getReserves(xMeta, yMeta, {
+      //     refresh: true,
+      //   });
+      //   console.log("[DEMO] reserves (after add):", reserves);
+      // } catch (e) {
+      //   console.error("[DEMO] reserves fetch failed:", e);
+      // }
+      //
+      // // 4) SWAP
+      // try {
+      //   const { payload, computed } = await swapSDK.buildSwapTx(
+      //     xMeta,
+      //     yMeta,
+      //     amountIn,
+      //     account.address.toString()
+      //   );
+      //   console.log({ payload, computed });
+      //   console.log("[DEMO] swap expectedOut/minOut:", computed);
+      //   const res = await swapSDK.submitWithWallet(wallet, payload);
+      //   console.log("[DEMO] swap tx:", res.hash);
+      // } catch (e) {
+      //   console.error("[DEMO] swap failed:", e);
+      // }
+      //
+      // // 5) RESERVES (after swap)
+      // try {
+      //   const { reserves } = await swapSDK.getReserves(xMeta, yMeta, {
+      //     refresh: true,
+      //   });
+      //   console.log("[DEMO] reserves (after swap):", reserves);
+      // } catch (e) {
+      //   console.error("[DEMO] reserves fetch failed:", e);
+      // }
+      //
+      // // 6) REMOVE LIQUIDITY
+      // try {
+      //   const lpBalance = await swapSDK.getWalletLPBalance(
+      //     account.address.toString(),
+      //     xMeta,
+      //     yMeta
+      //   );
+      //   const { payload, computed } = await swapSDK.buildRemoveLiquidityTx(
+      //     xMeta,
+      //     yMeta,
+      //     lpBalance.lpBalance,
+      //     account.address.toString()
+      //   );
+      //   console.log("[DEMO]:", payload);
+      //   console.log("[DEMO] remove_liquidity expected/min:", computed);
+      //   const res = await swapSDK.submitWithWallet(wallet, payload);
+      //   console.log("[DEMO] remove_liquidity tx:", res.hash);
+      // } catch (e) {
+      //   console.error("[DEMO] remove_liquidity failed:", e);
+      // }
 
       console.log("[DEMO] sequence complete");
     })().catch((err) => {

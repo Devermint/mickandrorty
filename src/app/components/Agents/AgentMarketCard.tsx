@@ -1,9 +1,10 @@
 import { Box, BoxProps, Text } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
+import {ReactNode} from "react";
 
 interface Props extends BoxProps {
   title: string;
-  value: string;
+  value: ReactNode;
 }
 export const AgentMarketCard = ({ title, value, ...rest }: Props) => {
   return (

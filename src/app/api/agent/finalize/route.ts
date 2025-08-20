@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const { txHash } = body;
 
     const response = await fetch(
-      `${process.env.BACKEND_BASE_URL}/create-agent-from-tx`,
+      `${process.env.NEXT_PUBLIC_API_URL}/create-agent-from-tx`,
       {
         method: "POST",
         headers: {

@@ -10,7 +10,7 @@ export async function handleSubmitAgent(args: AgentForm) {
   const imageForm = new FormData();
   imageForm.append("image", file);
 
-  const imageRes = await fetch(process.env.BACKEND_BASE_URL + "/upload/image", {
+  const imageRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/upload/image", {
     method: "POST",
     body: imageForm,
   });
@@ -24,7 +24,7 @@ export async function handleSubmitAgent(args: AgentForm) {
   agentForm.set("tokenDescription", args.tokenDescription);
   agentForm.set("imageUrl", imageUrl);
 
-  const agentRes = await fetch(process.env.BACKEND_BASE_URL + "/agents", {
+  const agentRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/agents", {
     method: "POST",
     body: agentForm,
   });

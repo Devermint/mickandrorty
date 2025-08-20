@@ -17,6 +17,50 @@ import { X } from "../icons/x";
 import { useRouter } from "next/navigation";
 import { AgentMarketInfo } from "./AgentMarketInfo";
 import { useAptosUsdPrice } from "@/app/hooks/use-usd-price";
+export function formatThousands(num: string | number, sep = ","): string {
+  const s = String(num);
+  const isNeg = s.startsWith("-");
+  const body = isNeg ? s.slice(1) : s;
+
+  const [intPart, fracPart] = body.split(".");
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+
+  return (isNeg ? "-" : "") + grouped + (fracPart !== undefined ? "." + fracPart : "");
+}
+export function formatTinyPrice(numStr?: string) {
+  if (!numStr) return <>{numStr}</>;
+
+  // If no decimal, just return grouped integer
+  if (!numStr.includes(".")) return <>{formatThousands(numStr)}</>;
+
+  const [intPart, fracPart] = numStr.split(".");
+
+  // Count true leading zeroes in the fractional part
+  let trueZeroCount = 0;
+  while (fracPart[trueZeroCount] === "0") trueZeroCount++;
+
+  // Next 4 significant digits after the leading zeros
+  const significant = fracPart.slice(trueZeroCount).slice(0, 4).padEnd(4, "0");
+
+  const intFmt = formatThousands(intPart); // ← comma group integer part only
+
+  // If there are leading zeros, show 0 + <sup>(additional zeros)</sup>
+  if (trueZeroCount > 0) {
+    return (
+        <>
+          {intFmt}.0{trueZeroCount - 1 > 0 && <sup>{trueZeroCount - 1}</sup>}
+          {significant}
+        </>
+    );
+  }
+
+  // No leading zeros → normal 4-digit fractional
+  return (
+      <>
+        {intFmt}.{significant}
+      </>
+  );
+}
 
 export const AgentInfoView = ({ agent }: { agent: Agent}) => {
   const router = useRouter();
