@@ -16,9 +16,12 @@ import { Telegram } from "../icons/telegram";
 import { X } from "../icons/x";
 import { useRouter } from "next/navigation";
 import { AgentMarketInfo } from "./AgentMarketInfo";
+import { useAptosUsdPrice } from "@/app/hooks/use-usd-price";
 
-export const AgentInfoView = ({ agent }: { agent: Agent }) => {
+export const AgentInfoView = ({ agent }: { agent: Agent}) => {
   const router = useRouter();
+  const { price: aptosPriceUsd } = useAptosUsdPrice();
+
 
   const handleBackClick = () => {
     router.push("/agents");
@@ -67,7 +70,7 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
             />
 
             <Image
-              src={agent.image}
+              src={agent.agent_icon_url}
               alt="overlay icon"
               position="absolute"
               top="5"
@@ -87,7 +90,7 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
               fontWeight={300}
               color={colorTokens.gray.timberwolf}
             >
-              {agent.name}
+              {agent.agent_name}
             </Text>
             <Text fontSize="xs" color={colorTokens.gray.platinum}>
               {agent.tag}
@@ -124,13 +127,7 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
             </Button>
           </Flex>
         </Flex>
-        <AgentMarketInfo
-          priceUsd={"Nan"}
-          price={"Nan"}
-          liquidity={"Nan"}
-          mktCap={"Nan"}
-          mt={5}
-        />
+        <AgentMarketInfo mt={5} agent={agent}/>
       </Flex>
       <Spacer />
       <TokenSwapForm agent={agent} />

@@ -8,6 +8,7 @@ import { Grid, GridItem } from "@chakra-ui/react";
 import { Chart } from "../Chart/Chart";
 import { colorTokens } from "../theme/theme";
 import { AgentInfoView } from "./AgentInfoView";
+import TradingViewWidget from "../Chart/trading-view-widget";
 
 export type TabKey = "info" | "chart" | "chat";
 
@@ -39,10 +40,10 @@ export const AgentView = ({ agent }: Props) => {
         />
       </GridItem>
       <GridItem colSpan={2}>
-        <Chart borderRadius={22} bg={colorTokens.blackCustom.a2} />
+        <TradingViewWidget token={agent}></TradingViewWidget>
       </GridItem>
       <GridItem colSpan={1}>
-        <AgentInfoView agent={agent} />
+        <AgentInfoView agent={agent}/>
       </GridItem>
     </Grid>
   );
