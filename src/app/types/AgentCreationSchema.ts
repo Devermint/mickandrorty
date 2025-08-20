@@ -17,5 +17,25 @@ export const AgentSchema = z.object({
   tokenImage: ImageUrl,
 });
 
+// Extended schema for tool submission
+export const SubmitAgentSchema = AgentSchema.extend({
+  requiresSignature: z
+    .boolean()
+    .default(true)
+    .describe(
+      "Whether this submission requires blockchain transaction signature from the user"
+    ),
+  confirmationMessage: z
+    .string()
+    .default("Please double check your token details and sign the transaction")
+    .describe("Message to show user before signing"),
+});
+
 export type AgentForm = z.infer<typeof AgentSchema>;
+export type SubmitAgentForm = z.infer<typeof SubmitAgentSchema>;
+
 export const AgentJsonSchema = zodToJsonSchema(AgentSchema, "Agent");
+export const SubmitAgentJsonSchema = zodToJsonSchema(
+  SubmitAgentSchema,
+  "SubmitAgent"
+);

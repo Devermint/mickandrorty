@@ -10,6 +10,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import { colorTokens } from "../theme/theme";
 
 interface Props extends BoxProps {
   children: string;
@@ -34,14 +35,18 @@ export const MarkdownView = ({
           a: ({ href, ...props }) => (
             <ChakraLink href={href} color="blue.400" {...props} />
           ),
-          code: ({ inline, ...props }: any) =>
-            inline ? (
-              <Code fontSize="sm" {...props} />
-            ) : (
-              <Box as="pre" overflowX="auto">
-                <Code whiteSpace="pre" display="block" w="full" {...props} />
-              </Box>
-            ),
+          code: ({ inline, ...props }: any) => (
+            <Code
+              whiteSpace="pre"
+              display="block"
+              w="100%"
+              textWrap="pretty"
+              bg="transparent"
+              color={colorTokens.gray.platinum}
+              p={0}
+              {...props}
+            />
+          ),
           img: (props) => {
             const blobMatch = children.match(/!\[.*?\]\((blob:[^)]+)\)/);
             if (blobMatch) {

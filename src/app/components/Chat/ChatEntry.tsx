@@ -14,6 +14,8 @@ import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
 import { MarkdownView } from "../MarkdownView/MarkdownView";
 import { ImageUpload } from "../ImageUpload/ImageUpload";
 import { ClientRef } from "@/app/lib/clientImageStore";
+import { AiOutlineSignature } from "react-icons/ai";
+import { AgentCreationData } from "@/app/lib/utils/agentCreation";
 
 export type ChatEntryProps = {
   role: "user" | "assistant";
@@ -24,7 +26,10 @@ export type ChatEntryProps = {
     | "video-loader"
     | "loader"
     | "error"
-    | "image-upload";
+    | "image-upload"
+    | "signature-required";
+  data?: any;
+  onAgentCreate?: (agentData: AgentCreationData) => Promise<void>;
   onTokenImageUploaded?: (ref: ClientRef) => void | Promise<void>;
 };
 
@@ -32,6 +37,8 @@ export const ChatEntry = ({
   role,
   content,
   type,
+  data,
+  onAgentCreate,
   onTokenImageUploaded,
 }: ChatEntryProps) => {
   const isMyMessage = role === "user";
@@ -42,6 +49,10 @@ export const ChatEntry = ({
     : colorTokens.gray.timberwolf;
   const name = role === "user" ? "You" : "Agent";
 
+  console.log(content);
+  console.log(type);
+  console.log(data);
+  console.log(onAgentCreate);
   return (
     <Flex direction="column" alignItems={align} mb="10px">
       {role && !isMyMessage && (
@@ -121,6 +132,33 @@ export const ChatEntry = ({
             />
           </Box>
         )}
+        {type === "signature-required" && (
+          <>
+            <MarkdownView
+              color={color}
+              lineHeight={1.5}
+              fontSize={14}
+              p={1}
+              isMyMessage={isMyMessage}
+            >
+              {content}
+            </MarkdownView>
+            <Button
+              size="sm"
+              borderWidth={1}
+              borderColor={colorTokens.gray.platinum}
+              onClick={() => {
+                if (onAgentCreate && data) {
+                  onAgentCreate(data);
+                }
+              }}
+              disabled={!onAgentCreate || !data}
+              mt={2}
+            >
+              <AiOutlineSignature /> Confirm the transaction
+            </Button>
+          </>
+        )}
       </Box>
     </Flex>
   );
@@ -141,11 +179,3 @@ export const DefaultChatEntry = () => (
     type="text"
   />
 );
-
-// export const DefaultTransactionEntry = () => (
-//   <ChatEntry
-//     role="assistant"
-//     content="I'm happy to generate something for you. Please send me APT token first."
-//     action="WAIT_FOR_TOKEN"
-//   />
-// );

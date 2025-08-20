@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { tools } from "./agentCreationTools";
-import { AgentSchema } from "@/app/types/AgentCreationSchema";
 import z from "zod";
+import { SubmitAgentSchema } from "@/app/types/AgentCreationSchema";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
@@ -14,7 +14,7 @@ const OutputSchema = z.object({
 type Output = z.infer<typeof OutputSchema>;
 
 type Envelope<T = unknown> = {
-  kind: "assistant" | "final" | "validation_error" | "upload_request";
+  kind: "text" | "error" | "image-upload" | "signature-required";
   title?: string;
   action?: "TEXT" | "GENERATE_VIDEO";
   markdown?: string;
@@ -37,7 +37,7 @@ You are a careful form assistant for creating Aptos agents.
 1) Ask only for missing/ambiguous fields (tokenName, tokenTicker, tokenDescription).
 2) Validate constraints as you go.
 3) When all fields are known, present them ONCE and ask for confirmation.
-4) Only after explicit "yes", call submit_agent with final values.
+4) Only after explicit "yes", call submit_agent with final values and requiresSignature=true.
 
 Formatting rules for any NON-tool reply (Markdown):
 - Do NOT include any repeated fields.
@@ -50,11 +50,22 @@ Formatting rules for any NON-tool reply (Markdown):
 - tokenDescription: {{tokenDescription or blank}}
 - tokenImage: {{tokenImage or blank}}
 
+CRITICAL IMAGE UPLOAD RULES:
 - If tokenName, tokenTicker, and tokenDescription are provided but tokenImage is missing,
-  call the tool "request_token_image" with a concise user-facing prompt and constraints.
-- Do NOT call submit_agent until tokenImage is provided.
-- When the user later provides tokenImage, continue the flow toward single-shot confirmation.
-- Allowed image types: image/png, image/jpeg, image/webp. Max 2MB. Min 256×256.
+  you MUST ALWAYS call the "request_token_image" function with these exact parameters:
+  {
+    "name": "request_token_image",
+    "arguments": {
+      "prompt": "Please upload your token image",
+      "accept": ["image/png", "image/jpeg", "image/webp"],
+      "maxSizeBytes": 2097152,
+      "minWidth": 256,
+      "minHeight": 256
+    }
+  }
+- NEVER ask for an image upload without calling the request_token_image function
+- Do NOT call submit_agent until tokenImage is provided
+- When the user later provides tokenImage, continue the flow toward single-shot confirmation
 - When confirming and tokenImage is present, include:
   ![Token image](url)
 
@@ -71,17 +82,6 @@ function toMarkdown(content: unknown): string {
   }
 }
 
-type TokenInfo = {
-  tokenName: string;
-  tokenTicker: string;
-};
-
-function makeConfirmation(args: TokenInfo) {
-  const name = args?.tokenName ?? "Unnamed Agent";
-  const ticker = args?.tokenTicker ? ` (${args.tokenTicker})` : "";
-  return `Creating agent **${name}${ticker}**…`;
-}
-
 export async function POST(req: NextRequest) {
   const { messages } = await req.json();
 
@@ -96,18 +96,12 @@ export async function POST(req: NextRequest) {
 
   const msg = resp.choices[0].message;
 
-  console.log(msg);
-
   if (msg.tool_calls?.length) {
     for (const tc of msg.tool_calls) {
       if (tc.type === "function") {
         return await handleToolCall(tc, msg, messages);
       }
     }
-    // const call = msg.tool_calls[0];
-    // if (call.type === "function" && call.function.name === "submit_agent") {
-    //   return await submitAgentToolCall(call, msg, messages);
-    // }
   }
 
   const out: Output = OutputSchema.parse({
@@ -117,7 +111,7 @@ export async function POST(req: NextRequest) {
   });
 
   const env: Envelope = {
-    kind: "assistant",
+    kind: "text",
     title: out.title,
     action: out.action,
     markdown: out.markdown,
@@ -131,25 +125,12 @@ async function handleToolCall(
   msg: OpenAI.Chat.Completions.ChatCompletionMessage,
   messages: any
 ) {
-  // const args = safeParseArgs(tc.function.arguments);
-
   switch (tc.function.name) {
-    case "request_token_image": {
-      console.log(
-        " ----------------------------------------------------Requesting image ----------------------------------------------------"
-      );
+    case "request_token_image":
       return await uploadImageToolCall(tc, msg, messages);
-    }
-
-    case "submit_agent": {
-      console.log(
-        " ----------------------------------------------------Requesting agent ----------------------------------------------------"
-      );
+    case "submit_agent":
       return await submitAgentToolCall(tc, msg, messages);
-    }
-
     default:
-      // Unknown tool -> ignore or log
       return;
   }
 }
@@ -163,81 +144,38 @@ const submitAgentToolCall = async (
   try {
     args = JSON.parse(call.function.arguments || "{}");
   } catch {
-    const env: Envelope = {
-      kind: "validation_error",
+    return NextResponse.json({
+      kind: "error",
       notice: "Invalid tool arguments JSON.",
       errors: { formErrors: ["Invalid tool arguments JSON"] },
-    };
-    return NextResponse.json(env);
+    });
   }
 
-  const parsed = AgentSchema.safeParse(args);
-  console.log(
-    "----------------------------IMAGE----------------------------------"
-  );
-  console.log(parsed);
+  // Validate with extended schema
+  const parsed = SubmitAgentSchema.safeParse(args);
   if (!parsed.success) {
-    const env: Envelope = {
-      kind: "validation_error",
+    return NextResponse.json({
+      kind: "error",
       notice: "Could not finalize — please review the fields.",
       errors: parsed.error.flatten(),
-    };
-    return NextResponse.json(env);
+    });
   }
 
-  // Create agent
-  const agentForm: FormData = new FormData();
-  agentForm.set("tokenName", parsed.data.tokenName);
-  agentForm.set("tokenTicker", parsed.data.tokenTicker);
-  agentForm.set("tokenDescription", parsed.data.tokenDescription);
-  agentForm.set("imageUrl", parsed.data.tokenImage);
+  // Check if signature is required
+  if (parsed.data.requiresSignature) {
+    return NextResponse.json({
+      kind: "signature-required",
+      notice: parsed.data.confirmationMessage,
+      data: parsed.data,
+    });
+  }
 
-  // const agentRes: Response = await fetch(
-  //   `${process.env.NEXT_PUBLIC_API_URL}/agents`,
-  //   {
-  //     method: "POST",
-  //     body: agentForm,
-  //   }
-  // );
-
-  const resultPayload = { status: "ok", ...parsed.data };
-
-  const assistantToolCallMsg = {
-    role: "assistant" as const,
-    content: (msg.content ?? "") as string,
-    tool_calls: msg.tool_calls,
-  };
-
-  if (!msg.tool_calls) return;
-
-  const toolResults = msg.tool_calls.map((tc) => ({
-    role: "tool" as const,
-    tool_call_id: tc.id,
-    content: JSON.stringify(resultPayload),
-  }));
-
-  const followUp = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: SYSTEM },
-      ...messages,
-      assistantToolCallMsg,
-      ...toolResults,
-    ],
-    temperature: 0.7,
-    max_tokens: 300,
-  });
-
-  const followText =
-    (followUp.choices[0]?.message?.content ?? "").toString().trim() ||
-    makeConfirmation(parsed.data);
-
-  const env: Envelope<typeof parsed.data> = {
-    kind: "final",
-    notice: followText,
+  // Direct submission (for non-blockchain features)
+  return NextResponse.json({
+    kind: "text",
+    notice: "Token created successfully!",
     data: parsed.data,
-  };
-  return NextResponse.json(env);
+  });
 };
 
 const uploadImageToolCall = async (
@@ -249,12 +187,11 @@ const uploadImageToolCall = async (
   try {
     args = JSON.parse(call.function.arguments || "{}");
   } catch {
-    const env: Envelope = {
-      kind: "validation_error",
+    return NextResponse.json({
+      kind: "error",
       notice: "Invalid tool arguments JSON.",
       errors: { formErrors: ["Invalid tool arguments JSON"] },
-    };
-    return NextResponse.json(env);
+    });
   }
 
   // Defaults + minimal validation
@@ -284,32 +221,16 @@ const uploadImageToolCall = async (
     problems.push("accept must be a list of image/* MIME types");
   }
   if (problems.length) {
-    const env: Envelope = {
-      kind: "validation_error",
+    return NextResponse.json({
+      kind: "error",
       notice: "Invalid upload constraints.",
       errors: { fieldErrors: { accept: problems } },
-    };
-    return NextResponse.json(env);
+    });
   }
 
-  const env: Envelope<{
-    accept: string[];
-    maxSizeBytes: number;
-    minWidth: number;
-    minHeight: number;
-  }> = {
-    kind: "upload_request",
+  return NextResponse.json({
+    kind: "image-upload",
     notice: prompt,
     data: { accept, maxSizeBytes, minWidth, minHeight },
-  };
-
-  console.log(env);
-  return NextResponse.json(env);
+  });
 };
-// function safeParseArgs(s: string) {
-//   try {
-//     return JSON.parse(s || "{}");
-//   } catch {
-//     return {};
-//   }
-// }

@@ -6,17 +6,22 @@ import { ChatEntryProps, DefaultChatEntry, ChatEntry } from "./ChatEntry";
 import { AgentInput } from "../Agents/AgentInput";
 import { colorTokens } from "../theme/theme";
 import { useSearchParams, useRouter } from "next/navigation";
-// import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { ChatHelperButton } from "./ChatHelperButton";
 import { Agent, AgentType } from "@/app/types/agent";
 import { StarsIcon } from "../icons/stars";
 import { ClientRef, getClientFile } from "@/app/lib/clientImageStore";
+import {
+  AgentCreationData,
+  createAgent,
+  useAgentCreation,
+} from "@/app/lib/utils/agentCreation";
 
 enum ChatState {
   IDLE,
   PROCESSING,
   GENERATING_VIDEO,
 }
+
 interface ChatProps extends FlexProps {
   agent: Agent;
   messages: ChatEntryProps[];
@@ -24,10 +29,9 @@ interface ChatProps extends FlexProps {
 }
 
 const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
-  // const account = useAptosWallet();
+  const { wallet, account, isConnected, swapSDK } = useAgentCreation();
 
   const inputMessage = useRef<HTMLTextAreaElement>(null);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -48,6 +52,99 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
     });
     return () => cancelAnimationFrame(id);
   }, [count]);
+
+  const handleAgentCreation = useCallback(
+    async (agentData: AgentCreationData) => {
+      if (!wallet || !account?.address || !isConnected) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Wallet not connected. Please connect your wallet first.",
+            type: "error",
+          },
+        ]);
+        return;
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "",
+          type: "loader",
+        },
+      ]);
+
+      try {
+        const result = await createAgent(
+          agentData,
+          swapSDK,
+          wallet,
+          account.address.toString()
+        );
+
+        setMessages((prev) => [
+          ...prev.slice(0, -1),
+          {
+            role: "assistant",
+            content: `Agent created successfully!\n\n**Token Name:** ${
+              agentData.tokenName
+            }\n**Symbol:** ${agentData.tokenTicker}\n**Transaction Hash:** \`${
+              result.agentHash
+            }\`\n\n${
+              result.poolHash
+                ? `**Pool Created:** \`${result.poolHash}\`\n`
+                : ""
+            }${
+              result.liquidityHash
+                ? `**Liquidity Added:** \`${result.liquidityHash}\`\n`
+                : ""
+            }${
+              result.swapHash
+                ? `**Swap Executed:** \`${result.swapHash}\`\n`
+                : ""
+            }${
+              result.removeLiquidityHash
+                ? `**Liquidity Removed:** \`${result.removeLiquidityHash}\`\n`
+                : ""
+            }\nYour agent is now live on the Aptos blockchain!`,
+            type: "text",
+          },
+        ]);
+
+        try {
+          await fetch("/api/agent/finalize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...agentData,
+              txHash: result.agentHash,
+              userAddress: account.address,
+              agentMeta: result.agentMeta,
+            }),
+          });
+        } catch (finalizeError) {
+          console.warn("Failed to finalize on backend:", finalizeError);
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Agent creation failed";
+
+        setMessages((prev) => [
+          ...prev.slice(0, -1),
+          {
+            role: "assistant",
+            content: `Agent creation failed\n\n**Error:** ${errorMessage}\n\nPlease try again or check your wallet connection. If the error persists, the agent may already exist for this wallet.`,
+            type: "error",
+          },
+        ]);
+
+        console.error("Agent creation failed:", error);
+      }
+    },
+    [wallet, account, isConnected, swapSDK, setMessages]
+  );
 
   const onMessageSend = useCallback(async () => {
     const el = inputMessage.current;
@@ -82,14 +179,17 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
           }),
         });
         const body = await response.json();
-        const { markdown, notice, kind } = body;
+        const { markdown, notice, kind, data } = body;
 
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
             content: markdown ?? notice,
-            type: kind === "upload_request" ? "image-upload" : "text",
+            type: kind,
+            data: data,
+            onAgentCreate:
+              kind === "signature-required" ? handleAgentCreation : undefined,
           },
         ]);
       } else {
@@ -194,10 +294,8 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
         }
       }
       el.value = "";
-      // el.focus();
     } catch (error) {
       el.value = "";
-      // el.focus();
 
       if (error instanceof Error) {
         setMessages((prev) => [
@@ -214,7 +312,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
         setChatState(ChatState.IDLE);
       }
     }
-  }, [chatState, messages]);
+  }, [chatState, messages, agent.type, handleAgentCreation]);
 
   useEffect(() => {
     const el = inputMessage.current;
@@ -226,25 +324,6 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
       router.replace(window.location.pathname);
     }
   }, [msg, onMessageSend, router]);
-
-  // function useEvent<T extends (...args: any[]) => any>(fn: T) {
-  //   const ref = useRef(fn);
-  //   useEffect(() => {
-  //     ref.current = fn;
-  //   }, [fn]);
-  //   return useCallback((...args: Parameters<T>) => ref.current(...args), []);
-  // }
-
-  // useEffect(() => {
-  //   // Only revoke URLs when component unmounts or when we have new ones
-  //   return () => {
-  //     Object.values(inlineMedia).forEach((url) => {
-  //       if (url.startsWith("blob:")) {
-  //         URL.revokeObjectURL(url);
-  //       }
-  //     });
-  //   };
-  // }, []);
 
   const handleTokenImageUploaded = useCallback(
     async (ref: ClientRef) => {
@@ -263,7 +342,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
         }
 
         const okTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-        const maxBytes = 5_000_000; // 5MB
+        const maxBytes = 5_000_000;
         if (!okTypes.has(file.type)) throw new Error("Unsupported file type.");
         if (file.size === 0) throw new Error("Empty file.");
         if (file.size > maxBytes) throw new Error("File too large.");
@@ -302,73 +381,6 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
     },
     [onMessageSend, setMessages]
   );
-  // const handleSendTransaction = async () => {
-  //   if (!account || !account.wallet) {
-  //     alert("Please connect your Petra wallet first.");
-  //     return;
-  //   }
-  //   // TODO: AAAAAAAA KNX
-  //   // const recipient = process.env.NEXT_PUBLIC_RECIPIENT; // Import from .env
-  //   const recipient =
-  //     "0xc867d5c746677025807a9ce394dc095d0aac08e4e126472c10b02bbebf6bfa1f";
-  //   console.log(recipient);
-  //   if (!recipient) {
-  //     alert("Recipient address is not configured.");
-  //     return;
-  //   }
-  //   const amountOctas = (0.05 * 10 ** 8).toString(); // 0.05 APT in octas
-  //   const payload = {
-  //     type: "entry_function_payload",
-  //     function: "0x1::coin::transfer",
-  //     type_arguments: ["0x1::aptos_coin::AptosCoin"],
-  //     arguments: [recipient, amountOctas],
-  //   };
-
-  //   try {
-  //     // console.log("Custom Context Account:", account.wallet.);
-  //     const pendingTxn = await account.wallet?.signAndSubmitTransaction(
-  //       payload
-  //     );
-  //     //alert(`Transaction submitted! Hash: ${pendingTxn.hash}`);
-  //     console.log("Pending transaction:", pendingTxn);
-
-  //     const apiUrl = `https://sandbox.sui-cluster.xyz/aptos.sandbox/message`;
-
-  //     const response = await fetch(apiUrl, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         text: `Transaction successful! Hash: ${pendingTxn.hash}`,
-  //         userId: "userl",
-  //         roomId: `default-room-${"randomstringrealia"}`,
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to send transaction message to the server.");
-  //     }
-  //     const serverResponse = await response.json();
-  //     console.log("Server response:", serverResponse);
-  //   } catch (error: unknown) {
-  //     if (
-  //       error instanceof Error &&
-  //       error.message.includes("Account not found")
-  //     ) {
-  //       alert(
-  //         "The account is not active on the blockchain. Please fund it first."
-  //       );
-  //     } else {
-  //       console.error("Transaction failed", error);
-  //       alert(
-  //         `Transaction failed: ${
-  //           error instanceof Error ? error.message : "Unknown error"
-  //         }`
-  //       );
-  //     }
-  //   }
-  // };
 
   const handleHelperButtonClick = (chatMessage: string) => {
     if (inputMessage.current === null) return;
@@ -433,12 +445,16 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
               {messages.map((m, i) => (
                 <ChatEntry
                   key={i}
+                  role={m.role}
+                  content={m.content}
+                  type={m.type}
+                  data={m.data}
+                  onAgentCreate={m.onAgentCreate}
                   onTokenImageUploaded={
                     m.type === "image-upload"
                       ? handleTokenImageUploaded
                       : undefined
                   }
-                  {...m}
                 />
               ))}
               {chatState === ChatState.GENERATING_VIDEO && progress && (
