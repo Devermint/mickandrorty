@@ -8,7 +8,6 @@ import { MobileAgentView } from "@/app/components/Agents/MobileAgentView";
 import { useAgent } from "@/app/hooks/useAgent";
 
 export default function Page({ params }: { params: Promise<{ agent: string }> }) {
-  // ✅ unwrap params Promise with React.use
   const { agent: faId } = React.use(params);
 
   const { data: agent, isLoading, isError, error } = useAgent(faId);

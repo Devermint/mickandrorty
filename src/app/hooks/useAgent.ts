@@ -7,13 +7,9 @@ export const useAgent = (faId?: string) =>
         enabled: !!faId,
         queryFn: async () => {
             // GET single agent (prefer efficient endpoint)
-            const res = await fetch(`/api/agent/${faId}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/agent?fa_id=${faId}`);
             if (!res.ok) {
-                // fallback to searching list if you don't have /agents/:id
-                const list = await fetch(`/api/agents`).then(r => r.json());
-                const found = (list?.items as Agent[] | undefined)?.find(a => a.fa_id === faId);
-                if (!found) throw new Error(`Agent ${faId} not found`);
-                return found;
+                throw new Error(`Agent ${faId} not found`);
             }
             return res.json();
         },

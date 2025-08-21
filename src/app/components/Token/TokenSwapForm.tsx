@@ -1,6 +1,6 @@
 "use client";
 // import { CircularProgress, CircularProgressLabel } from '@chakra-ui/react'
-import { useEffect, useMemo, useRef, useState } from "react";
+import {useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     Box,
     Flex,
@@ -107,7 +107,7 @@ const isFiniteNum = (n: number | null) => n != null && Number.isFinite(n);
 
 /* ------------------------------ price feed -------------------------------- */
 function useAptUsd() {
-    const [usd, setUsd] = useState<number | null>(null);
+    const [usd, setUsd] = useState<number>(0);
     useEffect(() => {
         let mounted = true;
         const load = async () => {
@@ -145,7 +145,6 @@ export default function TokenSwapForm({
 
     const agentMeta = useMemo(() => normalizeHex(agent.fa_id ?? ""), [agent.fa_id]);
     const agentSymbol = agent.agent_symbol ?? "AGENT";
-    console.log({agent})
     const agentDecimals = agent.decimals ?? 6;
 
     /* -------------------------------- state --------------------------------- */
@@ -167,6 +166,8 @@ export default function TokenSwapForm({
     const [reserves, setReserves] = useState<{ reserveX: bigint; reserveY: bigint } | null>(null);
     const [quoting, setQuoting] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [balanceError, setBalanceError] = useState<string>("");
+    const quoteSeq = useRef(0);
 
     const aptUsd = useAptUsd();
 
@@ -188,14 +189,6 @@ export default function TokenSwapForm({
         }, 1000);
         return () => clearInterval(t);
     }, []);
-    useEffect(() => {
-        if (refreshIn === 0) {
-            (async () => {
-                await doReserves();
-                setRefreshIn(REFRESH_MS / 1000);
-            })();
-        }
-    }, [refreshIn]);
 
     useEffect(() => {
         if (!agent?.fa_id || !process.env.NEXT_PUBLIC_RPC_URL) return;
@@ -212,11 +205,36 @@ export default function TokenSwapForm({
             aptosSDK,
             defaultSlippageBps: 100,
         });
-        console.log("SDK source:", AptosSwapSDK.prototype.quoteExactIn.toString());
 
         setSwapSDK(sdk);
     }, [agent?.fa_id, process.env.NEXT_PUBLIC_RPC_URL]);
+    useEffect(() => {
+        if (!isConnected) {
+            setBalanceError("");
+            return;
+        }
 
+        // Pick the correct balance + decimals
+        const bal = tab === "buy" ? aptBal : agentBal;
+        const dec = tab === "buy" ? APT_DECIMALS : agentDecimals;
+        const symbol = tab === "buy" ? "APT" : agentSymbol;
+
+        if (bal == null) {
+            setBalanceError("");
+            return;
+        }
+
+        try {
+            const amt = toAtomic(pay, dec);
+            if (amt > bal) {
+                setBalanceError(`Insufficient balance (${fromAtomic(bal, dec)} ${symbol})`);
+            } else {
+                setBalanceError("");
+            }
+        } catch {
+            setBalanceError("");
+        }
+    }, [pay, tab, aptBal, agentBal, isConnected, agentSymbol, agentDecimals]);
     useEffect(() => {
         if (!swapSDK) return;
 
@@ -239,8 +257,6 @@ export default function TokenSwapForm({
         const off6 = swapSDK.emitter.on("reserves:update", ({ entry }: any) => {
             setPairAddress(entry?.pairAddress ?? null);
             setReserves(entry ? { reserveX: entry.reserveX, reserveY: entry.reserveY } : null);
-            // DEBUG
-            // console.debug("[swap] reserves:update", entry);
         });
         return () => {
             off1?.(); off2?.(); off3?.(); off4?.(); off5?.(); off6?.();
@@ -266,7 +282,7 @@ export default function TokenSwapForm({
     useEffect(() => { refreshBalances(); }, [isConnected, account?.address, agentMeta]);
 
     /* ----------------------------- reserves/quote --------------------------- */
-    const doReserves = async () => {
+    const doReserves = useCallback(async () => {
         if (!agentMeta || !swapSDK) return;
         try {
             const { reserves } = await swapSDK.getReserves(APT_META, agentMeta, { refreshIfStale: true });
@@ -274,7 +290,6 @@ export default function TokenSwapForm({
             setPairAddress(reserves.pairAddress);
             setRefreshIn(Math.floor(REFRESH_MS / 1000));
 
-            // Spot on load (decimals-aware)
             const aptFirstLocal = addrLT(APT_META, agentMeta);
             const rAPT = aptFirstLocal ? reserves.reserveX : reserves.reserveY;
             const rAG  = aptFirstLocal ? reserves.reserveY : reserves.reserveX;
@@ -291,13 +306,20 @@ export default function TokenSwapForm({
                 setSpotPrice(spotHuman);
             }
 
-            // Show em dash for impact until user types something
             setPriceImpact(null);
-
-            // Ensure the "Pay 1 APT" summary is computed immediately
             await ensureUnitOut();
         } catch {}
-    };
+    }, [agentMeta, swapSDK, tab, agentDecimals]); // <-- include tab
+    useEffect(() => {
+        if (refreshIn === 0) {
+            (async () => {
+                await doReserves();
+                if (isConnected) await refreshBalances();
+                setRefreshIn(REFRESH_MS / 1000);
+            })();
+        }
+    }, [refreshIn, doReserves]);
+
     useEffect(() => {
         doReserves();
         const id = setInterval(doReserves, REFRESH_MS);
@@ -307,7 +329,7 @@ export default function TokenSwapForm({
             clearInterval(id);
             window.removeEventListener("focus", onFocus);
         };
-    }, [agentMeta, swapSDK]);
+    }, [doReserves]); // <-- depend on the callback
 
     const runQuote = async (side: "pay" | "receive", payStr: string, recvStr: string) => {
         if (!agentMeta || !swapSDK) return;
@@ -319,7 +341,6 @@ export default function TokenSwapForm({
 
             if (side === "pay") {
                 const inAmt = toAtomic(payStr, inDecimals);
-                debugLog({ inAmt });
 
                 if (inAmt <= 0n) {
                     // zero input → clear outputs, show em dashes, but still show 1-unit quote + spot
@@ -340,11 +361,9 @@ export default function TokenSwapForm({
                     return;
                 }
 
-                debugLog("calling quoteExactIn", { inMeta, outMeta });
                 const q = await swapSDK.quoteExactIn(inMeta, outMeta, inAmt, true, slippageBps);
                 const { amountOut, spotPrice, executionPrice, priceImpact, pairAddress, reserves } = q;
 
-                debugLog({ amountOut, spotPrice, executionPrice, priceImpact, pairAddress, reserves });
                 setReceive(fromAtomic(amountOut, outDecimals));
                 setSpotPrice(spotPrice * scale);              // decimals-aware
                 setExecutionPrice(executionPrice * scale);    // decimals-aware
@@ -410,15 +429,14 @@ export default function TokenSwapForm({
     useEffect(() => {
         if (typingSide === "pay") runQuote("pay", pay, receive);
         else runQuote("receive", pay, receive);
-    }, [slippageBps, tab]); // keep
+    }, [slippageBps]);
     useEffect(() => {
-        // FIX: clear inputs when switching tabs; will trigger 1-unit quote via effect above
         setPay("0");
         setReceive("0");
         setTypingSide("pay");
         setUnitOut(null);
-        // DEBUG
-        // console.debug("[swap] tab ->", tab, { inMeta, outMeta, inDecimals, outDecimals });
+        setExecutionPrice(null);
+        setPriceImpact(null);
     }, [tab]);
     // @ts-ignore
     const debugLog=(
@@ -446,11 +464,15 @@ export default function TokenSwapForm({
             });
         }
     };
+    const renderTokenInfoField = (label:string, value:any) => {
+        return (<Flex justify="space-between" mb={2}>
+            <Text color={colorTokens.gray.timberwolf} fontSize={13}>{label}</Text>
+            {!quoting &&<Text color={colorTokens.gray.platinum} fontSize={13}>{value}</Text>}
+            {quoting && <Spinner size="sm" ml={2} />}
+        </Flex>)
+    }
     const onPayChange = (v: string | number) => {
-        debugLog({v})
         const s = sanitizeDecimalInput(String(v ?? ""), inDecimals); // FIX: coerce
-        debugLog({s})
-
         setTypingSide("pay");
         setPay(s);
         runQuote("pay", s, receive);
@@ -474,6 +496,19 @@ export default function TokenSwapForm({
             onPayChange(s);
         }
     };
+    // utilities (top-level, near other utils)
+    const isUserCancel = (e: any) => {
+        const code = e?.code ?? e?.statusCode;
+        const name = String(e?.name ?? "").toLowerCase();
+        const msg  = String(e?.message ?? e ?? "").toLowerCase();
+        return code === 4001                   // common "user rejected" code
+            || name.includes("userrejected")
+            || name.includes("rejected")
+            || msg.includes("user rejected")
+            || msg.includes("rejected")
+            || msg.includes("cancel");
+    };
+
 
     /* -------------------------------- execute ------------------------------- */
     const onExecute = async () => {
@@ -489,17 +524,22 @@ export default function TokenSwapForm({
                 return;
             }
             const { payload } = await swapSDK.buildSwapTx(
-                inMeta,
-                outMeta,
-                amountIn,
-                account.address.toString(),
-                slippageBps
+                inMeta, outMeta, amountIn, account.address.toString(), slippageBps
             );
+            setSubmitting(true); // ensure we flip it on before wallet prompt
             await swapSDK.submitWithWallet(wallet, payload);
+            await refreshBalances();
+
         } catch (e: any) {
-            toaster.create({ type: "error", description: String(e?.message ?? e), duration: 3500 });
+            setSubmitting(false); // ← make sure we always clear it
+            if (isUserCancel(e)) {
+                toaster.create({ type: "info", description: "Swap cancelled in wallet", duration: 2500 });
+            } else {
+                toaster.create({ type: "error", description: String(e?.message ?? e), duration: 3500 });
+            }
         }
     };
+
 
     /* -------------------------------- derived UI ----------------------------- */
     const payLabel = tab === "buy" ? "You pay (APT)" : `You pay (${agentSymbol})`;
@@ -531,59 +571,72 @@ export default function TokenSwapForm({
         <Box borderRadius={16} bg={colorTokens.blackCustom.a3} p={4} flexShrink={0}>
             {/* Tabs */}
             <Tabs.Root value={tab} onValueChange={(v) => setTab(v.value as "buy" | "sell")}>
-                <Tabs.List mb={3} borderBottom="none">
-                    <Tabs.Trigger
-                        value="buy"
-                        mr={2}
-                        color={colorTokens.gray.timberwolf}
-                        _focus={{ boxShadow: "none" }}
-                    >
-                        Buy
-                    </Tabs.Trigger>
-                    <Tabs.Trigger
-                        value="sell"
-                        color={colorTokens.gray.timberwolf}
-                        _focus={{ boxShadow: "none" }}
-                    >
-                        Sell
-                    </Tabs.Trigger>
-                </Tabs.List>
+                <Flex align="center" mb={3}>
+                    {/* Tabs on the left */}
+                    <Tabs.List borderBottom="none" display="flex">
+                        <Tabs.Trigger
+                            value="buy"
+                            mr={2}
+                            color={colorTokens.gray.timberwolf}
+                            _focus={{ boxShadow: "none" }}
+                        >
+                            Buy
+                        </Tabs.Trigger>
+                        <Tabs.Trigger
+                            value="sell"
+                            color={colorTokens.gray.timberwolf}
+                            _focus={{ boxShadow: "none" }}
+                        >
+                            Sell
+                        </Tabs.Trigger>
+                    </Tabs.List>
+
+                    {/* Spacer pushes the next flex to the right */}
+                    <Flex flex="1" />
+
+                    {/* Refresh timer on the right */}
+                    <Flex align="center" gap={2} pb="2">
+                        <Text color={colorTokens.gray.timberwolf} fontSize={13}>
+                            Refresh:
+                        </Text>
+                        {(() => {
+                            const pct = Math.max(
+                                0,
+                                Math.min(
+                                    100,
+                                    (((REFRESH_MS / 1000) - refreshIn) / (REFRESH_MS / 1000)) * 100
+                                )
+                            );
+                            return (
+                                <Box
+                                    position="relative"
+                                    w="28px"
+                                    h="28px"
+                                    borderRadius="9999px"
+                                    bg={`conic-gradient(#ffffff ${pct}%, rgba(255,255,255,0.18) 0)`}
+                                >
+                                    <Flex
+                                        position="absolute"
+                                        inset="3px"
+                                        borderRadius="9999px"
+                                        bg="rgba(18, 19, 21, 1)"
+                                        align="center"
+                                        justify="center"
+                                    >
+                                        <Text fontSize="10px" color={colorTokens.gray.timberwolf}>
+                                            {refreshIn}s
+                                        </Text>
+                                    </Flex>
+                                </Box>
+                            );
+                        })()}
+                    </Flex>
+                </Flex>
+
                 <Tabs.Content value="buy" />
                 <Tabs.Content value="sell" />
             </Tabs.Root>
-            <Flex align="center" justifyContent={"flex-end"} paddingBottom={"2"} gap={2}>
-                <Text color={colorTokens.gray.timberwolf} fontSize={13}>
-                    Quote will be refreshed in:{" "}
-                </Text>
-                {(() => {
-                    const pct = Math.max(0, Math.min(100, (((REFRESH_MS / 1000) - refreshIn) / (REFRESH_MS / 1000)) * 100));
-                    return (
-                        <Box
-                            position="relative"
-                            w="28px"
-                            h="28px"
-                            borderRadius="9999px"
-                            // use Chakra bg so it wins over defaults; white ring via conic-gradient
-                            bg={`conic-gradient(#ffffff ${pct}%, rgba(255,255,255,0.18) 0)`}  // <--- white ring
-                        >
-                            {/* inner cutout to create the donut */}
-                            <Flex
-                                position="absolute"
-                                inset="3px"
-                                borderRadius="9999px"
-                                bg="rgba(18, 19, 21, 1)"
-                                align="center"
-                                justify="center"
-                            >
-                                <Text fontSize="10px" color={colorTokens.gray.timberwolf}>
-                                    {refreshIn}s
-                                </Text>
-                            </Flex>
-                        </Box>
-                    );
-                })()}
 
-            </Flex>
             {/* Pay row */}
             <Flex justifyContent="space-between" fontSize={13} fontFamily="Sora" fontWeight={300}>
                 <Text color={colorTokens.gray.timberwolf}>{payLabel}</Text>
@@ -659,13 +712,10 @@ export default function TokenSwapForm({
 
             {/* Live summary line */}
             <Text mt={3} color={colorTokens.gray.timberwolf} fontSize={13}>
+                {/*{`1 APT ≈ ${unitOut ?? "—"} ${agentSymbol} (~$${formatThousands(aptUsd.toFixed(2))})`}*/}
                 {tab === "buy"
-                    ? `Buy ${unitOut ?? "—"} ${agentSymbol} ← Pay 1 APT${
-                        aptUsd ? ` (~$${formatThousands(aptUsd.toFixed(2))})` : ""
-                    }`
-                    : `Sell ${unitOut ?? "—"} ${agentSymbol} → Receive 1 APT${
-                        aptUsd ? ` (~$${formatThousands(aptUsd.toFixed(2))})` : ""
-                    }`}
+                    ?  `1 APT ≈ ${unitOut ?? "—"} ${agentSymbol} (~$${formatThousands(aptUsd?.toFixed(2)??"")})`
+                    : `1 ${agentSymbol} ≈ ${unitOut ?? "—"} APT (~$${formatThousands((aptUsd*parseFloat(unitOut??"0"))?.toFixed(2)??"")})`}
                 {quoting && <Spinner size="sm" ml={2} />}
             </Text>
 
@@ -698,48 +748,87 @@ export default function TokenSwapForm({
 
             {/* Market info */}
             <Box mt={3}>
-                <Text color={colorTokens.gray.timberwolf} fontSize={13}>
-                    {/* FIX: correct units + guard Infinity */}
-                    Spot price:
-                    <>
-                        {" "}{isFiniteNum(spotPrice) ? formatTinyPrice(spotPrice!.toString()):"—"} {tab === "buy" ? `APT` : `${agentSymbol}`}
-                    </>
-                 {quoting && <Spinner size="sm" ml={2} />}
-                </Text>
+                {renderTokenInfoField("Spot price:", <>
+                    {" "}{isFiniteNum(spotPrice) ? formatTinyPrice(spotPrice!.toString()):"—"} {tab === "buy" ? `APT` : `${agentSymbol}`}
+                </>)}
                 {isFiniteNum(executionPrice) && (
-                <Text color={colorTokens.gray.timberwolf} fontSize={13}>
-                    Execution price:
-                    <>
-                        {" "}{isFiniteNum(executionPrice) ? formatTinyPrice(executionPrice!.toString()):"—" } {tab === "buy" ? `APT per ${agentSymbol}` : `${agentSymbol}`}
-                    </>
-                 {quoting && <Spinner size="sm" ml={2} />}
-                </Text>
-                )}
+
+                    renderTokenInfoField("Execution price:", <>
+                    {" "}{isFiniteNum(executionPrice) ? formatTinyPrice(executionPrice!.toString()):"—" } {tab === "buy" ? `APT` : `${agentSymbol}`}
+                </>)
+                 )}
                 {priceImpact != null && Number.isFinite(priceImpact) && (
-                <Text color={impactColor} fontSize={13}>
-                    Price impact: {Number.isFinite(priceImpact) ? `${(priceImpact * 100).toFixed(2)}%` : "—%"} {quoting && <Spinner size="sm" ml={2} />}
-                </Text>
-                )}
-                <Text
-                    color={colorTokens.gray.timberwolf}
-                    fontSize={13}
-                      onClick={() => handleCopy(pairAddress ?? "", "LP address")}
-                      _hover={{ color: colorTokens.green.erin, cursor: "pointer" }}>
-                    LP: {shortenMiddle(pairAddress?? "") ?? "—"}
-                </Text>
-                <Text
-                    color={colorTokens.gray.timberwolf}
-                    fontSize={13}
-                    onClick={() => handleCopy(agent.wallet ?? "", "Dev address")}
-                    _hover={{ color: colorTokens.green.erin, cursor: "pointer" }}>
-                    Dev: {shortenMiddle(agent.wallet?? "") ?? "—"}
-                </Text>
-                <Text color={colorTokens.gray.timberwolf} fontSize={13}>
-                    Reserves:{" "}
-                    {reserves
-                        ? `${fromAtomic(reserveAPT, APT_DECIMALS)} APT / ${fromAtomic(reserveAG, agentDecimals)} ${agentSymbol}`
-                        : "—"}
-                </Text>
+
+                    renderTokenInfoField("Price impact:", <>
+                    {" "}{Number.isFinite(priceImpact) ? `${(priceImpact * 100).toFixed(2)}%` : "—%"} {quoting && <Spinner size="sm" ml={2} />}
+                </>)
+               )}
+                {/*<Text color={colorTokens.gray.timberwolf} fontSize={13}>*/}
+                {/*    /!* FIX: correct units + guard Infinity *!/*/}
+                {/*    Spot price:*/}
+                {/*    <>*/}
+                {/*        {" "}{isFiniteNum(spotPrice) ? formatTinyPrice(spotPrice!.toString()):"—"} {tab === "buy" ? `APT` : `${agentSymbol}`}*/}
+                {/*    </>*/}
+                {/* {quoting && <Spinner size="sm" ml={2} />}*/}
+                {/*</Text>*/}
+                {/*{isFiniteNum(executionPrice) && (*/}
+                {/*<Text color={colorTokens.gray.timberwolf} fontSize={13}>*/}
+                {/*    Execution price:*/}
+                {/*    <>*/}
+                {/*        {" "}{isFiniteNum(executionPrice) ? formatTinyPrice(executionPrice!.toString()):"—" } {tab === "buy" ? `APT` : `${agentSymbol}`}*/}
+                {/*    </>*/}
+                {/* {quoting && <Spinner size="sm" ml={2} />}*/}
+                {/*</Text>*/}
+                {/*)}*/}
+                {/*{priceImpact != null && Number.isFinite(priceImpact) && (*/}
+                {/*<Text color={impactColor} fontSize={13}>*/}
+                {/*    Price impact: {Number.isFinite(priceImpact) ? `${(priceImpact * 100).toFixed(2)}%` : "—%"} {quoting && <Spinner size="sm" ml={2} />}*/}
+                {/*</Text>*/}
+                {/*)}*/}
+                <Flex justify="space-between" mb={2}>
+                    <Text color={colorTokens.gray.timberwolf} fontSize={13}>Dev:</Text>
+                    <Text
+                        color={colorTokens.gray.platinum} fontSize={13}
+                          onClick={() => handleCopy(agent.wallet ?? "", "Dev address")}
+                          _hover={{ color: colorTokens.green.erin, cursor: "pointer" }}>
+                        {shortenMiddle(agent.wallet?? "") ?? "—"}
+                    </Text>
+                </Flex>
+                <Flex justify="space-between" mb={2}>
+                    <Text color={colorTokens.gray.timberwolf} fontSize={13}>LP:</Text>
+                    <Text
+                        color={colorTokens.gray.platinum}
+                          onClick={() => handleCopy(pairAddress ?? "", "LP address")}
+                          _hover={{ color: colorTokens.green.erin, cursor: "pointer" }}
+                     fontSize={13}>
+                        {shortenMiddle(pairAddress?? "") ?? "—"}
+                    </Text>
+                </Flex>
+                {/*<Text*/}
+                {/*    color={colorTokens.gray.timberwolf}*/}
+                {/*    fontSize={13}*/}
+                {/*      onClick={() => handleCopy(pairAddress ?? "", "LP address")}*/}
+                {/*      _hover={{ color: colorTokens.green.erin, cursor: "pointer" }}>*/}
+                {/*    LP: {shortenMiddle(pairAddress?? "") ?? "—"}*/}
+                {/*</Text>*/}
+                {/*<Text*/}
+                {/*    color={colorTokens.gray.timberwolf}*/}
+                {/*    fontSize={13}*/}
+                {/*    onClick={() => handleCopy(agent.wallet ?? "", "Dev address")}*/}
+                {/*    _hover={{ color: colorTokens.green.erin, cursor: "pointer" }}>*/}
+                {/*    Dev: {shortenMiddle(agent.wallet?? "") ?? "—"}*/}
+                {/*</Text>*/}
+                { renderTokenInfoField("Reserves:", <>
+                        {" "}{reserves
+                    ? `${fromAtomic(reserveAPT, APT_DECIMALS)} APT / ${fromAtomic(reserveAG, agentDecimals)} ${agentSymbol}`
+                    : "—"}
+                    </>)}
+                {/*<Text color={colorTokens.gray.timberwolf} fontSize={13}>*/}
+                {/*    Reserves:{" "}*/}
+                {/*    {reserves*/}
+                {/*        ? `${fromAtomic(reserveAPT, APT_DECIMALS)} APT / ${fromAtomic(reserveAG, agentDecimals)} ${agentSymbol}`*/}
+                {/*        : "—"}*/}
+                {/*</Text>*/}
             </Box>
 
             {/* CTA */}
@@ -763,10 +852,10 @@ export default function TokenSwapForm({
                         color={tab === "buy" ? "rgba(31, 125, 32, 1)" : "white"}
                         _hover={{ bg: tab === "buy" ? colorTokens.green.erin : "rgba(231, 55, 55, 1)" }}
                         onClick={onExecute}
-                        disabled={submitting || quoting}
+                        disabled={submitting || quoting || !!balanceError}
                     >
                         {submitting && <Spinner size="sm" mr={2} />}
-                        {buttonLabel}
+                        {balanceError?balanceError:buttonLabel}
                     </Button>
                 )}
             </Flex>

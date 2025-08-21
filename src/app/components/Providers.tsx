@@ -6,6 +6,7 @@ import { system } from "./theme/theme";
 import { Suspense } from "react";
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { AptosWalletProvider } from "../context/AptosWalletContext";
+import {Toaster} from "@/components/ui/toaster";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <AptosWalletProvider sessionDuration={8 * 60 * 60 * 1000}>
             <Suspense fallback={<LoadingSpinner />}></Suspense>
             <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+            <Toaster />
           </AptosWalletProvider>
         </AptosWalletAdapterProvider>
       </ChakraProvider>

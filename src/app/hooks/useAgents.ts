@@ -6,7 +6,7 @@ export const useAgents = () =>
     useQuery<Agent[]>({
         queryKey: ["agents"],
         queryFn: async () => {
-            const res = await fetch("/api/agents");
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/all-agents`);
             if (!res.ok) throw new Error(`Failed to fetch agents: ${res.status}`);
             const data = await res.json();
             const apiAgents: Agent[] = data?.items ?? [];
