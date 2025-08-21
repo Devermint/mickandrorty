@@ -104,7 +104,6 @@ export const TradingViewWidget = ({
 		const options: ChartingLibraryWidgetOptions = {
 			...DEFAULT_CHART_OPTIONS,
 			symbol,
-			debug: true,
 			datafeed,
 			container: chartContainerRef.current,
 			overrides: {

@@ -16,7 +16,6 @@ import { Telegram } from "../icons/telegram";
 import { X } from "../icons/x";
 import { useRouter } from "next/navigation";
 import { AgentMarketInfo } from "./AgentMarketInfo";
-import { useAptosUsdPrice } from "@/app/hooks/use-usd-price";
 export function formatThousands(num: string | number, sep = ","): string {
   const s = String(num);
   const isNeg = s.startsWith("-");
@@ -64,8 +63,6 @@ export function formatTinyPrice(numStr?: string) {
 
 export const AgentInfoView = ({ agent }: { agent: Agent}) => {
   const router = useRouter();
-  const { price: aptosPriceUsd } = useAptosUsdPrice();
-
 
   const handleBackClick = () => {
     router.push("/agents");
