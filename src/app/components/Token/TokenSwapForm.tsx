@@ -759,32 +759,10 @@ export default function TokenSwapForm({
                  )}
                 {priceImpact != null && Number.isFinite(priceImpact) && (
 
-                    renderTokenInfoField("Price impact:", <>
+                    renderTokenInfoField("Price impact:", <div color={impactColor}>
                     {" "}{Number.isFinite(priceImpact) ? `${(priceImpact * 100).toFixed(2)}%` : "—%"} {quoting && <Spinner size="sm" ml={2} />}
-                </>)
+                </div>)
                )}
-                {/*<Text color={colorTokens.gray.timberwolf} fontSize={13}>*/}
-                {/*    /!* FIX: correct units + guard Infinity *!/*/}
-                {/*    Spot price:*/}
-                {/*    <>*/}
-                {/*        {" "}{isFiniteNum(spotPrice) ? formatTinyPrice(spotPrice!.toString()):"—"} {tab === "buy" ? `APT` : `${agentSymbol}`}*/}
-                {/*    </>*/}
-                {/* {quoting && <Spinner size="sm" ml={2} />}*/}
-                {/*</Text>*/}
-                {/*{isFiniteNum(executionPrice) && (*/}
-                {/*<Text color={colorTokens.gray.timberwolf} fontSize={13}>*/}
-                {/*    Execution price:*/}
-                {/*    <>*/}
-                {/*        {" "}{isFiniteNum(executionPrice) ? formatTinyPrice(executionPrice!.toString()):"—" } {tab === "buy" ? `APT` : `${agentSymbol}`}*/}
-                {/*    </>*/}
-                {/* {quoting && <Spinner size="sm" ml={2} />}*/}
-                {/*</Text>*/}
-                {/*)}*/}
-                {/*{priceImpact != null && Number.isFinite(priceImpact) && (*/}
-                {/*<Text color={impactColor} fontSize={13}>*/}
-                {/*    Price impact: {Number.isFinite(priceImpact) ? `${(priceImpact * 100).toFixed(2)}%` : "—%"} {quoting && <Spinner size="sm" ml={2} />}*/}
-                {/*</Text>*/}
-                {/*)}*/}
                 <Flex justify="space-between" mb={2}>
                     <Text color={colorTokens.gray.timberwolf} fontSize={13}>Dev:</Text>
                     <Text
@@ -804,31 +782,11 @@ export default function TokenSwapForm({
                         {shortenMiddle(pairAddress?? "") ?? "—"}
                     </Text>
                 </Flex>
-                {/*<Text*/}
-                {/*    color={colorTokens.gray.timberwolf}*/}
-                {/*    fontSize={13}*/}
-                {/*      onClick={() => handleCopy(pairAddress ?? "", "LP address")}*/}
-                {/*      _hover={{ color: colorTokens.green.erin, cursor: "pointer" }}>*/}
-                {/*    LP: {shortenMiddle(pairAddress?? "") ?? "—"}*/}
-                {/*</Text>*/}
-                {/*<Text*/}
-                {/*    color={colorTokens.gray.timberwolf}*/}
-                {/*    fontSize={13}*/}
-                {/*    onClick={() => handleCopy(agent.wallet ?? "", "Dev address")}*/}
-                {/*    _hover={{ color: colorTokens.green.erin, cursor: "pointer" }}>*/}
-                {/*    Dev: {shortenMiddle(agent.wallet?? "") ?? "—"}*/}
-                {/*</Text>*/}
                 { renderTokenInfoField("Reserves:", <>
                         {" "}{reserves
                     ? `${fromAtomic(reserveAPT, APT_DECIMALS)} APT / ${fromAtomic(reserveAG, agentDecimals)} ${agentSymbol}`
                     : "—"}
                     </>)}
-                {/*<Text color={colorTokens.gray.timberwolf} fontSize={13}>*/}
-                {/*    Reserves:{" "}*/}
-                {/*    {reserves*/}
-                {/*        ? `${fromAtomic(reserveAPT, APT_DECIMALS)} APT / ${fromAtomic(reserveAG, agentDecimals)} ${agentSymbol}`*/}
-                {/*        : "—"}*/}
-                {/*</Text>*/}
             </Box>
 
             {/* CTA */}

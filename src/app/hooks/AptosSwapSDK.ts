@@ -153,7 +153,6 @@ export class AptosSwapSDK {
       refreshIfStale = true,
       slippageBps?: number
   ) {
-    console.log("quoteexactout", {inMeta, outMeta, amountOut, refreshIfStale});
     const { reserves } = await this.getReserves(inMeta, outMeta, {
       refreshIfStale,
     });
@@ -187,10 +186,6 @@ export class AptosSwapSDK {
 
   getPoolAdminAddress(): string {
     if (!this._poolAdminAddr) {
-      console.log({
-        mod: this.moduleAddress,
-        seed: this.poolAdminSeed
-      })
       this._poolAdminAddr = createResourceAddress(
         this.moduleAddress,
         this.poolAdminSeed
@@ -214,7 +209,6 @@ export class AptosSwapSDK {
   }
   getPairAddress(xMeta: string, yMeta: string): string {
     const { seed } = this.orderAndSeed(xMeta, yMeta);
-    console.log({pooladdy: this.getPoolAdminAddress(), seed})
     return createResourceAddress(this.getPoolAdminAddress(), seed);
   }
   private pairKey(xMeta: string, yMeta: string) {
@@ -252,11 +246,8 @@ export class AptosSwapSDK {
     yMeta: string,
     opts?: { refresh?: boolean; refreshIfStale?: boolean }
   ) {
-    console.log("reserves,", xMeta, yMeta, opts);
     const key = this.pairKey(xMeta, yMeta);
-    console.log({key})
     const cached = this.reservesCache.get(key);
-    console.log({cached})
     const now = Date.now();
     const isExpired = !cached || now - cached.tsMs > this.CACHE_TTL_MS;
     const mustRefresh =
@@ -271,7 +262,6 @@ export class AptosSwapSDK {
     try {
       const pair = this.getPairAddress(xMeta, yMeta);
       const { a, b } = this.orderAndSeed(xMeta, yMeta);
-      console.log({pair,a,b})
       const [rx, ry] = await Promise.all([
         this.viewPrimaryBalance(pair, a),
         this.viewPrimaryBalance(pair, b),
@@ -364,11 +354,9 @@ export class AptosSwapSDK {
     refreshIfStale = true,
     slippageBps?: number
   ) {
-    console.log({inMeta, outMeta, amountIn, refreshIfStale});
     const { reserves } = await this.getReserves(inMeta, outMeta, {
       refreshIfStale,
     });
-    console.log({reserves})
     const { a, b } = this.orderAndSeed(inMeta, outMeta);
 
     const reserveIn =
@@ -590,7 +578,6 @@ export class AptosSwapSDK {
 
     const evt = tx.events.find((e: any) => e.type === createdEventType);
     if (!evt) return null;
-    console.log({ evt });
     // `meta` is the FA metadata object address in event.data
     return evt.data.meta as string;
   }
