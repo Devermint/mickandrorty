@@ -1,0 +1,3 @@
+button[data-scope="tabs"][data-part="trigger"][data-selected] {
+     --indicator-color: #51FE53 !important;
+ }

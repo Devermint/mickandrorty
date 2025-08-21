@@ -146,14 +146,15 @@ export function AptosSwapDemo() {
       // }
       //
       // // 5) RESERVES (after swap)
-      // try {
-      //   const { reserves } = await swapSDK.getReserves(xMeta, yMeta, {
-      //     refresh: true,
-      //   });
-      //   console.log("[DEMO] reserves (after swap):", reserves);
-      // } catch (e) {
-      //   console.error("[DEMO] reserves fetch failed:", e);
-      // }
+      try {
+        console.log({xMeta, yMeta});
+        const { reserves } = await swapSDK.getReserves(xMeta, yMeta, {
+          refresh: true,
+        });
+        console.log("[DEMO] reserves (after swap):", reserves);
+      } catch (e) {
+        console.error("[DEMO] reserves fetch failed:", e);
+      }
       //
       // // 6) REMOVE LIQUIDITY
       // try {

@@ -129,9 +129,68 @@ export class AptosSwapSDK {
     this.agentCreatorModule = `${this.moduleAddress}::agent_creator`;
     this.defaultSlippageBps = opts.defaultSlippageBps ?? 100;
   }
+// --- add near other helpers ---
+  private ceilDiv(n: bigint, d: bigint) {
+    if (d === 0n) throw new Error("division by zero");
+    return (n + d - 1n) / d;
+  }
+  getAmountIn(amountOut: bigint, reserveIn: bigint, reserveOut: bigint) {
+    // Uniswap v2 style with fee
+    if (amountOut <= 0n || reserveIn <= 0n || reserveOut <= 0n) return 0n;
+    if (amountOut >= reserveOut) throw new Error("insufficient liquidity");
+    const feeMul = FEE_SCALE - FEE_MULTIPLIER; // 9970 for 0.30%
+    // amountIn = ceil( reserveIn * amountOut * SCALE / ((reserveOut - amountOut) * feeMul) )
+    const num = reserveIn * amountOut * FEE_SCALE;
+    const den = (reserveOut - amountOut) * feeMul;
+    return this.ceilDiv(num, den);
+  }
+
+// --- new public quoteExactOut ---
+  async quoteExactOut(
+      inMeta: string,
+      outMeta: string,
+      amountOut: bigint,
+      refreshIfStale = true,
+      slippageBps?: number
+  ) {
+    console.log("quoteexactout", {inMeta, outMeta, amountOut, refreshIfStale});
+    const { reserves } = await this.getReserves(inMeta, outMeta, {
+      refreshIfStale,
+    });
+    const { a, b } = this.orderAndSeed(inMeta, outMeta);
+
+    const reserveIn =
+        normalizeAddr(inMeta) === a ? reserves.reserveX : reserves.reserveY;
+    const reserveOut =
+        normalizeAddr(outMeta) === b ? reserves.reserveY : reserves.reserveX;
+
+    const inAmt = this.getAmountIn(amountOut, reserveIn, reserveOut);
+    const spot = this.getSpotPrice(reserveIn, reserveOut);
+    const exec = this.getExecutionPrice(inAmt, amountOut);
+    const priceImpact = this.getPriceImpact(spot, exec);
+
+    // slippage tolerance → max input
+    const slip = slippageBps ?? this.defaultSlippageBps;
+    const maxIn = this.ceilDiv(inAmt * FEE_SCALE, FEE_SCALE - BigInt(slip));
+
+    return {
+      amountIn: inAmt,
+      maxIn,
+      slippageBps: slip,
+      spotPrice: spot,
+      executionPrice: exec,
+      priceImpact,
+      pairAddress: reserves.pairAddress,
+      reserves,
+    };
+  }
 
   getPoolAdminAddress(): string {
     if (!this._poolAdminAddr) {
+      console.log({
+        mod: this.moduleAddress,
+        seed: this.poolAdminSeed
+      })
       this._poolAdminAddr = createResourceAddress(
         this.moduleAddress,
         this.poolAdminSeed
@@ -155,6 +214,7 @@ export class AptosSwapSDK {
   }
   getPairAddress(xMeta: string, yMeta: string): string {
     const { seed } = this.orderAndSeed(xMeta, yMeta);
+    console.log({pooladdy: this.getPoolAdminAddress(), seed})
     return createResourceAddress(this.getPoolAdminAddress(), seed);
   }
   private pairKey(xMeta: string, yMeta: string) {
@@ -192,8 +252,11 @@ export class AptosSwapSDK {
     yMeta: string,
     opts?: { refresh?: boolean; refreshIfStale?: boolean }
   ) {
+    console.log("reserves,", xMeta, yMeta, opts);
     const key = this.pairKey(xMeta, yMeta);
+    console.log({key})
     const cached = this.reservesCache.get(key);
+    console.log({cached})
     const now = Date.now();
     const isExpired = !cached || now - cached.tsMs > this.CACHE_TTL_MS;
     const mustRefresh =
@@ -208,6 +271,7 @@ export class AptosSwapSDK {
     try {
       const pair = this.getPairAddress(xMeta, yMeta);
       const { a, b } = this.orderAndSeed(xMeta, yMeta);
+      console.log({pair,a,b})
       const [rx, ry] = await Promise.all([
         this.viewPrimaryBalance(pair, a),
         this.viewPrimaryBalance(pair, b),
@@ -300,9 +364,11 @@ export class AptosSwapSDK {
     refreshIfStale = true,
     slippageBps?: number
   ) {
+    console.log({inMeta, outMeta, amountIn, refreshIfStale});
     const { reserves } = await this.getReserves(inMeta, outMeta, {
       refreshIfStale,
     });
+    console.log({reserves})
     const { a, b } = this.orderAndSeed(inMeta, outMeta);
 
     const reserveIn =

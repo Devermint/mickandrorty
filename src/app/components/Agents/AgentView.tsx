@@ -43,7 +43,7 @@ export const AgentView = ({ agent }: Props) => {
       <GridItem colSpan={2}>
         <TradingViewWidget token={agent}></TradingViewWidget>
       </GridItem>
-      <GridItem colSpan={1}>
+      <GridItem colSpan={1} h="full" minH={0}>
         <AgentInfoView agent={agent}/>
       </GridItem>
     </Grid>
