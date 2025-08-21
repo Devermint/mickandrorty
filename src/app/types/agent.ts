@@ -9,8 +9,20 @@ export type Agent = {
   status?: string
   created?: string
   updated?: string
+  id?: string
   type?: AgentType
   tag?: string
+  liquidity_usd?: number
+  mcap_usd?: number
+  pair_address?: string
+  price_apt?: number
+  price_usd?: number
+  reserves: {
+    agent_decimals?: number,
+    agent_raw?: number,
+    apt_decimals?: number,
+    apt_raw?: number
+  },
 };
 
 export enum AgentType {
@@ -31,7 +43,13 @@ export const testAgents: Agent[] = [
     tx_hash: "0xa4dac3c4363d8b957c4d79e712860b6900ea86957c8cb1eeb3e13a05713cdf2d",
     status: "success",
     created: "2025-08-17T21:18:36.431Z",
-    updated: "2025-08-17T21:18:36.431Z"
+    updated: "2025-08-17T21:18:36.431Z",
+    reserves: {
+      agent_decimals: undefined,
+      agent_raw: undefined,
+      apt_decimals: undefined,
+      apt_raw: undefined
+    }
   },
   {
     fa_id: "0f268864-9777-4a0b-bc66-66a386d14778",
@@ -45,7 +63,13 @@ export const testAgents: Agent[] = [
     tx_hash: "0xb7e1ccf66787e2962803bdfd4328547ac0d840615e4fe98dab97a2c369acddf8",
     status: "success",
     created: "2025-08-17T21:18:36.431Z",
-    updated: "2025-08-17T21:18:36.431Z"
+    updated: "2025-08-17T21:18:36.431Z",
+    reserves: {
+      agent_decimals: undefined,
+      agent_raw: undefined,
+      apt_decimals: undefined,
+      apt_raw: undefined
+    }
   },
   {
     fa_id: "662ea2ee-1e4f-4a00-9130-a771f4b84cc2",
@@ -59,7 +83,13 @@ export const testAgents: Agent[] = [
     tx_hash: "0x12eaffc763874749ec9b8893ea3e7777c8cbbc939d0157e5f633a765f29bb6b8",
     status: "success",
     created: "2025-08-17T21:18:36.431Z",
-    updated: "2025-08-17T21:18:36.431Z"
+    updated: "2025-08-17T21:18:36.431Z",
+    reserves: {
+      agent_decimals: undefined,
+      agent_raw: undefined,
+      apt_decimals: undefined,
+      apt_raw: undefined
+    }
   }
 ];
 
