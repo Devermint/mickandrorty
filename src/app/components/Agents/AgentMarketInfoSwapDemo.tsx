@@ -7,7 +7,7 @@ import { Network } from "aptos";
 export function AptosSwapDemo() {
   const { wallet, account, isConnected } = useAptosWallet();
 
-  // Fullnode URL that works with @aptos-labs/ts-sdk (include /v1)
+  // Fullnode URL that works with @aptos-labs/ts-sdk
   const nodeUrl =
     "https://ultra-withered-patina.aptos-mainnet.quiknode.pro/804be4e05ef290503e6020df7efd44fb2ad52b8c/v1";
 
