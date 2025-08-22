@@ -15,6 +15,7 @@ import { useAgentsInfinite } from "@/app/hooks/useAgentsInfinite";
 import type { Agent } from "@/app/types/agent";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { AgentListCard } from "@/app/components/Agents/AgentListCard";
+import { colorTokens } from "@/app/components/theme/theme";
 
 function useDebounced<T>(value: T, ms = 350) {
   const [v, setV] = useState(value);
@@ -112,11 +113,12 @@ export default function AgentExplorerPage() {
         )}
 
         <SimpleGrid
-          minChildWidth="250px"
-          gap="5rem 2rem"
+          minChildWidth="200px"
+          gap={10}
           justifyItems="center"
           alignItems="start"
-          w={{ base: "90%", md: "70%" }}
+          flex={1}
+          maxW={{ base: "90%", md: "70%" }}
         >
           {agents.map((agent) => (
             <Box
@@ -126,14 +128,14 @@ export default function AgentExplorerPage() {
               cursor="pointer"
               bg={cardBg}
               border={`1px solid ${border}`}
-              borderRadius="xl"
+              borderRadius={20}
               _hover={{
                 transform: "translateY(-2px)",
                 boxShadow: `0 0 0 1px ${neonSoft}, 0 0 24px ${neonSoft}`,
               }}
               transition="all 160ms ease"
             >
-              <AgentListCard isActive={true} agent={agent} />
+              <AgentListCard agent={agent} />
             </Box>
           ))}
         </SimpleGrid>
@@ -152,7 +154,7 @@ export default function AgentExplorerPage() {
               Load more
             </Button>
           ) : agents.length > 0 ? (
-            <Text color="gray.400">No more agents</Text>
+            <Text color={colorTokens.green.darkErin}>No more agents</Text>
           ) : null}
         </Flex>
 

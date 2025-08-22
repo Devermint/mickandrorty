@@ -1,10 +1,11 @@
 "use client";
 import { AgentCarousel } from "@/app/components/Agents/AgentCarousel";
-import { Box, Flex, Spinner, Text } from "@chakra-ui/react";
+import { Box, Flex, Spacer, Spinner, Text } from "@chakra-ui/react";
 import { useRef, useState, useEffect } from "react";
 import { AgentInput } from "@/app/components/Agents/AgentInput";
 import { useRouter } from "next/navigation";
 import { useAgents } from "@/app/hooks/useAgents";
+import { colorTokens } from "../theme/theme";
 
 export default function AgentsPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -45,18 +46,28 @@ export default function AgentsPage() {
       pb={{ base: 10, md: 20 }}
       zIndex={1}
       overflow={{ base: "hidden", md: "visible" }}
+      flex={1}
     >
+      {isLoading && (
+        <Flex
+          justify="center"
+          mb={4}
+          flex={1}
+          direction="column"
+          align="center"
+          minH="70%"
+        >
+          <Spacer />
+          <Spinner size="xl" color={colorTokens.green.erin} />
+          <Spacer />
+        </Flex>
+      )}
       <Box
         h="100%"
         alignItems="center"
         maxW={{ base: "100%", md: 750 }}
         overflow={{ base: "hidden", md: "visible" }}
       >
-        {isLoading && (
-          <Flex justify="center" mb={4}>
-            <Spinner size="sm" />
-          </Flex>
-        )}
         {isError && (
           <Text color="red.400" mb={2}>
             Failed to load agents.
@@ -64,21 +75,22 @@ export default function AgentsPage() {
         )}
 
         {agents.length > 0 && (
-          <AgentCarousel
-            agents={agents}
-            activeId={activeId}
-            setActiveId={setActiveId}
-          />
+          <>
+            <AgentCarousel
+              agents={agents}
+              activeId={activeId}
+              setActiveId={setActiveId}
+            />
+            <AgentInput
+              mt={100}
+              h={100}
+              p={0}
+              mx={2}
+              inputRef={textareaRef}
+              onButtonClick={handleSend}
+            />
+          </>
         )}
-
-        <AgentInput
-          mt={100}
-          h={100}
-          p={0}
-          mx={2}
-          inputRef={textareaRef}
-          onButtonClick={handleSend}
-        />
       </Box>
     </Flex>
   );

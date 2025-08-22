@@ -7,6 +7,7 @@ import { AgentView } from "@/app/components/Agents/AgentView";
 import { MobileAgentView } from "@/app/components/Agents/MobileAgentView";
 import { useAgent } from "@/app/hooks/useAgent";
 import { testAgents } from "@/app/types/agent";
+import { colorTokens } from "@/app/components/theme/theme";
 
 export default function Page({
   params,
@@ -20,8 +21,13 @@ export default function Page({
   if (isLoading) {
     return (
       <FullHeightLayout>
-        <Flex justify="center" align="center" h="100%">
-          <Spinner size="lg" />
+        <Flex
+          justify="center"
+          align="center"
+          h="100%"
+          color={colorTokens.green.erin}
+        >
+          <Spinner size="xl" />
         </Flex>
       </FullHeightLayout>
     );
