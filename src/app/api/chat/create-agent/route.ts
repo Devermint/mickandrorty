@@ -50,24 +50,22 @@ Formatting rules for any NON-tool reply (Markdown):
 - tokenDescription: {{tokenDescription or blank}}
 - tokenImage: {{tokenImage or blank}}
 
-CRITICAL IMAGE UPLOAD RULES:
-- If tokenName, tokenTicker, and tokenDescription are provided but tokenImage is missing,
-  you MUST ALWAYS call the "request_token_image" function with these exact parameters:
-  {
-    "name": "request_token_image",
-    "arguments": {
-      "prompt": "Please upload your token image",
-      "accept": ["image/png", "image/jpeg", "image/webp"],
-      "maxSizeBytes": 2097152,
-      "minWidth": 256,
-      "minHeight": 256
-    }
-  }
-- NEVER ask for an image upload without calling the request_token_image function
-- Do NOT call submit_agent until tokenImage is provided
-- When the user later provides tokenImage, continue the flow toward single-shot confirmation
-- When confirming and tokenImage is present, include:
-  ![Token image](url)
+CRITICAL IMAGE UPLOAD PROTOCOL (mandatory and immediate):
+• As soon as tokenName, tokenTicker, and tokenDescription are all present, and tokenImage is not yet set, you MUST IMMEDIATELY call the tool \`request_token_image\`.
+• Do not ask the user whether they have an image. Do not phrase it as an option. Always trigger the upload request automatically.
+• Call with minimal args unless constraints change:
+  { prompt: "Please upload your token image", includeInResponse: false }
+  (All other parameters fall back to tool defaults.)
+• In that turn, you MUST send only the tool call — no natural language, no explanation, no markdown, no code fences. 
+• Do not say you are "prompting" or "calling" the tool. Just call it.
+• After the tool result, validate mime/type/size/dimensions; if invalid, call \`request_token_image\` again with a revised \`prompt\` inside the tool arguments. 
+• Do NOT call submit_agent until tokenImage is present AND the user has explicitly answered "yes".
+• When confirming and tokenImage is present, include the preview:
+  ![Token image]({tokenImage.url})
+• Never narrate or display raw tool-call JSON or code.
+
+FINAL ACTION SANITY CHECK (pre-send guard):
+Before sending any assistant message, if tokenName, tokenTicker, and tokenDescription are present but tokenImage is missing, replace the message with a \`request_token_image\` tool call.
 
 Confirm? (yes/no)
 `;
@@ -96,6 +94,7 @@ export async function POST(req: NextRequest) {
 
   const msg = resp.choices[0].message;
 
+  console.log(msg);
   if (msg.tool_calls?.length) {
     for (const tc of msg.tool_calls) {
       if (tc.type === "function") {
@@ -125,6 +124,10 @@ async function handleToolCall(
   msg: OpenAI.Chat.Completions.ChatCompletionMessage,
   messages: any
 ) {
+  console.log("Function name: ", tc.function.name);
+  console.log("------------------------------------------");
+  messages.forEach((x: any) => console.log(x));
+  console.log("------------------------------------------");
   switch (tc.function.name) {
     case "request_token_image":
       return await uploadImageToolCall(tc, msg, messages);

@@ -24,7 +24,11 @@ export function formatThousands(num: string | number, sep = ","): string {
   const [intPart, fracPart] = body.split(".");
   const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
 
-  return (isNeg ? "-" : "") + grouped + (fracPart !== undefined ? "." + fracPart : "");
+  return (
+    (isNeg ? "-" : "") +
+    grouped +
+    (fracPart !== undefined ? "." + fracPart : "")
+  );
 }
 export function formatTinyPrice(numStr?: string) {
   if (!numStr) return <>{numStr}</>;
@@ -46,22 +50,22 @@ export function formatTinyPrice(numStr?: string) {
   // If there are leading zeros, show 0 + <sup>(additional zeros)</sup>
   if (trueZeroCount > 0) {
     return (
-        <>
-          {intFmt}.0{trueZeroCount - 1 > 0 && <sup>{trueZeroCount - 1}</sup>}
-          {significant}
-        </>
+      <>
+        {intFmt}.0{trueZeroCount - 1 > 0 && <sup>{trueZeroCount - 1}</sup>}
+        {significant}
+      </>
     );
   }
 
   // No leading zeros → normal 4-digit fractional
   return (
-      <>
-        {intFmt}.{significant}
-      </>
+    <>
+      {intFmt}.{significant}
+    </>
   );
 }
 
-export const AgentInfoView = ({ agent }: { agent: Agent}) => {
+export const AgentInfoView = ({ agent }: { agent: Agent }) => {
   const router = useRouter();
 
   const handleBackClick = () => {
@@ -98,29 +102,16 @@ export const AgentInfoView = ({ agent }: { agent: Agent}) => {
             position="relative"
             w={71}
             h={71}
-            borderRadius="full"
+            borderRadius={6}
             overflow="hidden"
           >
             <Image
-              src="/agents/agent-bg.gif"
-              alt="swirl"
+              src={agent.agent_icon_url}
+              alt="overlay icon"
               width="100%"
               height="100%"
               objectFit="cover"
-              scale={2}
-            />
-
-            <Image
-              src={agent.agent_icon_url}
-              alt="overlay icon"
-              position="absolute"
-              top="5"
-              left="0"
-              width="100%"
-              height="100%"
-              objectFit="contain"
               pointerEvents="none"
-              scale={1.2}
             />
           </Box>
         </Flex>
@@ -168,7 +159,7 @@ export const AgentInfoView = ({ agent }: { agent: Agent}) => {
             </Button>
           </Flex>
         </Flex>
-        <AgentMarketInfo mt={5} agent={agent}/>
+        <AgentMarketInfo mt={5} agent={agent} />
       </Flex>
       <Spacer />
       <TokenSwapForm agent={agent} />

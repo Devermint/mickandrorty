@@ -5,23 +5,16 @@ import {
   Box,
   Button,
   Flex,
-  Heading,
-  Input,
-  InputElement,
-  InputGroup,
   SimpleGrid,
   Spinner,
   Text,
   Skeleton,
-  Badge,
-  HStack,
 } from "@chakra-ui/react";
-import { SearchIcon } from "@chakra-ui/icons";
 import { useTransitionRouter } from "next-view-transitions";
 import { useAgentsInfinite } from "@/app/hooks/useAgentsInfinite";
 import type { Agent } from "@/app/types/agent";
-import { AgentCard } from "@/app/components/Agents/AgentCard";
 import { useColorModeValue } from "@/components/ui/color-mode";
+import { AgentListCard } from "@/app/components/Agents/AgentListCard";
 
 function useDebounced<T>(value: T, ms = 350) {
   const [v, setV] = useState(value);
@@ -80,30 +73,32 @@ export default function AgentExplorerPage() {
         position="absolute"
         inset={0}
         pointerEvents="none"
-        bgImage={`radial-gradient(circle at 50% 20%, rgba(86,240,159,0.08), transparent 50%), 
-                   linear-gradient(transparent 23px, rgba(86,240,159,0.07) 24px),
-                   linear-gradient(90deg, transparent 23px, rgba(86,240,159,0.07) 24px)`}
         bgSize="100% 100%, 24px 24px, 24px 24px"
         opacity={0.5}
       />
-      <Box
-        position="absolute"
-        inset={0}
-        bgGradient="radial-gradient(80% 60% at 50% -10%, rgba(86,240,159,0.12), transparent 60%)"
-        pointerEvents="none"
-      />
+      <Box position="absolute" inset={0} pointerEvents="none" />
 
-      <Flex direction="column" px={{ base: 3, md: 6 }} py={{ base: 4, md: 8 }} gap={5} position="relative">
-
+      <Flex
+        direction="column"
+        px={{ base: 3, md: 6 }}
+        py={{ base: 4, md: 8 }}
+        gap={5}
+        position="relative"
+        w="100%"
+        align="center"
+      >
         {isLoading && !data && (
-          <SimpleGrid columns={{ base: 2, sm: 2, md: 3, lg: 4, xl: 5 }} gap="2rem 2rem">
+          <SimpleGrid
+            columns={{ base: 2, sm: 2, md: 3, lg: 4, xl: 5 }}
+            gap="2rem 2rem"
+          >
             {Array.from({ length: 12 }).map((_, i) => (
               <Skeleton
                 key={i}
                 variant="shine"
                 height="250px"
                 borderRadius="xl"
-                  css={{
+                css={{
                   "--start-color": "rgba(0, 255, 119, 0.6)",
                   "--end-color": "rgba(86, 240, 158, 0.34)",
                 }}
@@ -121,6 +116,7 @@ export default function AgentExplorerPage() {
           gap="5rem 2rem"
           justifyItems="center"
           alignItems="start"
+          w={{ base: "90%", md: "70%" }}
         >
           {agents.map((agent) => (
             <Box
@@ -137,7 +133,7 @@ export default function AgentExplorerPage() {
               }}
               transition="all 160ms ease"
             >
-              <AgentCard isActive={true} agent={agent} />
+              <AgentListCard isActive={true} agent={agent} />
             </Box>
           ))}
         </SimpleGrid>

@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 const fetchAptosUsdPrice = async () => {
-  const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/apt-price`
-  );
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/apt-price`);
 
   if (!res.ok) throw new Error("Failed to fetch Aptos price");
 
@@ -13,10 +11,15 @@ const fetchAptosUsdPrice = async () => {
 };
 
 export const useAptosUsdPrice = () => {
-  const { data: aptosUsd, isLoading, error } = useQuery({
+  const {
+    data: aptosUsd,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["aptos-usd-price"],
     queryFn: fetchAptosUsdPrice,
     refetchInterval: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   return {

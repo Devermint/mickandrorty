@@ -1,7 +1,7 @@
 "use client";
 import { Flex } from "@chakra-ui/react";
 
-export default function ChatPage() {
+export default function MyAgentsPage() {
   return (
     <Flex
       flexDirection="column"

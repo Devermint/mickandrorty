@@ -6,8 +6,13 @@ import FullHeightLayout from "@/app/components/Layout/FullHeightLayout";
 import { AgentView } from "@/app/components/Agents/AgentView";
 import { MobileAgentView } from "@/app/components/Agents/MobileAgentView";
 import { useAgent } from "@/app/hooks/useAgent";
+import { testAgents } from "@/app/types/agent";
 
-export default function Page({ params }: { params: Promise<{ agent: string }> }) {
+export default function Page({
+  params,
+}: {
+  params: Promise<{ agent: string }>;
+}) {
   const { agent: faId } = React.use(params);
 
   const { data: agent, isLoading, isError, error } = useAgent(faId);
@@ -36,7 +41,14 @@ export default function Page({ params }: { params: Promise<{ agent: string }> })
 
   return (
     <FullHeightLayout>
-      <Box as="main" flex="1" overflowY="auto" overflowX="hidden" position="relative" minH={0}>
+      <Box
+        as="main"
+        flex="1"
+        overflowY="auto"
+        overflowX="hidden"
+        position="relative"
+        minH={0}
+      >
         <Flex
           w="full"
           h="full"

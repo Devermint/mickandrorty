@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import ChatPage from "../chat/page";
 import FullHeightLayout from "@/app/components/Layout/FullHeightLayout";
+import MyAgentsPage from "./page";
 
 export const metadata: Metadata = {
   title: "Chat | Aptoslayer.ai",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function ChatLayout() {
   return (
     <FullHeightLayout>
-      <ChatPage />;
+      <MyAgentsPage />;
     </FullHeightLayout>
   );
 }

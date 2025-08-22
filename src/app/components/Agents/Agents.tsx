@@ -4,7 +4,6 @@ import { Box, Flex, Spinner, Text } from "@chakra-ui/react";
 import { useRef, useState, useEffect } from "react";
 import { AgentInput } from "@/app/components/Agents/AgentInput";
 import { useRouter } from "next/navigation";
-import type { Agent } from "@/app/types/agent";
 import { useAgents } from "@/app/hooks/useAgents";
 
 export default function AgentsPage() {

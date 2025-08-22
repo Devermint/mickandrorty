@@ -21,7 +21,6 @@ export const AgentCarousel = ({
   activeId,
   setActiveId,
 }: AgentCarouselProps) => {
-  console.log("Inner agents", agents);
   const innerRefs = useRef<HTMLDivElement[]>([]);
 
   const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;

@@ -54,7 +54,11 @@ export const MarkdownView = ({
                 <img
                   src={blobMatch[1]}
                   alt={props.alt || "Image"}
-                  style={{ maxWidth: "100%" }}
+                  style={{
+                    maxWidth: "100%",
+                    borderRadius: "10px",
+                    paddingTop: "4px",
+                  }}
                 />
               );
             }

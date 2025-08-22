@@ -165,7 +165,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
       el.value = "";
       el.blur();
 
-      if (agent.type === AgentType.AgentCreator) {
+      if (agent.agent_type === AgentType.AgentCreator) {
         const response = await fetch("/api/chat/create-agent", {
           method: "POST",
           headers: {
@@ -366,7 +366,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
           throw new Error("Upload succeeded but no URL returned.");
 
         if (inputMessage.current) {
-          inputMessage.current.value = `Here is the tokenImage: ![Image](${json.url})`;
+          inputMessage.current.value = `Here is my token image: ![Image](${json.url})`;
           await onMessageSend();
         }
       } catch (e: any) {
@@ -393,7 +393,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
   return (
     <Flex
       bg={colorTokens.blackCustom.a1}
-      borderRadius={{ base: 0, md: 20 }}
+      borderRadius={{ base: 0, md: 13 }}
       maxW={800}
       w={{ base: "100%", lg: 800 }}
       flexDirection="column"
@@ -411,10 +411,10 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
           py={1}
           display={{ base: "none", md: "flex" }}
         >
-          <Icon size="lg">
-            <StarsIcon color="#C7CAC8" />
+          <Icon size="md" mb="2px">
+            <StarsIcon color={colorTokens.green.erin} />
           </Icon>
-          <Text p={{ base: 1, md: 4 }} fontSize="lg">
+          <Text px={{ base: 1, md: 2 }} py={{ base: 1, md: 2 }} fontSize="lg">
             Chat
           </Text>
         </Flex>
