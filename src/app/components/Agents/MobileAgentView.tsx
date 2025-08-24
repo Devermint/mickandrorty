@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ChatEntryProps } from "../Chat/ChatEntry";
 import { Chart } from "../Chart/Chart";
+import TradingViewWidget from "../Chart/trading-view-widget";
 
 export type TabKey = "info" | "chart" | "chat";
 
@@ -41,7 +42,7 @@ export const MobileAgentView = ({ agent }: Props) => {
           </Tabs.Content>
 
           <Tabs.Content value="chart" p={0}>
-            <Chart />
+            <TradingViewWidget token={agent} isMobile></TradingViewWidget>
           </Tabs.Content>
 
           <Tabs.Content value="chat" p={0}>

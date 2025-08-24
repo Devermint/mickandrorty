@@ -115,19 +115,19 @@ export const createAgent = async (
     throw e;
   }
 
-  try {
-    const payload = swapSDK.buildRegisterPoolTx(
-      baseMeta,
-      quoteMeta,
-      userAddress
-    );
-    console.log(payload, wallet);
-    const res = await swapSDK.submitWithWallet(wallet, payload);
-    result.poolHash = res.hash;
-    console.log("create_pool tx:", res.hash);
-  } catch (e) {
-    console.warn("create_pool skipped or failed (pool may already exist):", e);
-  }
+  // try {
+  //   const payload = swapSDK.buildRegisterPoolTx(
+  //     baseMeta,
+  //     quoteMeta,
+  //     userAddress
+  //   );
+  //   console.log(payload, wallet);
+  //   const res = await swapSDK.submitWithWallet(wallet, payload);
+  //   result.poolHash = res.hash;
+  //   console.log("create_pool tx:", res.hash);
+  // } catch (e) {
+  //   console.warn("create_pool skipped or failed (pool may already exist):", e);
+  // }
 
   try {
     const { payload, computed } = await swapSDK.buildAddLiquidityTx(
@@ -155,21 +155,21 @@ export const createAgent = async (
     console.error("reserves fetch failed:", e);
   }
 
-  try {
-    const { payload, computed } = await swapSDK.buildSwapTx(
-      baseMeta,
-      quoteMeta,
-      amountIn,
-      userAddress
-    );
-    console.log({ payload, computed });
-    console.log("swap expectedOut/minOut:", computed);
-    const res = await swapSDK.submitWithWallet(wallet, payload);
-    result.swapHash = res.hash;
-    console.log("swap tx:", res.hash);
-  } catch (e) {
-    console.error("swap failed:", e);
-  }
+  // try {
+  //   const { payload, computed } = await swapSDK.buildSwapTx(
+  //     baseMeta,
+  //     quoteMeta,
+  //     amountIn,
+  //     userAddress
+  //   );
+  //   console.log({ payload, computed });
+  //   console.log("swap expectedOut/minOut:", computed);
+  //   const res = await swapSDK.submitWithWallet(wallet, payload);
+  //   result.swapHash = res.hash;
+  //   console.log("swap tx:", res.hash);
+  // } catch (e) {
+  //   console.error("swap failed:", e);
+  // }
 
   try {
     const { reserves } = await swapSDK.getReserves(baseMeta, quoteMeta, {
@@ -180,26 +180,26 @@ export const createAgent = async (
     console.error("reserves fetch failed:", e);
   }
 
-  try {
-    const lpBalance = await swapSDK.getWalletLPBalance(
-      userAddress,
-      baseMeta,
-      quoteMeta
-    );
-    const { payload, computed } = await swapSDK.buildRemoveLiquidityTx(
-      baseMeta,
-      quoteMeta,
-      lpBalance.lpBalance,
-      userAddress
-    );
-    console.log(":", payload);
-    console.log("remove_liquidity expected/min:", computed);
-    const res = await swapSDK.submitWithWallet(wallet, payload);
-    result.removeLiquidityHash = res.hash;
-    console.log("remove_liquidity tx:", res.hash);
-  } catch (e) {
-    console.error("remove_liquidity failed:", e);
-  }
+  // try {
+  //   const lpBalance = await swapSDK.getWalletLPBalance(
+  //     userAddress,
+  //     baseMeta,
+  //     quoteMeta
+  //   );
+  //   const { payload, computed } = await swapSDK.buildRemoveLiquidityTx(
+  //     baseMeta,
+  //     quoteMeta,
+  //     lpBalance.lpBalance,
+  //     userAddress
+  //   );
+  //   console.log(":", payload);
+  //   console.log("remove_liquidity expected/min:", computed);
+  //   const res = await swapSDK.submitWithWallet(wallet, payload);
+  //   result.removeLiquidityHash = res.hash;
+  //   console.log("remove_liquidity tx:", res.hash);
+  // } catch (e) {
+  //   console.error("remove_liquidity failed:", e);
+  // }
 
   console.log("sequence complete");
   return result;

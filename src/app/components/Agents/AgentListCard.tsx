@@ -4,6 +4,7 @@ import { X } from "../icons/x";
 import { Telegram } from "../icons/telegram";
 import { Agent } from "@/app/types/agent";
 import { colorTokens } from "../theme/theme";
+import { formatTinyPrice, isFiniteNum } from "@/app/lib/utils/formatters";
 type AgentCardProps = {
   agent: Agent;
 };
@@ -73,20 +74,47 @@ export const AgentListCard = ({ agent }: AgentCardProps) => (
       <Box w="full" mt={6} pb={2}>
         <Flex justify="space-between" mb={2}>
           <Text color={colorTokens.gray.timberwolf} fontSize={13}>
-            Market CAP
+            Price
           </Text>
 
-          <Text color={colorTokens.gray.platinum} fontSize={13}>
-            {agent.mcap_usd}
+          <Text color={colorTokens.green.erin} fontSize={13}>
+            <>
+              {isFiniteNum(agent.price_usd) ? (
+                <>${formatTinyPrice(agent.price_usd!.toString())}</>
+              ) : (
+                "—"
+              )}
+            </>
           </Text>
         </Flex>
         <Flex justify="space-between" mb={2}>
           <Text color={colorTokens.gray.timberwolf} fontSize={13}>
-            Trades in 24h
+            Market CAP
           </Text>
 
-          <Text color={colorTokens.gray.platinum} fontSize={13}>
-            NaN
+          <Text color={colorTokens.green.erin} fontSize={13}>
+            <>
+              {isFiniteNum(agent.mcap_usd) ? (
+                <>${formatTinyPrice(agent.mcap_usd!.toString())}</>
+              ) : (
+                "—"
+              )}
+            </>
+          </Text>
+        </Flex>
+        <Flex justify="space-between" mb={2}>
+          <Text color={colorTokens.gray.timberwolf} fontSize={13}>
+            Liquidity
+          </Text>
+
+          <Text color={colorTokens.green.erin} fontSize={13}>
+            <>
+              {isFiniteNum(agent.liquidity_usd) ? (
+                <>${formatTinyPrice(agent.liquidity_usd!.toString())}</>
+              ) : (
+                "—"
+              )}
+            </>
           </Text>
         </Flex>
       </Box>

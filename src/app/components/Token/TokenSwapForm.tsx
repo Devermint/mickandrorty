@@ -20,6 +20,15 @@ import { toaster } from "@/components/ui/toaster";
 import { Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 import { Network } from "aptos";
 import { AptosSwapSDK } from "@/app/hooks/AptosSwapSDK";
+import {
+  addrLT,
+  formatThousands,
+  formatTinyPrice,
+  isFiniteNum,
+  normalizeHex,
+  sanitizeDecimalInput,
+} from "@/app/lib/utils/formatters";
+import { fromAtomic, toAtomic } from "@/app/lib/utils/conversion";
 
 /* ------------------------------ constants -------------------------------- */
 const APT_META =
@@ -27,88 +36,7 @@ const APT_META =
 const APT_DECIMALS = 8;
 const REFRESH_MS = 15000;
 
-/* ----------------------------- utils/format ------------------------------- */
-export function formatThousands(num: string | number, sep = ","): string {
-  const s = String(num);
-  const isNeg = s.startsWith("-");
-  const body = isNeg ? s.slice(1) : s;
-  const [intPart, fracPart] = body.split(".");
-  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
-  return (
-    (isNeg ? "-" : "") +
-    grouped +
-    (fracPart !== undefined ? "." + fracPart : "")
-  );
-}
-
-export function formatTinyPrice(numStr?: string) {
-  if (!numStr) return <>{numStr}</>;
-  if (!numStr.includes(".")) return <>{formatThousands(numStr)}</>;
-  const [intPart, fracPart] = numStr.split(".");
-  let trueZeroCount = 0;
-  while (fracPart[trueZeroCount] === "0") trueZeroCount++;
-  const significant = fracPart.slice(trueZeroCount).slice(0, 4).padEnd(4, "0");
-  const intFmt = formatThousands(intPart);
-  if (trueZeroCount > 0) {
-    return (
-      <>
-        {intFmt}.0{trueZeroCount - 1 > 0 && <sup>{trueZeroCount - 1}</sup>}
-        {significant}
-      </>
-    );
-  }
-  return (
-    <>
-      {intFmt}.{significant}
-    </>
-  );
-}
-
-function sanitizeDecimalInput(raw: string, maxDecimals: number): string {
-  let s = raw.replace(/[^0-9.]/g, "");
-  const parts = s.split(".");
-  if (parts.length > 2) s = parts[0] + "." + parts.slice(1).join("");
-  const [ip, fp = ""] = s.split(".");
-  const trimmedFp = fp.slice(0, Math.max(0, maxDecimals));
-  if (ip && ip !== "0" && ip.startsWith("0")) {
-    const n = String(parseInt(ip, 10));
-    s = n + (trimmedFp ? "." + trimmedFp : "");
-  } else {
-    s =
-      (ip || "0") + (trimmedFp ? "." + trimmedFp : s.endsWith(".") ? "." : "");
-  }
-  if (s === "." || s === "") s = "0";
-  return s;
-}
-
-function toAtomic(amountStr: string, decimals: number): bigint {
-  const [i, f = ""] = amountStr.split(".");
-  const frac = f.padEnd(decimals, "0").slice(0, decimals);
-  const whole = BigInt(i || "0");
-  const fracBI = BigInt(frac || "0");
-  return whole * BigInt(10) ** BigInt(decimals) + fracBI;
-}
-function fromAtomic(amount: bigint, decimals: number): string {
-  const base = BigInt(10) ** BigInt(decimals);
-  const i = amount / base;
-  const f = amount % base;
-  if (f === 0n) return i.toString();
-  const fStr = f.toString().padStart(decimals, "0").replace(/0+$/, "");
-  return `${i.toString()}.${fStr}`;
-}
-function normalizeHex(addr: string) {
-  const a = addr.toLowerCase();
-  return a.startsWith("0x") ? a : `0x${a}`;
-}
 // NEW: compare addresses canonical (match SDK ordering)
-function addrLT(a: string, b: string) {
-  try {
-    return BigInt(normalizeHex(a)) < BigInt(normalizeHex(b));
-  } catch {
-    return normalizeHex(a) < normalizeHex(b);
-  }
-}
-const isFiniteNum = (n: number | null) => n != null && Number.isFinite(n);
 
 /* ------------------------------ price feed -------------------------------- */
 function useAptUsd() {

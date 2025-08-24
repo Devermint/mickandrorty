@@ -110,7 +110,7 @@ export const TradingViewWidget = ({
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!loaded || !chartContainerRef.current) return;
+    if (!loaded || !chartContainerRef.current || !token) return;
 
     // symbol must be the agent coin type that backend expects
     const symbol = token.agent_symbol ?? "Asd";

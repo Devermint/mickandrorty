@@ -69,7 +69,7 @@ export default function AgentExplorerPage() {
   const openAgent = (faId: string) => router.push(`/agent/${faId}`);
 
   return (
-    <Box position="relative" overflow="hidden">
+    <Box position="relative" overflowX="hidden" overflowY="scroll">
       <Box
         position="absolute"
         inset={0}
@@ -113,7 +113,7 @@ export default function AgentExplorerPage() {
         )}
 
         <SimpleGrid
-          minChildWidth="200px"
+          minChildWidth="220px"
           gap={10}
           justifyItems="center"
           alignItems="start"
