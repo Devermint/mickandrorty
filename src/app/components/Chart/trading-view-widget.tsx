@@ -150,8 +150,13 @@ export const TradingViewWidget = ({
     chart.current.onChartReady(() => {
       console.log("📊 Chart is ready, scrolling to latest data...");
       try {
-        // Get the chart object and scroll to the rightmost position
+		if(isMobile) {
+			chart.current?.applyOverrides({
+				"scalesProperties.fontSize": 5,
+			});
+		}
         const chartWidget = chart.current?.chart();
+		
         if (chartWidget) {
           // Set visible range to show latest data with more context
           const now = Math.floor(Date.now() / 1000);
