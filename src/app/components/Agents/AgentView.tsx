@@ -1,14 +1,14 @@
 "use client";
 
 import Chat from "@/app/components/Chat/Chat";
-import type { Agent } from "@/app/types/agent";
+import { AgentType, type Agent } from "@/app/types/agent";
 import { useState } from "react";
-import { ChatEntryProps } from "../Chat/ChatEntry";
 import { Grid, GridItem } from "@chakra-ui/react";
 import { Chart } from "../Chart/Chart";
 import { colorTokens } from "../theme/theme";
 import { AgentInfoView } from "./AgentInfoView";
 import TradingViewWidget from "../Chart/trading-view-widget";
+import { ChatEntryProps } from "@/app/types/message";
 
 export type TabKey = "info" | "chart" | "chat";
 
@@ -19,7 +19,6 @@ interface Props {
 // also will need to wire
 export const AgentView = ({ agent }: Props) => {
   const [messages, setMessages] = useState<ChatEntryProps[]>([]);
-
   return (
     <Grid
       templateColumns="repeat(4, 1fr)"
@@ -38,6 +37,7 @@ export const AgentView = ({ agent }: Props) => {
           w="100%"
           minH="0"
           bg={colorTokens.blackCustom.a2}
+          enableGroupChat={!(agent.agent_type === AgentType.AgentCreator)}
         />
       </GridItem>
       <GridItem colSpan={2}>

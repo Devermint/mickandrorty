@@ -25,12 +25,18 @@ Choose the most appropriate action.
 If you are uncertain, always choose "TEXT".
 
 ⚠️ VERY IMPORTANT:
-You must return ONLY a single-line JSON object in **this exact format**:
+Absolutely no surrounding text, no Markdown, no backticks, no explanations.
+You must return ONLY a single-line JSON object with no extra text, no code fences, no commentary in **this exact format**:
 {
   "action": "GENERATE_VIDEO"
 }
 
 Or:
+{
+  "action": "TEXT"
+}
+
+If you are uncertain, always return this:
 {
   "action": "TEXT"
 }
@@ -150,7 +156,14 @@ async function getAgentAction(messages: Message[]) {
     max_tokens: 300,
   });
 
+  console.log("----------------------Start------------------");
+  console.log([{ role: "system", content: decisionPrompt }, ...messages]);
+  console.log("------------------End----------------------");
+
   const content = completion.choices[0]?.message?.content;
+  console.log("----------------------Start------------------");
+  console.log(completion.choices[0].message);
+  console.log("------------------End----------------------");
   return JSON.parse(content || "");
 }
 

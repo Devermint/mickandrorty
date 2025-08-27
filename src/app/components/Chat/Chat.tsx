@@ -1,49 +1,168 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Flex, FlexProps, Icon, Text } from "@chakra-ui/react";
-import { ChatEntryProps, DefaultChatEntry, ChatEntry } from "./ChatEntry";
+import { Flex, FlexProps, Icon, Text, Badge, HStack } from "@chakra-ui/react";
+import { DefaultChatEntry, ChatEntry } from "./ChatEntry";
 import { AgentInput } from "../Agents/AgentInput";
 import { colorTokens } from "../theme/theme";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChatHelperButton } from "./ChatHelperButton";
-import { Agent, AgentType } from "@/app/types/agent";
+import { Agent } from "@/app/types/agent";
 import { StarsIcon } from "../icons/stars";
-import { ClientRef, getClientFile } from "@/app/lib/clientImageStore";
-import {
-  AgentCreationData,
-  createAgent,
-  useAgentCreation,
-} from "@/app/lib/utils/agentCreation";
-
-enum ChatState {
-  IDLE,
-  PROCESSING,
-  GENERATING_VIDEO,
-}
+import { IoChatbubble } from "react-icons/io5";
+import { useAgentCreation } from "@/app/lib/utils/agentCreation";
+import { ChatEntryProps, ChatState } from "@/app/types/message";
+import { useMessageHandler } from "@/app/hooks/useMessageHandler";
+import { useTokenImageUpload } from "@/app/hooks/useTokenImageUpload";
+import { useGroupChat } from "@/app/hooks/useGroupChat";
 
 interface ChatProps extends FlexProps {
   agent: Agent;
   messages: ChatEntryProps[];
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
+  enableGroupChat?: boolean;
+  socketUrl?: string;
 }
 
-const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
+const Chat = ({
+  agent,
+  messages,
+  setMessages,
+  enableGroupChat = true,
+  socketUrl,
+  ...rest
+}: ChatProps) => {
   const { wallet, account, isConnected, swapSDK } = useAgentCreation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
+  // Existing AI chat state
   const inputMessage = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-
-  const searchParams = useSearchParams();
-  const msg = searchParams.get("message") ?? "";
-
   const [chatState, setChatState] = useState(ChatState.IDLE);
   const [progress, setProgress] = useState<string | null>(null);
-
   const didInitialize = useRef(false);
-  const count = messages?.length ?? 0;
 
+  // Track the last message count to detect new AI responses
+  const lastMessageCountRef = useRef(messages.length);
+
+  // Group chat integration with agent-specific room
+  const handleGroupMessage = useCallback(
+    (groupMessage: ChatEntryProps, isFromHistory = false) => {
+      setMessages((prev) => [...prev, groupMessage]);
+    },
+    [setMessages]
+  );
+
+  const {
+    isConnected: isGroupConnected,
+    connectionStatus,
+    error: groupError,
+    sendUserMessage,
+    sendAgentMessage,
+    clearError,
+  } = useGroupChat({
+    socketUrl,
+    enabled: enableGroupChat,
+    agentId: agent.fa_id,
+    hasExistingMessages: messages.length > 0, // Add this line
+    onNewMessage: handleGroupMessage,
+  });
+  // Original message handler
+  const { onMessageSend: originalOnMessageSend } = useMessageHandler({
+    chatState,
+    messages,
+    agent,
+    wallet,
+    account,
+    isConnected,
+    swapSDK,
+    inputMessage,
+    setMessages,
+    setChatState,
+    setProgress,
+  });
+
+  // Enhanced message send that sends to both AI and group chat
+  const onMessageSend = useCallback(() => {
+    const messageElement = inputMessage.current;
+    if (!messageElement || !messageElement.value.trim()) return;
+
+    const messageContent = messageElement.value.trim();
+
+    // Send user message to group chat first
+    if (enableGroupChat && isGroupConnected) {
+      sendUserMessage(messageContent);
+    }
+
+    // Then process with AI agent (existing behavior)
+    originalOnMessageSend();
+  }, [
+    enableGroupChat,
+    isGroupConnected,
+    sendUserMessage,
+    originalOnMessageSend,
+  ]);
+
+  // Track messages that we've already broadcast to prevent loops
+  const broadcastedMessagesRef = useRef(new Set<string>());
+
+  // Monitor for new AI responses and broadcast them to group chat (with loop prevention)
+  useEffect(() => {
+    const currentMessageCount = messages.length;
+    const lastCount = lastMessageCountRef.current;
+
+    if (
+      currentMessageCount > lastCount &&
+      enableGroupChat &&
+      isGroupConnected
+    ) {
+      // Check if the newest message is from the assistant and not from group chat
+      const newestMessage = messages[currentMessageCount - 1];
+
+      if (
+        newestMessage?.role === "assistant" &&
+        (newestMessage?.type === "text" || newestMessage?.type === "video") && // Include both text and video
+        !newestMessage.data?.isGroupMessage
+      ) {
+        // Don't broadcast messages that came from group chat
+
+        // Create a unique identifier for this message to prevent duplicate broadcasts
+        const messageId = `${newestMessage.content}_${Date.now()}`;
+
+        if (!broadcastedMessagesRef.current.has(messageId)) {
+          broadcastedMessagesRef.current.add(messageId);
+
+          sendAgentMessage(newestMessage.content);
+
+          // Clean up old message IDs to prevent memory leaks (keep last 100)
+          if (broadcastedMessagesRef.current.size > 100) {
+            const entries = Array.from(broadcastedMessagesRef.current);
+            broadcastedMessagesRef.current = new Set(entries.slice(-50));
+          }
+        }
+      }
+    }
+
+    lastMessageCountRef.current = currentMessageCount;
+  }, [messages, enableGroupChat, isGroupConnected, sendAgentMessage]);
+
+  const { handleTokenImageUploaded } = useTokenImageUpload({
+    setMessages,
+    inputMessage,
+    onMessageSend,
+  });
+
+  const handleHelperButtonClick = (chatMessage: string) => {
+    if (inputMessage.current === null) return;
+    inputMessage.current.value = chatMessage;
+    onMessageSend();
+  };
+
+  const count = messages?.length ?? 0;
+  const msg = searchParams.get("message") ?? "";
+
+  // Auto-scroll
   useEffect(() => {
     const id = requestAnimationFrame(() => {
       const el = containerRef.current;
@@ -53,342 +172,16 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
     return () => cancelAnimationFrame(id);
   }, [count]);
 
-  const handleAgentCreation = useCallback(
-    async (agentData: AgentCreationData) => {
-      if (!wallet || !account?.address || !isConnected) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: "Wallet not connected. Please connect your wallet first.",
-            type: "error",
-          },
-        ]);
-        return;
-      }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "",
-          type: "loader",
-        },
-      ]);
-
-      try {
-        const result = await createAgent(
-          agentData,
-          swapSDK,
-          wallet,
-          account.address.toString()
-        );
-
-        setMessages((prev) => [
-          ...prev.slice(0, -1),
-          {
-            role: "assistant",
-            content: `Agent created successfully!\n\n**Token Name:** ${
-              agentData.tokenName
-            }\n**Symbol:** ${agentData.tokenTicker}\n**Transaction Hash:** \`${
-              result.agentHash
-            }\`\n\n${
-              result.poolHash
-                ? `**Pool Created:** \`${result.poolHash}\`\n`
-                : ""
-            }${
-              result.liquidityHash
-                ? `**Liquidity Added:** \`${result.liquidityHash}\`\n`
-                : ""
-            }${
-              result.swapHash
-                ? `**Swap Executed:** \`${result.swapHash}\`\n`
-                : ""
-            }${
-              result.removeLiquidityHash
-                ? `**Liquidity Removed:** \`${result.removeLiquidityHash}\`\n`
-                : ""
-            }\nYour agent is now live on the Aptos blockchain!`,
-            type: "text",
-          },
-        ]);
-
-        try {
-          await fetch("/api/agent/finalize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...agentData,
-              txHash: result.agentHash,
-              userAddress: account.address,
-              agentMeta: result.agentMeta,
-            }),
-          });
-        } catch (finalizeError) {
-          console.warn("Failed to finalize on backend:", finalizeError);
-        }
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Agent creation failed";
-
-        setMessages((prev) => [
-          ...prev.slice(0, -1),
-          {
-            role: "assistant",
-            content: `Agent creation failed\n\n**Error:** ${errorMessage}\n\nPlease try again or check your wallet connection. If the error persists, the agent may already exist for this wallet.`,
-            type: "error",
-          },
-        ]);
-
-        console.error("Agent creation failed:", error);
-      }
-    },
-    [wallet, account, isConnected, swapSDK, setMessages]
-  );
-
-  const onMessageSend = useCallback(async () => {
-    const el = inputMessage.current;
-    if (!el || chatState !== ChatState.IDLE) return;
-
-    const text = el.value.trim();
-    if (!text) return;
-
-    let holdStateForVideo = false;
-
-    try {
-      setMessages((prev) => [
-        ...prev,
-        { role: "user", content: text, type: "text" },
-      ]);
-
-      setChatState(ChatState.PROCESSING);
-      el.value = "";
-      el.blur();
-
-      if (agent.agent_type === AgentType.AgentCreator) {
-        const response = await fetch("/api/chat/create-agent", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: [
-              ...messages,
-              { role: "user", content: text, type: "text" },
-            ],
-          }),
-        });
-        const body = await response.json();
-        const { markdown, notice, kind, data } = body;
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: markdown ?? notice,
-            type: kind,
-            data: data,
-            onAgentCreate:
-              kind === "signature-required" ? handleAgentCreation : undefined,
-          },
-        ]);
-      } else {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: [
-              ...messages,
-              { role: "user", content: text, type: "text" },
-            ],
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to chat");
-        }
-
-        if (!response.body) {
-          throw new Error("No response body from chat");
-        }
-
-        const { message, action } = await response.json();
-
-        if (action === "GENERATE_VIDEO") {
-          holdStateForVideo = true;
-          setChatState(ChatState.GENERATING_VIDEO);
-          const response = await fetch("/api/generate-video", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ prompt: message }),
-          });
-          if (!response.ok) {
-            throw new Error("Failed to generate video");
-          }
-
-          if (!response.body) {
-            throw new Error("No response body for streaming");
-          }
-
-          const { jobId } = await response.json();
-
-          const es = new EventSource(`/api/generate-video?id=${jobId}`);
-
-          es.onmessage = (e) => {
-            const data = JSON.parse(e.data);
-            console.log("Hello");
-            console.log(data.status);
-
-            if (data.status === "IN_QUEUE") {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: "assistant",
-                  content: "Video is in queue...",
-                  type: "text",
-                },
-              ]);
-            }
-
-            if (data.status === "IN_PROGRESS") {
-              setProgress(data.progress);
-            }
-
-            if (data.status === "COMPLETED") {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: "assistant",
-                  content: data.videoUrl,
-                  type: "video",
-                },
-              ]);
-              setProgress(null);
-              setChatState(ChatState.IDLE);
-              es.close();
-            }
-          };
-
-          es.onerror = (e) => {
-            console.error("SSE error", e);
-            es.close();
-          };
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "assistant",
-              content:
-                "Video generation is in progress... (this may take ~5 minutes)",
-              type: "text",
-            },
-          ]);
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: message, type: "text" },
-          ]);
-        }
-      }
-      el.value = "";
-    } catch (error) {
-      el.value = "";
-
-      if (error instanceof Error) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: error.message,
-            type: "error",
-          },
-        ]);
-      }
-    } finally {
-      if (!holdStateForVideo) {
-        setChatState(ChatState.IDLE);
-      }
-    }
-  }, [chatState, messages, agent.type, handleAgentCreation]);
-
+  // Handle initial message from URL
   useEffect(() => {
     const el = inputMessage.current;
     if (msg && el && !didInitialize.current) {
       didInitialize.current = true;
       el.value = msg;
       onMessageSend();
-
       router.replace(window.location.pathname);
     }
   }, [msg, onMessageSend, router]);
-
-  const handleTokenImageUploaded = useCallback(
-    async (ref: ClientRef) => {
-      try {
-        const file = getClientFile(ref.id);
-        if (!file) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "assistant",
-              content: "Could not read the selected file. Please try again.",
-              type: "error",
-            },
-          ]);
-          return;
-        }
-
-        const okTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-        const maxBytes = 5_000_000;
-        if (!okTypes.has(file.type)) throw new Error("Unsupported file type.");
-        if (file.size === 0) throw new Error("Empty file.");
-        if (file.size > maxBytes) throw new Error("File too large.");
-
-        const fd = new FormData();
-        fd.append("file", file, file.name || "upload");
-
-        const res = await fetch("/api/upload-image", {
-          method: "POST",
-          body: fd,
-        });
-
-        if (!res.ok) {
-          const errText = await res.text().catch(() => "");
-          throw new Error(errText || `Upload failed with ${res.status}`);
-        }
-
-        const json = (await res.json()) as { url?: string };
-        if (!json?.url)
-          throw new Error("Upload succeeded but no URL returned.");
-
-        if (inputMessage.current) {
-          inputMessage.current.value = `Here is my token image: ![Image](${json.url})`;
-          await onMessageSend();
-        }
-      } catch (e: any) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: e?.message ?? "Upload failed",
-            type: "error",
-          },
-        ]);
-      }
-    },
-    [onMessageSend, setMessages]
-  );
-
-  const handleHelperButtonClick = (chatMessage: string) => {
-    if (inputMessage.current === null) return;
-
-    inputMessage.current.value = chatMessage;
-    onMessageSend();
-  };
 
   return (
     <Flex
@@ -410,14 +203,61 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
           px={3}
           py={1}
           display={{ base: "none", md: "flex" }}
+          justify="space-between"
         >
-          <Icon size="md" mb="2px">
-            <StarsIcon color={colorTokens.green.erin} />
-          </Icon>
-          <Text px={{ base: 1, md: 2 }} py={{ base: 1, md: 2 }} fontSize="lg">
-            Chat
-          </Text>
+          <HStack>
+            <Icon size="md" mb="2px">
+              <StarsIcon color={colorTokens.green.erin} />
+            </Icon>
+            <Text px={{ base: 1, md: 2 }} py={{ base: 1, md: 2 }} fontSize="lg">
+              Chat with {agent.agent_name || "Agent"}
+            </Text>
+          </HStack>
+
+          {/* Group chat status indicator */}
+          {enableGroupChat && (
+            <HStack
+              gap={2}
+              color={
+                isGroupConnected
+                  ? colorTokens.green.erin
+                  : colorTokens.gray.timberwolf
+              }
+            >
+              <IoChatbubble size="16" />
+              {/* <Badge
+                colorPalette={isGroupConnected ? "green" : "red"}
+                size="sm"
+                variant="solid"
+              >
+                {isGroupConnected ? "Live" : "Offline"}
+              </Badge> */}
+            </HStack>
+          )}
         </Flex>
+
+        {/* Group chat error display */}
+        {enableGroupChat && groupError && (
+          <Flex
+            bg="red.900"
+            px={3}
+            py={1}
+            align="center"
+            justify="space-between"
+          >
+            <Text fontSize="sm" color="red.200">
+              {groupError}
+            </Text>
+            <Text
+              fontSize="sm"
+              color="red.300"
+              cursor="pointer"
+              onClick={clearError}
+            >
+              ✕
+            </Text>
+          </Flex>
+        )}
 
         <Flex
           direction="column"
@@ -438,26 +278,26 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
           }}
         >
           {count === 0 ? (
-            <>
-              <DefaultChatEntry />
-            </>
+            <DefaultChatEntry />
           ) : (
             <>
-              {messages.map((m, i) => (
-                <ChatEntry
-                  key={i}
-                  role={m.role}
-                  content={m.content}
-                  type={m.type}
-                  data={m.data}
-                  onAgentCreate={m.onAgentCreate}
-                  onTokenImageUploaded={
-                    m.type === "image-upload"
-                      ? handleTokenImageUploaded
-                      : undefined
-                  }
-                />
-              ))}
+              {messages.map((m, i) => {
+                return (
+                  <ChatEntry
+                    key={i}
+                    role={m.role}
+                    content={m.content}
+                    type={m.type}
+                    data={m.data}
+                    onAgentCreate={m.onAgentCreate}
+                    onTokenImageUploaded={
+                      m.type === "image-upload"
+                        ? handleTokenImageUploaded
+                        : undefined
+                    }
+                  />
+                );
+              })}
               {chatState === ChatState.GENERATING_VIDEO && progress && (
                 <ChatEntry
                   type="video-loader"
@@ -502,6 +342,7 @@ const Chat = ({ agent, messages, setMessages, ...rest }: ChatProps) => {
             chatEntry="How is my token created?"
           />
         </Flex>
+
         <AgentInput
           h="17%"
           flexShrink={0}

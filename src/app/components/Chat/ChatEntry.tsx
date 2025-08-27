@@ -1,3 +1,4 @@
+// ChatEntry.tsx (Clean version without timestamps/usernames)
 "use client";
 
 import React from "react";
@@ -13,25 +14,8 @@ import { colorTokens } from "../theme/theme";
 import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
 import { MarkdownView } from "../MarkdownView/MarkdownView";
 import { ImageUpload } from "../ImageUpload/ImageUpload";
-import { ClientRef } from "@/app/lib/clientImageStore";
 import { AiOutlineSignature } from "react-icons/ai";
-import { AgentCreationData } from "@/app/lib/utils/agentCreation";
-
-export type ChatEntryProps = {
-  role: "user" | "assistant";
-  content: string;
-  type?:
-    | "text"
-    | "video"
-    | "video-loader"
-    | "loader"
-    | "error"
-    | "image-upload"
-    | "signature-required";
-  data?: any;
-  onAgentCreate?: (agentData: AgentCreationData) => Promise<void>;
-  onTokenImageUploaded?: (ref: ClientRef) => void | Promise<void>;
-};
+import { ChatEntryProps } from "@/app/types/message";
 
 export const ChatEntry = ({
   role,
@@ -41,29 +25,49 @@ export const ChatEntry = ({
   onAgentCreate,
   onTokenImageUploaded,
 }: ChatEntryProps) => {
-  const isMyMessage = role === "user";
-  const align = isMyMessage ? "flex-end" : "flex-start";
-  const bg = isMyMessage ? colorTokens.blackCustom.a3 : "transparent";
+  const isMyMessage = role === "user" && !data?.isGroupMessage;
+  const isAgent = role === "assistant";
+
+  console.log("role", role);
+  console.log("content", content);
+  console.log("type", type);
+  console.log("data", data);
+  const align = isAgent ? "flex-start" : "flex-end";
+
+  // Background colors
+  const bg = isMyMessage
+    ? colorTokens.blackCustom.a3
+    : isAgent
+    ? "transparent"
+    : colorTokens.blackCustom.a1; // Different bg for other users' messages
+
+  // Text colors
   const color = isMyMessage
     ? colorTokens.gray.platinum
-    : colorTokens.gray.timberwolf;
-  const name = role === "user" ? "You" : "Agent";
+    : isAgent
+    ? colorTokens.gray.timberwolf
+    : colorTokens.gray.platinum;
 
   return (
     <Flex direction="column" alignItems={align} mb="10px">
-      {role && !isMyMessage && (
+      {role && isAgent && (
         <Text fontSize="12px" mb="2px">
-          {name}
+          Agent
         </Text>
       )}
-
       <Box
         px={3}
         py={1}
         bgColor={bg}
         borderRadius={{ base: 16, md: 28 }}
         maxW="80%"
+        w={isAgent ? "80%" : "auto"}
+        textAlign={isAgent ? "left" : "right"}
         overflow="hidden"
+        borderLeft={isAgent ? `3px solid ${colorTokens.green.erin}` : "none"}
+        borderRight={
+          !isAgent ? `3px solid ${colorTokens.gray.timberwolf}` : "none"
+        }
       >
         {type === "text" && (
           <MarkdownView
@@ -71,7 +75,7 @@ export const ChatEntry = ({
             lineHeight={1.5}
             fontSize={14}
             p={1}
-            isMyMessage={isMyMessage}
+            isMyMessage={!isAgent}
           >
             {content}
           </MarkdownView>
@@ -171,7 +175,7 @@ export const DemoVideoEntry = () => (
 export const DefaultChatEntry = () => (
   <ChatEntry
     role="assistant"
-    content="Here you will see your conversation with the agent... Go ahead and ask it something."
+    content="Chat with this AI agent and other users. Your messages and the agent's responses will be visible to everyone in this agent's chat room."
     type="text"
   />
 );

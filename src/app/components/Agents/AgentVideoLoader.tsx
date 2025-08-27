@@ -13,13 +13,14 @@ export const AgentVideoLoader = ({ progress }: JsonProgressProps) => {
   const pct = (done / max) * 100;
 
   return (
-    <VStack align="stretch" flex={1} mt={2} w="100%">
+    <VStack align="stretch" flex={1} mt={2}>
       <Progress.Root
         value={pct}
         min={0}
         max={100}
         size="sm"
         w={{ base: 100, md: "100%" }}
+        minW={{ base: 100, md: "100%" }}
         striped
         animated
         style={
