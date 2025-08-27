@@ -10,9 +10,8 @@ import { colorTokens } from "../theme/theme";
 import { AgentInfoView } from "./AgentInfoView";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ChatEntryProps } from "../Chat/ChatEntry";
-import { Chart } from "../Chart/Chart";
 import TradingViewWidget from "../Chart/trading-view-widget";
+import { ChatEntryProps } from "@/app/types/message";
 
 export type TabKey = "info" | "chart" | "chat";
 
