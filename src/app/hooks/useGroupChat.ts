@@ -37,7 +37,7 @@ interface UseGroupChatOptions {
 
 export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   const {
-    socketUrl = process.env.NEXT_PUBLIC_API_URL,
+    socketUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000",
     enabled = true,
     agentId,
     hasExistingMessages = false,
