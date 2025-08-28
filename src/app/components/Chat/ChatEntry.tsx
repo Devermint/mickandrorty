@@ -27,11 +27,6 @@ export const ChatEntry = ({
 }: ChatEntryProps) => {
   const isMyMessage = role === "user" && !data?.isGroupMessage;
   const isAgent = role === "assistant";
-
-  console.log("role", role);
-  console.log("content", content);
-  console.log("type", type);
-  console.log("data", data);
   const align = isAgent ? "flex-start" : "flex-end";
 
   // Background colors

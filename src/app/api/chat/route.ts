@@ -155,15 +155,8 @@ async function getAgentAction(messages: Message[]) {
     temperature: 0.7,
     max_tokens: 300,
   });
-
-  console.log("----------------------Start------------------");
-  console.log([{ role: "system", content: decisionPrompt }, ...messages]);
-  console.log("------------------End----------------------");
-
   const content = completion.choices[0]?.message?.content;
-  console.log("----------------------Start------------------");
-  console.log(completion.choices[0].message);
-  console.log("------------------End----------------------");
+
   return JSON.parse(content || "");
 }
 

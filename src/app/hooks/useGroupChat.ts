@@ -52,18 +52,9 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const hasLoadedHistory = useRef(false); // Add this flag
 
-  console.log("🔍 Hook params:", {
-    enabled,
-    agentId,
-    socketUrl,
-    hasExistingMessages,
-  });
   // Socket connection management
   const connect = useCallback(() => {
-    console.log("🚀 tryning Creating socket connection...");
     if (!enabled || !agentId || socketRef.current) return socketRef.current;
-
-    console.log("🚀 Creating socket connection...");
 
     setConnectionStatus("Connecting...");
     socketRef.current = io(socketUrl, {
