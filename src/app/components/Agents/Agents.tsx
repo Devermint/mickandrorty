@@ -1,17 +1,21 @@
 "use client";
 import { AgentCarousel } from "@/app/components/Agents/AgentCarousel";
 import { Box, Flex, Spacer, Spinner, Text } from "@chakra-ui/react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, SetStateAction } from "react";
 import { AgentInput } from "@/app/components/Agents/AgentInput";
 import { useRouter } from "next/navigation";
 import { useAgents } from "@/app/hooks/useAgents";
 import { colorTokens } from "../theme/theme";
+import Chat from "../Chat/Chat";
+import { ChatEntryProps } from "@/app/types/message";
+import { AgentType } from "@/app/types/agent";
 
-export default function AgentsPage() {
+export default function Agents() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
 
   const { data: agents = [], isLoading, isError } = useAgents();
+  const [messages, setMessages] = useState<ChatEntryProps[]>([]);
 
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -42,11 +46,12 @@ export default function AgentsPage() {
     <Flex
       flexDirection="column"
       alignItems="center"
-      mt={{ base: 5, md: 20 }}
-      pb={{ base: 10, md: 20 }}
+      mt={{ base: 5, md: 5 }}
+      pb={{ base: 2, md: 10 }}
       zIndex={1}
       overflow={{ base: "hidden", md: "visible" }}
       flex={1}
+      minH={0}
     >
       {isLoading && (
         <Flex
@@ -62,19 +67,20 @@ export default function AgentsPage() {
           <Spacer />
         </Flex>
       )}
-      <Box
+      {/* <Box
         h="100%"
         alignItems="center"
         maxW={{ base: "100%", md: 750 }}
         overflow={{ base: "hidden", md: "visible" }}
-      >
-        {isError && (
+        border="1px solid red"
+      > */}
+      {/* {isError && (
           <Text color="red.400" mb={2}>
             Failed to load agents.
           </Text>
-        )}
+        )} */}
 
-        {agents.length > 0 && (
+      {/* {agents.length > 0 && (
           <>
             <AgentCarousel
               agents={agents}
@@ -90,8 +96,65 @@ export default function AgentsPage() {
               onButtonClick={handleSend}
             />
           </>
-        )}
-      </Box>
+        )} */}
+      {!isLoading && (
+        <Flex direction="column" h="100%">
+          <Text
+            textAlign="center"
+            fontFamily="Sora"
+            fontSize={{ base: "3rem", md: "5rem" }}
+            lineHeight={1}
+            css={{
+              background:
+                "linear-gradient(to bottom, #FFFFFF 0%, #646363ff 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            CREATE AI AGENT
+          </Text>
+          <Text textAlign="center" fontSize={{ base: "0.6rem", md: "1rem" }}>
+            Chat with Agent to proceed creation of your own Ai agent
+          </Text>
+          <Chat
+            agent={{
+              wallet: undefined,
+              fa_id: undefined,
+              agent_symbol: undefined,
+              agent_name: undefined,
+              agent_icon_url: undefined,
+              decimals: undefined,
+              tx_hash: undefined,
+              status: undefined,
+              created: undefined,
+              updated: undefined,
+              id: undefined,
+              type: undefined,
+              tag: undefined,
+              liquidity_usd: undefined,
+              mcap_usd: undefined,
+              pair_address: undefined,
+              price_apt: undefined,
+              price_usd: undefined,
+              reserves: {
+                agent_decimals: undefined,
+                agent_raw: undefined,
+                apt_decimals: undefined,
+                apt_raw: undefined,
+              },
+              agent_type: AgentType.AgentCreator,
+            }}
+            chatName="Aptos Agent"
+            messages={messages}
+            setMessages={setMessages}
+            enableGroupChat={false}
+            mt={{ base: 4, md: 10 }}
+            overflow="hidden"
+            pt={{ base: 5, md: 0 }}
+          />
+        </Flex>
+      )}
     </Flex>
   );
 }

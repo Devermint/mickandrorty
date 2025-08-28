@@ -29,7 +29,6 @@ export const MobileAgentView = ({ agent }: Props) => {
     <Tabs.Root
       defaultValue={defaultTab ?? "info"}
       lazyMount
-      unmountOnExit
       variant="plain"
       display={{ base: "block", md: "none" }}
       h="100%"

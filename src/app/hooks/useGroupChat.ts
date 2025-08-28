@@ -60,7 +60,6 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     socketRef.current = io(socketUrl, {
       transports: ["websocket", "polling"],
       timeout: 20000, // Connection timeout: 20 seconds
-      forceNew: true, // Force new connection each time
       reconnection: true, // Enable auto-reconnection
       reconnectionDelay: 1000, // Wait 1s before reconnecting
       reconnectionAttempts: 5, // Try 5 times

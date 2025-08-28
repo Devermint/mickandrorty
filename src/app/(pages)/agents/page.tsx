@@ -113,12 +113,14 @@ export default function AgentExplorerPage() {
         )}
 
         <SimpleGrid
+          w={{ base: "90%", md: "70%" }}
           minChildWidth="220px"
-          gap={10}
           justifyItems="center"
           alignItems="start"
           flex={1}
           maxW={{ base: "90%", md: "70%" }}
+          columns={{ base: 2, sm: 2, md: 3, lg: 4, xl: 5 }}
+          gap="2rem 2rem"
         >
           {agents.map((agent) => (
             <Box

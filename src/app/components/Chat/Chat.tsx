@@ -22,6 +22,7 @@ interface ChatProps extends FlexProps {
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
   enableGroupChat?: boolean;
   socketUrl?: string;
+  chatName?: string;
 }
 
 const Chat = ({
@@ -30,6 +31,7 @@ const Chat = ({
   setMessages,
   enableGroupChat = true,
   socketUrl,
+  chatName,
   ...rest
 }: ChatProps) => {
   const { wallet, account, isConnected, swapSDK } = useAgentCreation();
@@ -198,7 +200,11 @@ const Chat = ({
     >
       <Flex flexDir="column" h="100%" maxH="100%" overflowY="hidden">
         <Flex
-          bg={{ base: colorTokens.blackCustom.a2, md: "unset" }}
+          bg={
+            chatName
+              ? colorTokens.blackCustom.a2
+              : { base: colorTokens.blackCustom.a2, md: "unset" }
+          }
           align="center"
           px={3}
           py={1}
@@ -209,8 +215,9 @@ const Chat = ({
             <Icon size="md" mb="2px">
               <StarsIcon color={colorTokens.green.erin} />
             </Icon>
+
             <Text px={{ base: 1, md: 2 }} py={{ base: 1, md: 2 }} fontSize="lg">
-              Chat with {agent.agent_name || "Agent"}
+              {chatName ? chatName : `Chat with ${agent.agent_name || "Agent"}`}
             </Text>
           </HStack>
 
