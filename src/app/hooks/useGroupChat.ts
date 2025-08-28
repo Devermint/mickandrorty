@@ -52,14 +52,24 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const hasLoadedHistory = useRef(false); // Add this flag
 
+  console.log("🔍 Hook params:", {
+    enabled,
+    agentId,
+    socketUrl,
+    hasExistingMessages,
+  });
   // Socket connection management
   const connect = useCallback(() => {
+    console.log("🚀 tryning Creating socket connection...");
     if (!enabled || !agentId || socketRef.current) return socketRef.current;
+
+    console.log("🚀 Creating socket connection...");
 
     setConnectionStatus("Connecting...");
     socketRef.current = io(socketUrl, {
       transports: ["websocket", "polling"],
       timeout: 20000, // Connection timeout: 20 seconds
+      forceNew: true, // Force new connection each time
       reconnection: true, // Enable auto-reconnection
       reconnectionDelay: 1000, // Wait 1s before reconnecting
       reconnectionAttempts: 5, // Try 5 times
@@ -168,16 +178,8 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     [convertToChatEntry, onNewMessage]
   );
 
-  const handleConnectionError = useCallback((err?: Error) => {
-    console.error("Socket connection error:", err);
-
-    // Some servers include extra info in `err.message` or `err.data`
-    if (err && "message" in err) {
-      setError(`Failed to connect: ${err.message}`);
-    } else {
-      setError("Failed to connect to group chat");
-    }
-
+  const handleConnectionError = useCallback(() => {
+    setError("Failed to connect to group chat");
     setConnectionStatus("Connection Failed");
   }, []);
 

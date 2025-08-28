@@ -72,7 +72,6 @@ export class RegularChatHandler extends MessageHandler {
 
     es.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      console.log(data);
       switch (data.status) {
         case "IN_QUEUE":
           this.addAssistantMessage("Video is in queue...", "text");
