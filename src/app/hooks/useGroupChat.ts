@@ -37,7 +37,7 @@ interface UseGroupChatOptions {
 
 export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   const {
-    socketUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000",
+    socketUrl = process.env.NEXT_PUBLIC_SOCKETS_URL ?? "http://localhost:8000",
     enabled = true,
     agentId,
     hasExistingMessages = false,
@@ -168,8 +168,16 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     [convertToChatEntry, onNewMessage]
   );
 
-  const handleConnectionError = useCallback(() => {
-    setError("Failed to connect to group chat");
+  const handleConnectionError = useCallback((err?: Error) => {
+    console.error("Socket connection error:", err);
+
+    // Some servers include extra info in `err.message` or `err.data`
+    if (err && "message" in err) {
+      setError(`Failed to connect: ${err.message}`);
+    } else {
+      setError("Failed to connect to group chat");
+    }
+
     setConnectionStatus("Connection Failed");
   }, []);
 

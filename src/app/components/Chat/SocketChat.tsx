@@ -43,7 +43,8 @@ type ConnectionStatus =
   | "Connection Failed";
 
 /* ---------------------- Constants ---------------------- */
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_SOCKETS_URL ?? "http://localhost:8000";
 const MAX_MESSAGE_LENGTH = 1000;
 
 /* ---------------------- Custom hook for socket management ---------------------- */
