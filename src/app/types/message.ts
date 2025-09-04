@@ -1,5 +1,5 @@
-import { AgentCreationData } from "@/app/lib/utils/agentCreation";
-import { ClientRef } from "@/app/lib/clientImageStore";
+import { AgentCreationData } from "../lib/utils/agentCreation";
+import { ClientRef } from "../lib/clientImageStore";
 
 export interface MessageContext {
   messages: ChatEntryProps[];

@@ -34,9 +34,16 @@ export const AgentVideoLoader = ({ progress }: JsonProgressProps) => {
         </Progress.Track>
       </Progress.Root>
 
-      <Text fontWeight="bold" color={colorTokens.gray.platinum}>
-        {`Generating... ${pct.toPrecision(2)}%`}
-      </Text>
+      {pct == 0 &&
+        <Text fontWeight="bold" color={colorTokens.gray.platinum}>
+          Waiting in queue...
+        </Text>
+      }
+      {pct > 0 &&
+        <Text fontWeight="bold" color={colorTokens.gray.platinum}>
+          {`Generating... ${pct.toPrecision(2)}%`}
+        </Text>
+      }
       <Text fontSize="xs" color="gray.500"></Text>
     </VStack>
   );

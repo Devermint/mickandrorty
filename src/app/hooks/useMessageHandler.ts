@@ -15,6 +15,8 @@ interface UseMessageHandlerProps {
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
   setChatState: React.Dispatch<React.SetStateAction<ChatState>>;
   setProgress: React.Dispatch<React.SetStateAction<string | null>>;
+  socket?: any; // Socket.IO instance
+  agentId?: string; // Agent ID for Socket.IO
 }
 
 export const useMessageHandler = ({
@@ -29,6 +31,8 @@ export const useMessageHandler = ({
   setMessages,
   setChatState,
   setProgress,
+  socket,
+  agentId,
 }: UseMessageHandlerProps) => {
   const onMessageSend = useCallback(async () => {
     const el = inputMessage.current;
@@ -85,6 +89,8 @@ export const useMessageHandler = ({
     setMessages,
     setChatState,
     setProgress,
+    socket,
+    agentId,
   ]);
 
   return { onMessageSend };

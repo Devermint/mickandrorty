@@ -37,7 +37,6 @@ const Chat = ({
   const { wallet, account, isConnected, swapSDK } = useAgentCreation();
   const router = useRouter();
   const searchParams = useSearchParams();
-
   // Existing AI chat state
   const inputMessage = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -56,12 +55,22 @@ const Chat = ({
     [setMessages]
   );
 
+    // Handle video generation progress updates
+  const handleVideoProgressUpdate = useCallback((jobId: string, content: string, type: string, progress?: string) => {
+    setMessages(prev => prev.map(msg => 
+      msg.data?.job_id === jobId 
+        ? { ...msg, content, type: type as ChatEntryProps["type"] }
+        : msg
+    ));
+  }, []);
+
   const {
     isConnected: isGroupConnected,
     connectionStatus,
     error: groupError,
     sendUserMessage,
     sendAgentMessage,
+    socket,
     clearError,
   } = useGroupChat({
     socketUrl,
@@ -69,6 +78,7 @@ const Chat = ({
     agentId: agent.fa_id,
     hasExistingMessages: messages.length > 0, // Add this line
     onNewMessage: handleGroupMessage,
+    onVideoProgressUpdate: handleVideoProgressUpdate,
   });
   // Original message handler
   const { onMessageSend: originalOnMessageSend } = useMessageHandler({
@@ -83,7 +93,11 @@ const Chat = ({
     setMessages,
     setChatState,
     setProgress,
+    socket,
+    agentId: agent.fa_id,
   });
+
+
 
   // Enhanced message send that sends to both AI and group chat
   const onMessageSend = useCallback(() => {
@@ -130,12 +144,26 @@ const Chat = ({
         // Don't broadcast messages that came from group chat
 
         // Create a unique identifier for this message to prevent duplicate broadcasts
-        const messageId = `${newestMessage.content}_${Date.now()}`;
+        const messageId = `${newestMessage.content}_${newestMessage.data?.job_id || ''}_${Date.now()}`;
 
         if (!broadcastedMessagesRef.current.has(messageId)) {
           broadcastedMessagesRef.current.add(messageId);
 
-          sendAgentMessage(newestMessage.content);
+          // For video messages with job_id, send the job_id along with the message
+          if (newestMessage.type === "video" && newestMessage.data?.job_id) {
+            // Send video message with job_id to Socket.IO backend
+            if (socket) {
+              socket.emit("send_agent_message", {
+                content: newestMessage.content || "", // Empty content for initial video generation
+                agent_id: agent.fa_id,
+                user_type: "agent",
+                type: "video",
+                job_id: newestMessage.data.job_id
+              });
+            }
+          } else {
+            sendAgentMessage(newestMessage.content);
+          }
 
           // Clean up old message IDs to prevent memory leaks (keep last 100)
           if (broadcastedMessagesRef.current.size > 100) {
@@ -296,12 +324,14 @@ const Chat = ({
                     content={m.content}
                     type={m.type}
                     data={m.data}
+                    job_id={m.data?.job_id || null}
                     onAgentCreate={m.onAgentCreate}
                     onTokenImageUploaded={
                       m.type === "image-upload"
                         ? handleTokenImageUploaded
                         : undefined
                     }
+                    onVideoProgressUpdate={handleVideoProgressUpdate}
                   />
                 );
               })}

@@ -1,7 +1,7 @@
-import { ChatState } from "@/app/types/message";
-import { MessageHandler } from "./base/MessageHandler";
+import { MessageHandler, ChatState, ChatEntryProps } from "./base/MessageHandler";
 
 export class RegularChatHandler extends MessageHandler {
+
   async handleMessage(text: string): Promise<void> {
     this.addUserMessage(text);
     this.context.setChatState(ChatState.PROCESSING);
@@ -42,10 +42,6 @@ export class RegularChatHandler extends MessageHandler {
 
   private async handleVideoGeneration(prompt: string): Promise<void> {
     this.context.setChatState(ChatState.GENERATING_VIDEO);
-    this.addAssistantMessage(
-      "Video generation is in progress... (this may take ~5 minutes)",
-      "text"
-    );
 
     try {
       const response = await fetch("/api/generate-video", {
@@ -59,41 +55,16 @@ export class RegularChatHandler extends MessageHandler {
       }
 
       const { jobId } = await response.json();
-      this.setupVideoGenerationEventSource(jobId);
+      
+      // Store job_id in message with empty content
+      this.addAssistantMessage("", "video", { job_id: jobId });
+      
+      // Video generation progress will be handled by useGroupChat hook
     } catch (error) {
       this.addErrorMessage(error);
       this.context.setChatState(ChatState.IDLE);
     }
   }
 
-  private setupVideoGenerationEventSource(jobId: string): void {
-    const es = new EventSource(`/api/generate-video?id=${jobId}`);
-    this.context.setChatState(ChatState.PROCESSING);
-
-    es.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      switch (data.status) {
-        case "IN_QUEUE":
-          this.addAssistantMessage("Video is in queue...", "text");
-          break;
-        case "IN_PROGRESS":
-          this.context.setChatState(ChatState.GENERATING_VIDEO);
-          this.context.setProgress(data.progress);
-          break;
-        case "COMPLETED":
-          this.addAssistantMessage(data.videoUrl, "video");
-          this.context.setProgress(null);
-          this.context.setChatState(ChatState.IDLE);
-          es.close();
-          break;
-      }
-    };
-
-    es.onerror = (e) => {
-      console.error("SSE error", e);
-      this.addErrorMessage("Video generation failed");
-      this.context.setChatState(ChatState.IDLE);
-      es.close();
-    };
-  }
+  // Video generation logic moved to useGroupChat hook
 }

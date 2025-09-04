@@ -12,59 +12,30 @@ const openai = new OpenAI({
 });
 
 const decisionPrompt = `
-You are a strict JSON-only chat analyzer.
+You are a chat analyzer. You are given a chat history and a user prompt. You need to figure out the action to take. The action can be one of the following:
+- GENERATE_VIDEO
+- TEXT
 
-Your job is to analyze a chat history and a user prompt, and decide which of the following actions best matches the intent.
+If you are not sure about the action, return "TEXT".
 
-The allowed actions are (case-sensitive):
-- "GENERATE_VIDEO"
-- "TEXT"
+Here are some examples of actions (user prompt):
+- GENERATE_VIDEO:
+    - "Generate a video about..."
+    - "Generate me a video of that"
+    - "Ready to generate"
+- TEXT:
+    - "Can you help me generate a video of..."
+    - "Help me generate a video of..."
+    - "I don't like that"
+    - "I want to change the prompt"
+    - "I want to add a new scene"
+    - "new character"
+    - "new background"
 
-Choose the most appropriate action.
-
-If you are uncertain, always choose "TEXT".
-
-⚠️ VERY IMPORTANT:
-Absolutely no surrounding text, no Markdown, no backticks, no explanations.
-You must return ONLY a single-line JSON object with no extra text, no code fences, no commentary in **this exact format**:
+The response should be in the following format:
 {
-  "action": "GENERATE_VIDEO"
+  "action": "The action to take"
 }
-
-Or:
-{
-  "action": "TEXT"
-}
-
-If you are uncertain, always return this:
-{
-  "action": "TEXT"
-}
-
-❌ DO NOT include explanations, markdown, extra fields, or formatting.
-❌ DO NOT return anything outside the JSON structure.
-
---- Examples ---
-
-User prompt: "Generate a video about the solar system"
-→
-{ "action": "GENERATE_VIDEO" }
-
-User prompt: "Can you help me generate a video?"
-→
-{ "action": "TEXT" }
-
-User prompt: "I want to add a new background"
-→
-{ "action": "TEXT" }
-
-User prompt: "Generate me a video about rainforests"
-→
-{ "action": "GENERATE_VIDEO" }
-
---- End of Examples ---
-
-Now return the JSON response based on the current user prompt.
 `;
 
 const agentPrompt = `You are a creative video prompt specialist for Veo3, an advanced AI video generation model and you act as a helpful assistant. Your role is to:
@@ -100,6 +71,10 @@ export async function POST(request: NextRequest) {
   try {
     const { messages } = await request.json();
 
+    const filteredMessages = messages.filter(
+      (msg: { type: string }) => msg.type !== "video"
+    );
+
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: "OpenAI API key is not configured" },
@@ -107,7 +82,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const agentAction = await getAgentAction(messages);
+    const agentAction = await getAgentAction(filteredMessages);
     if (agentAction.action === "") {
       return NextResponse.json(
         { error: "Unknown action to take" },
@@ -116,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (agentAction.action === "GENERATE_VIDEO") {
-      const tldr = await getTldr(messages);
+      const tldr = await getTldr(filteredMessages);
       if (!tldr.prompt) {
         return NextResponse.json(
           { error: "No tldr prompt to generate video" },
@@ -130,7 +105,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const agentResponse = await getAgentResponse(messages);
+    const agentResponse = await getAgentResponse(filteredMessages);
     if (!agentResponse) {
       return NextResponse.json(
         { error: "No response from OpenAI" },
@@ -152,10 +127,13 @@ async function getAgentAction(messages: Message[]) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [{ role: "system", content: decisionPrompt }, ...messages],
-    temperature: 0.7,
+    temperature: 0.1,
     max_tokens: 300,
   });
   const content = completion.choices[0]?.message?.content;
+
+  if(!content?.startsWith(`{`))
+    return {action: "TEXT"}
 
   return JSON.parse(content || "");
 }
