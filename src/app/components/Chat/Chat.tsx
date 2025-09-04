@@ -387,7 +387,7 @@ const Chat = ({
           w="auto"
           p={0}
           inputRef={inputMessage}
-          disabled={chatState !== ChatState.IDLE}
+          // disabled={chatState !== ChatState.IDLE}
           onButtonClick={onMessageSend}
         />
       </Flex>
