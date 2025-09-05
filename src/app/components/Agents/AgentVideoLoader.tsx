@@ -10,7 +10,7 @@ export const AgentVideoLoader = ({ progress }: JsonProgressProps) => {
   const match = progress.match(/(\d+)\/(\d+)/);
   const done = match ? parseInt(match[1], 10) : 0;
   const max = match ? parseInt(match[2], 10) : 100;
-  const pct = (done / max) * 100;
+  const pct = max > 0 ? ((done / max) * 100) : 0;
 
   return (
     <VStack align="stretch" flex={1} mt={2}>
@@ -36,7 +36,7 @@ export const AgentVideoLoader = ({ progress }: JsonProgressProps) => {
 
       {pct == 0 &&
         <Text fontWeight="bold" color={colorTokens.gray.platinum}>
-          Waiting in queue...
+          Waiting for status updates...
         </Text>
       }
       {pct > 0 &&

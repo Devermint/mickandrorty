@@ -36,7 +36,7 @@ export const useMessageHandler = ({
 }: UseMessageHandlerProps) => {
   const onMessageSend = useCallback(async () => {
     const el = inputMessage.current;
-    if (!el || chatState !== ChatState.IDLE) return;
+    if (!el) return;
 
     const text = el.value.trim();
     if (!text) return;

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { zodResponseFormat } from "openai/helpers/zod";
+import z from "zod";
+import { agentCreationSystemPrompt, decisionSystemPrompt, tldrSystemPrompt, videoCreationSystemPrompt } from "./systemPrompts";
 
 type Message = {
   role: "system" | "user" | "assistant";
@@ -11,61 +14,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const decisionPrompt = `
-You are a chat analyzer. You are given a chat history and a user prompt. You need to figure out the action to take. The action can be one of the following:
-- GENERATE_VIDEO
-- TEXT
 
-If you are not sure about the action, return "TEXT".
-
-Here are some examples of actions (user prompt):
-- GENERATE_VIDEO:
-    - "Generate a video about..."
-    - "Generate me a video of that"
-    - "Ready to generate"
-- TEXT:
-    - "Can you help me generate a video of..."
-    - "Help me generate a video of..."
-    - "I don't like that"
-    - "I want to change the prompt"
-    - "I want to add a new scene"
-    - "new character"
-    - "new background"
-
-The response should be in the following format:
-{
-  "action": "The action to take"
-}
-`;
-
-const agentPrompt = `You are a creative video prompt specialist for Veo3, an advanced AI video generation model and you act as a helpful assistant. Your role is to:
-
-1. Help users brainstorm creative video ideas
-2. Transform basic ideas into detailed, cinematic video prompts
-3. Suggest specific camera angles, lighting, movements, and visual elements
-4. Keep prompts concise but descriptive (1-2 sentences)
-5. Focus on visual storytelling and cinematic quality
-6. Suggest realistic scenarios that would work well with AI video generation
-
-When a user describes their idea, enhance it with:
-- Camera movements (pan, tilt, dolly, zoom)
-- Lighting conditions (golden hour, dramatic shadows, soft lighting)
-- Visual style (cinematic, documentary, artistic)
-- Setting details (urban, natural, interior)
-- Movement and action within the frame
-
-Always end your response by asking if they'd like you to refine the prompt further or if they're ready to generate the video.
-
-`;
-
-const tldrPrompt = `
-You are a chat summarizer for video generation. You are given a chat history and you need to summarize it and prepare a prompt for FAL-AI video generation model.
-
-The response should be in the following format:
-{
-  "prompt": "The prompt for FAL-AI video generation model"
-}
-`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,6 +30,10 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
+      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
 
     const agentAction = await getAgentAction(filteredMessages);
     if (agentAction.action === "") {
@@ -105,7 +58,17 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const agentResponse = await getAgentResponse(filteredMessages);
+    let agentResponse;
+
+    if (agentAction.action === "AGENT_CREATION") {
+      console.log("Triggered -------------------------------------------------------")
+      agentResponse = await getAgentResponse(filteredMessages, baseUrl, agentCreationSystemPrompt(baseUrl), 0.3);
+    }
+    else if (agentAction.action === "TEXT")
+      agentResponse = await getAgentResponse(filteredMessages, baseUrl, videoCreationSystemPrompt, 0.7);
+
+
+
     if (!agentResponse) {
       return NextResponse.json(
         { error: "No response from OpenAI" },
@@ -123,39 +86,47 @@ export async function POST(request: NextRequest) {
   }
 }
 
+const AgentAction = z.object({
+  action: z.enum(["TEXT", "GENERATE_VIDEO", "AGENT_CREATION"])
+});
+
 async function getAgentAction(messages: Message[]) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    messages: [{ role: "system", content: decisionPrompt }, ...messages],
+    messages: [{ role: "system", content: decisionSystemPrompt }, ...messages],
     temperature: 0.1,
     max_tokens: 300,
+    response_format: zodResponseFormat(AgentAction, "agent_action")
   });
   const content = completion.choices[0]?.message?.content;
 
-  if(!content?.startsWith(`{`))
-    return {action: "TEXT"}
-
+  console.log("Agent action", content)
   return JSON.parse(content || "");
 }
+
+const TldrObject = z.object({
+  prompt: z.string()
+});
 
 async function getTldr(messages: Message[]) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    messages: [{ role: "system", content: tldrPrompt }, ...messages],
+    messages: [{ role: "system", content: tldrSystemPrompt }, ...messages],
     temperature: 0.7,
     max_tokens: 300,
+    response_format: zodResponseFormat(TldrObject, "tldr_object")
   });
 
   const content = completion.choices[0]?.message?.content;
   return JSON.parse(content || "");
 }
 
-async function getAgentResponse(messages: Message[]) {
+async function getAgentResponse(messages: Message[], baseUrl: string, systemPrompt: string, temperature?: number) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    messages: [{ role: "system", content: agentPrompt }, ...messages],
-    temperature: 0.7,
-    max_tokens: 300,
+    messages: [{ role: "system", content: systemPrompt }, ...messages],
+    temperature: temperature ?? 0.5,
+    max_tokens: 500,
   });
 
   return completion.choices[0]?.message?.content;

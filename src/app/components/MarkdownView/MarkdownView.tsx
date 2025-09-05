@@ -6,6 +6,7 @@ import {
   chakra,
   Code,
   Link as ChakraLink,
+  Button,
 } from "@chakra-ui/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -21,6 +22,8 @@ export const MarkdownView = ({
   isMyMessage = false,
   ...rest
 }: Props) => {
+
+  console.log(children)
   return (
     <Box {...rest}>
       <ReactMarkdown
@@ -31,9 +34,28 @@ export const MarkdownView = ({
           ol: (props) => (
             <chakra.ol pt={2} listStyleType="decimal" {...props} />
           ),
-          li: (props) => <chakra.li {...props} />,
+          li: (props) => <chakra.li {...props} />
+          ,
           a: ({ href, ...props }) => (
-            <ChakraLink href={href} color="blue.400" {...props} />
+            <ChakraLink 
+              href={href} 
+              target="_blank"
+              rel="noopener noreferrer"
+              color={colorTokens.green.erin}
+              border="1px solid"
+              borderColor={colorTokens.green.erin}
+              borderRadius="md"
+              px={2}
+              py={1}
+              display="inline-block"
+              textDecoration="none"
+              _hover={{
+                color: colorTokens.green.darkErin,
+                borderColor: colorTokens.green.darkErin,
+                textDecoration: "none"
+              }}
+              {...props} 
+            />
           ),
           code: ({ inline, ...props }: any) => (
             <Code

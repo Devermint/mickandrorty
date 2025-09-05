@@ -46,6 +46,9 @@ const Chat = ({
 
   // Track the last message count to detect new AI responses
   const lastMessageCountRef = useRef(messages.length);
+  
+  // Track processed video generations to avoid duplicates
+  const processedVideoJobs = useRef(new Set<string>());
 
   // Group chat integration with agent-specific room
   const handleGroupMessage = useCallback(
@@ -72,6 +75,7 @@ const Chat = ({
     sendAgentMessage,
     socket,
     clearError,
+    startLocalVideoGeneration,
   } = useGroupChat({
     socketUrl,
     enabled: enableGroupChat,
@@ -176,6 +180,27 @@ const Chat = ({
 
     lastMessageCountRef.current = currentMessageCount;
   }, [messages, enableGroupChat, isGroupConnected, sendAgentMessage]);
+
+  // Monitor messages for new local video generations that need EventSource start
+  useEffect(() => {
+    if (!enableGroupChat || !startLocalVideoGeneration) return;
+
+    messages.forEach(message => {
+      // Check if this is a local video message that needs video generation
+      if (
+        message.role === "assistant" &&
+        message.type === "video" &&
+        !message.content && // No content yet (incomplete)
+        message.data?.job_id && // Has job_id
+        !message.data?.isGroupMessage && // Not from group chat (local message)
+        !processedVideoJobs.current.has(message.data.job_id) // Not already processed
+      ) {
+        console.log("Starting local video generation for job:", message.data.job_id);
+        processedVideoJobs.current.add(message.data.job_id);
+        startLocalVideoGeneration(message.data.job_id);
+      }
+    });
+  }, [messages, enableGroupChat, startLocalVideoGeneration]);
 
   const { handleTokenImageUploaded } = useTokenImageUpload({
     setMessages,
@@ -361,22 +386,17 @@ const Chat = ({
           <ChatHelperButton
             label="Video generator"
             onButtonClick={handleHelperButtonClick}
-            chatEntry="Can you generate a video for me?"
-          />
-          <ChatHelperButton
-            label="Obtaining APTOS"
-            onButtonClick={handleHelperButtonClick}
-            chatEntry="How do I obtain APTOS?"
+            chatEntry="Can you help me generate a video?"
           />
           <ChatHelperButton
             label="Agent creation"
             onButtonClick={handleHelperButtonClick}
-            chatEntry="How do I create an agent?"
+            chatEntry="How do I create an agent on Aptos AI Layer?"
           />
           <ChatHelperButton
             label="Token creation"
             onButtonClick={handleHelperButtonClick}
-            chatEntry="How is my token created?"
+            chatEntry="How is my token created on Aptos AI Layer?"
           />
         </Flex>
 
