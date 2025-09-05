@@ -40,12 +40,13 @@ const Chat = ({
   // Existing AI chat state
   const inputMessage = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const spacerRef = useRef<HTMLDivElement>(null);
   const [chatState, setChatState] = useState(ChatState.IDLE);
   const didInitialize = useRef(false);
 
   // Track the last message count to detect new AI responses
   const lastMessageCountRef = useRef(messages.length);
-  
+
 
   // Group chat integration with agent-specific room
   const handleGroupMessage = useCallback(
@@ -62,16 +63,16 @@ const Chat = ({
         // Match by message ID
         const messageId = updatedMessage.data?.messageId || updatedMessage.data?._id;
         const currentMessageId = msg.data?.messageId || msg.data?._id;
-        
+
         if (messageId && currentMessageId === messageId) {
           return { ...msg, ...updatedMessage };
         }
-        
+
         // Fallback: match by job_id for video messages
         if (updatedMessage.data?.job_id && msg.data?.job_id === updatedMessage.data.job_id) {
           return { ...msg, ...updatedMessage };
         }
-        
+
         return msg;
       }));
     },
@@ -202,30 +203,18 @@ const Chat = ({
   const count = messages?.length ?? 0;
   const msg = searchParams.get("message") ?? "";
 
-  // Auto-scroll with user scroll detection
+  // Auto-scroll to bottom (top of reversed container) on new messages
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    const isUserNearBottom = () => {
-      const threshold = 100; // pixels from bottom
-      return el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
-    };
-
-    // Only auto-scroll if user is already near the bottom
-    if (isUserNearBottom()) {
-      // Use double requestAnimationFrame to ensure DOM is fully updated
-      const id1 = requestAnimationFrame(() => {
-        const id2 = requestAnimationFrame(() => {
-          if (el && isUserNearBottom()) { // Double-check user hasn't scrolled
-            el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-          }
-        });
-        return () => cancelAnimationFrame(id2);
-      });
-      return () => cancelAnimationFrame(id1);
-    }
+    const timeoutId = setTimeout(() => {
+      el.scrollTo({ top: 0, behavior: "smooth" });
+    }, 50);
+    
+    return () => clearTimeout(timeoutId);
   }, [count]);
+
 
   // Handle initial message from URL
   useEffect(() => {
@@ -251,7 +240,7 @@ const Chat = ({
       h="100%"
       {...rest}
     >
-      <Flex flexDir="column" h="100%" maxH="100%" overflowY="hidden">
+      <Flex flexDir="column" flex={1} overflowY="hidden">
         <Flex
           bg={
             chatName
@@ -320,12 +309,12 @@ const Chat = ({
         )}
 
         <Flex
-          direction="column"
+          direction="column-reverse"
           overflowY="auto"
           flex={1}
           px={4}
           pt={4}
-          pb={10}
+          pb={4}
           mr="0.5rem"
           ref={containerRef}
           overscrollBehaviorY="contain"
@@ -341,10 +330,13 @@ const Chat = ({
             <DefaultChatEntry />
           ) : (
             <>
-              {messages.map((m, i) => {
+              {chatState === ChatState.PROCESSING && (
+                <ChatEntry type="loader" role="assistant" content={""} />
+              )}
+              {[...messages].reverse().map((m, i) => {
                 return (
                   <ChatEntry
-                    key={i}
+                    key={messages.length - 1 - i}
                     role={m.role}
                     content={m.content}
                     type={m.type}
@@ -355,13 +347,10 @@ const Chat = ({
                       m.type === "image-upload"
                         ? handleTokenImageUploaded
                         : undefined
-                    }                    
+                    }
                   />
                 );
               })}
-              {chatState === ChatState.PROCESSING && (
-                <ChatEntry type="loader" role="assistant" content={""} />
-              )}
             </>
           )}
         </Flex>
