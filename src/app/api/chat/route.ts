@@ -126,7 +126,7 @@ async function getAgentResponse(messages: Message[], baseUrl: string, systemProm
     model: "gpt-4o-mini",
     messages: [{ role: "system", content: systemPrompt }, ...messages],
     temperature: temperature ?? 0.5,
-    max_tokens: 500,
+    max_tokens: 300,
   });
 
   return completion.choices[0]?.message?.content;
