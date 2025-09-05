@@ -14,7 +14,6 @@ interface UseMessageHandlerProps {
   inputMessage: React.RefObject<HTMLTextAreaElement>;
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
   setChatState: React.Dispatch<React.SetStateAction<ChatState>>;
-  setProgress: React.Dispatch<React.SetStateAction<string | null>>;
   socket?: any; // Socket.IO instance
   agentId?: string; // Agent ID for Socket.IO
 }
@@ -30,7 +29,6 @@ export const useMessageHandler = ({
   inputMessage,
   setMessages,
   setChatState,
-  setProgress,
   socket,
   agentId,
 }: UseMessageHandlerProps) => {
@@ -48,7 +46,6 @@ export const useMessageHandler = ({
       messages,
       setMessages,
       setChatState,
-      setProgress,
       wallet,
       account,
       isConnected,
@@ -88,7 +85,6 @@ export const useMessageHandler = ({
     inputMessage,
     setMessages,
     setChatState,
-    setProgress,
     socket,
     agentId,
   ]);

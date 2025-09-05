@@ -23,7 +23,6 @@ export const MarkdownView = ({
   ...rest
 }: Props) => {
 
-  console.log(children)
   return (
     <Box {...rest}>
       <ReactMarkdown

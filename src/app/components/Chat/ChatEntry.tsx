@@ -16,10 +16,8 @@ import { MarkdownView } from "../MarkdownView/MarkdownView";
 import { ImageUpload } from "../ImageUpload/ImageUpload";
 import { AiOutlineSignature } from "react-icons/ai";
 import { ChatEntryProps } from "@/app/types/message";
-import VideoGenerationManager from "@/app/lib/VideoGenerationManager";
 
 interface ChatEntryComponentProps extends ChatEntryProps {
-  onVideoProgressUpdate?: (jobId: string, content: string, type: string, progress?: string) => void;
   job_id?: string;
 }
 
@@ -30,34 +28,11 @@ export const ChatEntry = ({
   data,
   job_id,
   onAgentCreate,
-  onTokenImageUploaded,
-  onVideoProgressUpdate,
+  onTokenImageUploaded
 }: ChatEntryComponentProps) => {
   const isMyMessage = role === "user" && !data?.isGroupMessage;
   const isAgent = role === "assistant";
   const align = isAgent ? "flex-start" : "flex-end";
-
-  // Start video generation for incomplete video messages
-  useEffect(() => {
-    console.log('ChatEntry useEffect:', { type, content, job_id, hasCallback: !!onVideoProgressUpdate });
-    
-    if (type === "video" && !content && job_id && onVideoProgressUpdate) {
-      console.log('Starting video generation for job:', job_id);
-      const manager = VideoGenerationManager.getInstance();
-      
-      const handleProgress = (jobId: string, content: string, type: string, progress?: string) => {
-        console.log('Video progress update:', { jobId, content, type, progress });
-        onVideoProgressUpdate(jobId, content, type, progress);
-      };
-
-      manager.startVideoGeneration(job_id, handleProgress);
-
-      // Cleanup when component unmounts or job_id changes
-      return () => {
-        manager.stopVideoGeneration(job_id, handleProgress);
-      };
-    }
-  }, [type, content, job_id, onVideoProgressUpdate]);
 
   // Background colors
   const bg = isMyMessage
@@ -149,7 +124,7 @@ export const ChatEntry = ({
           </>
         )}
         {type === "video" && !content && job_id && (
-          <AgentVideoLoader progress="Video generation starting..." />
+          <AgentVideoLoader progress={data.message ?? "Generating video..."} />
         )}
         {type === "video-loader" && <AgentVideoLoader progress={content} />}
         {type === "loader" && (

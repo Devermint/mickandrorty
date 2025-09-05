@@ -12,6 +12,7 @@ interface GroupChatMessage {
   agent_id?: string;
   type: "text" | "video";
   job_id?: string;
+  message?: string
 }
 
 interface ServerError {
@@ -34,7 +35,7 @@ interface UseGroupChatOptions {
   agentId?: string; // Agent-specific chat rooms
   hasExistingMessages?: boolean; // Add this to prevent loading history when messages exist
   onNewMessage?: (message: ChatEntryProps, isFromHistory?: boolean) => void;
-  onVideoProgressUpdate?: (jobId: string, content: string, type: string, progress?: string) => void;
+  onMessageUpdate?: (message: ChatEntryProps) => void;
 }
 
 export const useGroupChat = (options: UseGroupChatOptions = {}) => {
@@ -44,7 +45,7 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     agentId,
     hasExistingMessages = false,
     onNewMessage,
-    onVideoProgressUpdate,
+    onMessageUpdate,
   } = options;
 
   const [isConnected, setIsConnected] = useState(false);
@@ -54,7 +55,6 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
 
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const hasLoadedHistory = useRef(false); // Add this flag
-  const activeVideoJobs = useRef(new Set<string>()); // Track active video generations
 
   // Socket connection management
   const connect = useCallback(() => {
@@ -97,6 +97,7 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
           messageId: message._id || message.id, // Include unique ID for duplicate checking
           _id: message._id,
           job_id: message.job_id,
+          message: message.message
         },
       };
     },
@@ -158,137 +159,37 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     setError(data.message || "An error occurred");
   }, []);
 
-  // Video generation logic - defined before message handlers that use it
-  const startVideoGeneration = useCallback((jobId: string, messageId?: string) => {
-    // Prevent duplicate EventSource connections
-    if (activeVideoJobs.current.has(jobId)) {
-      return;
-    }
-
-    activeVideoJobs.current.add(jobId);
-    const es = new EventSource(`/api/generate-video?id=${jobId}`);
-
-    es.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      const socket = socketRef.current;
-      
-      console.log("-------------------------------------------------")
-      console.log(data)
-      
-      // Always update local UI
-      console.log(`Updating local UI for job ${jobId}, status: ${data.status}, messageId: ${messageId}`);
-      switch (data.status) {
-        case "IN_QUEUE":
-          onVideoProgressUpdate?.(jobId, "Video is in queue...", "text");
-          break;
-        case "IN_PROGRESS":
-          onVideoProgressUpdate?.(jobId, data.progress || "Video generation in progress...", "video-loader", data.progress);
-          break;
-        case "COMPLETED":
-          onVideoProgressUpdate?.(jobId, data.videoUrl, "video");
-          activeVideoJobs.current.delete(jobId);
-          es.close();
-          return; // Exit early to avoid socket update for completed
-      }
-
-      // Only update Socket.IO backend if we have a valid messageId (not for local messages)
-      if (!socket || !agentId || !messageId) {
-        console.log(`Skipping socket update - socket: ${!!socket}, agentId: ${!!agentId}, messageId: ${messageId}`);
-        return;
-      }
-
-      const updateMessageId = messageId;
-      switch (data.status) {
-        case "IN_QUEUE":
-          socket.emit('update_message', {
-            message_id: updateMessageId,
-            content: "",
-            message: "Video is in queue...",
-            agent_id: agentId,
-            user_type: 'agent',
-            type: 'text'
-          });
-          break;
-        case "IN_PROGRESS":
-          socket.emit('update_message', {
-            message_id: updateMessageId,
-            content: "",
-            message: data.progress || "Video generation in progress...",
-            agent_id: agentId,
-            user_type: 'agent',
-            type: 'video-loader',
-            progress: data.progress
-          });
-          break;
-        case "COMPLETED":
-          socket.emit('update_message', {
-            message_id: updateMessageId,
-            content: data.videoUrl,
-            agent_id: agentId,
-            user_type: 'agent',
-            type: 'video'
-          });
-          break;
-      }
-    };
-
-    es.onerror = (e) => {
-      console.error(`Video generation error for job ${jobId}:`, e);
-      
-      // Always update local UI
-      onVideoProgressUpdate?.(jobId, "Video generation failed", "error");
-      
-      // Only update Socket.IO backend if we have a valid messageId
-      const socket = socketRef.current;
-      if (socket && agentId && messageId) {
-        console.log(`Sending error update to socket for message ${messageId}`);
-        socket.emit('update_message', {
-          message_id: messageId,
-          content: "",
-          message: `Video generation failed - ${e}`,
-          agent_id: agentId,
-          user_type: 'agent',
-          type: 'error'
-        });
-      } else {
-        console.log(`Skipping socket error update - socket: ${!!socket}, agentId: ${!!agentId}, messageId: ${messageId}`);
-      }
-      
-      activeVideoJobs.current.delete(jobId);
-      es.close();
-    };
-  }, [agentId, onVideoProgressUpdate]);
-
   const handleMessageHistory = useCallback(
     (message: GroupChatMessage) => {
       const chatEntry = convertToChatEntry(message);
       onNewMessage?.(chatEntry, true);
-      
-      // If this is an incomplete video message, start video generation
-      if (message.type === "video" && !message.content && message.job_id) {
-        startVideoGeneration(message.job_id, message._id || message.id);
-      }
     },
-    [convertToChatEntry, onNewMessage, startVideoGeneration]
+    [convertToChatEntry, onNewMessage]
   );
 
   const handleNewMessage = useCallback(
     (message: GroupChatMessage) => {
       const chatEntry = convertToChatEntry(message);
       onNewMessage?.(chatEntry, false);
-      
-      // If this is an incomplete video message, start video generation
-      if (message.type === "video" && !message.content && message.job_id) {
-        startVideoGeneration(message.job_id, message._id || message.id);
-      }
     },
-    [convertToChatEntry, onNewMessage, startVideoGeneration]
+    [convertToChatEntry, onNewMessage]
   );
 
   const handleConnectionError = useCallback(() => {
     setError("Failed to connect to group chat");
     setConnectionStatus("Connection Failed");
   }, []);
+
+  const handleMessageUpdated = useCallback(
+    (updatedMessage: GroupChatMessage) => {
+      
+      const chatEntry = convertToChatEntry(updatedMessage);
+      // Update the existing message in the local state via callback
+      console.log("updatedMessage", chatEntry)
+      onMessageUpdate?.(chatEntry);
+    },
+    [convertToChatEntry, onMessageUpdate]
+  );
 
   // Initialize connection when enabled and agentId is available
   useEffect(() => {
@@ -306,6 +207,7 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     socket.on("error", handleServerError);
     socket.on("message_history", handleMessageHistory);
     socket.on("new_message", handleNewMessage);
+    socket.on("message_updated", handleMessageUpdated);
     socket.on("connect_error", handleConnectionError);
 
     return () => {
@@ -315,6 +217,7 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
       socket.off("error", handleServerError);
       socket.off("message_history", handleMessageHistory);
       socket.off("new_message", handleNewMessage);
+      socket.off("message_updated", handleMessageUpdated);
       socket.off("connect_error", handleConnectionError);
     };
   }, [
@@ -327,6 +230,7 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     handleServerError,
     handleMessageHistory,
     handleNewMessage,
+    handleMessageUpdated,
     handleConnectionError,
   ]);
 
@@ -366,15 +270,8 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   useEffect(() => {
     return () => {
       disconnect();
-      activeVideoJobs.current.clear();
     };
   }, [disconnect]);
-
-  // Expose a function to manually start video generation for local messages
-  const startLocalVideoGeneration = useCallback((jobId: string) => {
-    // Start video generation without a specific message ID (for local messages)
-    startVideoGeneration(jobId);
-  }, [startVideoGeneration]);
 
   return {
     isConnected,
@@ -384,6 +281,5 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     sendAgentMessage,
     socket: socketRef.current, // Add socket reference
     clearError: useCallback(() => setError(""), []),
-    startLocalVideoGeneration, // Expose the function
   };
 };

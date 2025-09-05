@@ -24,7 +24,6 @@ class VideoGenerationManager {
     }
     this.callbacks.get(jobId)!.add(onProgress);
 
-    // If already running, just add the callback and return
     if (this.activeJobs.has(jobId)) {
       return;
     }

@@ -1,8 +1,9 @@
+import { ChatState } from "@/app/types/message";
+
 export interface MessageContext {
   messages: ChatEntryProps[];
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
   setChatState: React.Dispatch<React.SetStateAction<ChatState>>;
-  setProgress: React.Dispatch<React.SetStateAction<string | null>>;
   wallet?: any;
   account?: any;
   isConnected: boolean;
@@ -24,11 +25,6 @@ export type ChatEntryProps = {
   data?: any;
 };
 
-export enum ChatState {
-  IDLE,
-  PROCESSING,
-  GENERATING_VIDEO,
-}
 
 export abstract class MessageHandler {
   protected context: MessageContext;

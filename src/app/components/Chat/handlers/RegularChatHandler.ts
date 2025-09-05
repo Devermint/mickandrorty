@@ -1,4 +1,5 @@
-import { MessageHandler, ChatState, ChatEntryProps } from "./base/MessageHandler";
+import { ChatState } from "@/app/types/message";
+import { MessageHandler } from "./base/MessageHandler";
 
 export class RegularChatHandler extends MessageHandler {
 
@@ -41,8 +42,6 @@ export class RegularChatHandler extends MessageHandler {
   }
 
   private async handleVideoGeneration(prompt: string): Promise<void> {
-    this.context.setChatState(ChatState.GENERATING_VIDEO);
-
     try {
       const response = await fetch("/api/generate-video", {
         method: "POST",
@@ -59,7 +58,8 @@ export class RegularChatHandler extends MessageHandler {
       // Store job_id in message with empty content
       this.addAssistantMessage("", "video", { job_id: jobId });
       
-      // Video generation progress will be handled by useGroupChat hook
+      // Video generation progress will be handled by Python backend via WebSockets
+      this.context.setChatState(ChatState.IDLE);
     } catch (error) {
       this.addErrorMessage(error);
       this.context.setChatState(ChatState.IDLE);

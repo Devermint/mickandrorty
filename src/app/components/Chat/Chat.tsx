@@ -41,14 +41,11 @@ const Chat = ({
   const inputMessage = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [chatState, setChatState] = useState(ChatState.IDLE);
-  const [progress, setProgress] = useState<string | null>(null);
   const didInitialize = useRef(false);
 
   // Track the last message count to detect new AI responses
   const lastMessageCountRef = useRef(messages.length);
   
-  // Track processed video generations to avoid duplicates
-  const processedVideoJobs = useRef(new Set<string>());
 
   // Group chat integration with agent-specific room
   const handleGroupMessage = useCallback(
@@ -58,31 +55,43 @@ const Chat = ({
     [setMessages]
   );
 
-    // Handle video generation progress updates
-  const handleVideoProgressUpdate = useCallback((jobId: string, content: string, type: string, progress?: string) => {
-    setMessages(prev => prev.map(msg => 
-      msg.data?.job_id === jobId 
-        ? { ...msg, content, type: type as ChatEntryProps["type"] }
-        : msg
-    ));
-  }, []);
+  // Handle message updates from WebSocket
+  const handleMessageUpdate = useCallback(
+    (updatedMessage: ChatEntryProps) => {
+      setMessages(prev => prev.map(msg => {
+        // Match by message ID
+        const messageId = updatedMessage.data?.messageId || updatedMessage.data?._id;
+        const currentMessageId = msg.data?.messageId || msg.data?._id;
+        
+        if (messageId && currentMessageId === messageId) {
+          return { ...msg, ...updatedMessage };
+        }
+        
+        // Fallback: match by job_id for video messages
+        if (updatedMessage.data?.job_id && msg.data?.job_id === updatedMessage.data.job_id) {
+          return { ...msg, ...updatedMessage };
+        }
+        
+        return msg;
+      }));
+    },
+    [setMessages]
+  );
 
   const {
     isConnected: isGroupConnected,
-    connectionStatus,
     error: groupError,
     sendUserMessage,
     sendAgentMessage,
     socket,
     clearError,
-    startLocalVideoGeneration,
   } = useGroupChat({
     socketUrl,
     enabled: enableGroupChat,
     agentId: agent.fa_id,
-    hasExistingMessages: messages.length > 0, // Add this line
+    hasExistingMessages: messages.length > 0,
     onNewMessage: handleGroupMessage,
-    onVideoProgressUpdate: handleVideoProgressUpdate,
+    onMessageUpdate: handleMessageUpdate,
   });
   // Original message handler
   const { onMessageSend: originalOnMessageSend } = useMessageHandler({
@@ -96,12 +105,9 @@ const Chat = ({
     inputMessage,
     setMessages,
     setChatState,
-    setProgress,
     socket,
     agentId: agent.fa_id,
   });
-
-
 
   // Enhanced message send that sends to both AI and group chat
   const onMessageSend = useCallback(() => {
@@ -180,27 +186,6 @@ const Chat = ({
 
     lastMessageCountRef.current = currentMessageCount;
   }, [messages, enableGroupChat, isGroupConnected, sendAgentMessage]);
-
-  // Monitor messages for new local video generations that need EventSource start
-  useEffect(() => {
-    if (!enableGroupChat || !startLocalVideoGeneration) return;
-
-    messages.forEach(message => {
-      // Check if this is a local video message that needs video generation
-      if (
-        message.role === "assistant" &&
-        message.type === "video" &&
-        !message.content && // No content yet (incomplete)
-        message.data?.job_id && // Has job_id
-        !message.data?.isGroupMessage && // Not from group chat (local message)
-        !processedVideoJobs.current.has(message.data.job_id) // Not already processed
-      ) {
-        console.log("Starting local video generation for job:", message.data.job_id);
-        processedVideoJobs.current.add(message.data.job_id);
-        startLocalVideoGeneration(message.data.job_id);
-      }
-    });
-  }, [messages, enableGroupChat, startLocalVideoGeneration]);
 
   const { handleTokenImageUploaded } = useTokenImageUpload({
     setMessages,
@@ -355,18 +340,10 @@ const Chat = ({
                       m.type === "image-upload"
                         ? handleTokenImageUploaded
                         : undefined
-                    }
-                    onVideoProgressUpdate={handleVideoProgressUpdate}
+                    }                    
                   />
                 );
               })}
-              {chatState === ChatState.GENERATING_VIDEO && progress && (
-                <ChatEntry
-                  type="video-loader"
-                  role="assistant"
-                  content={progress}
-                />
-              )}
               {chatState === ChatState.PROCESSING && (
                 <ChatEntry type="loader" role="assistant" content={""} />
               )}
