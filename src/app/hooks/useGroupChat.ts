@@ -54,7 +54,10 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   const [error, setError] = useState("");
 
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
-  const hasLoadedHistory = useRef(false); // Add this flag
+  const hasLoadedHistory = useRef(false);
+  const reconnectAttempts = useRef(0);
+  const isReconnecting = useRef(false);
+  const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Socket connection management
   const connect = useCallback(() => {
@@ -63,24 +66,52 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     setConnectionStatus("Connecting...");
     socketRef.current = io(socketUrl, {
       transports: ["websocket", "polling"],
-      timeout: 20000, // Connection timeout: 20 seconds
-      forceNew: true, // Force new connection each time
-      reconnection: true, // Enable auto-reconnection
-      reconnectionDelay: 1000, // Wait 1s before reconnecting
-      reconnectionAttempts: 5, // Try 5 times
+      timeout: 10000, // Reduced timeout for mobile
+      forceNew: true,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 10, // More attempts for mobile
+      maxReconnectionAttempts: 10,
+      // Mobile-specific optimizations
+      upgrade: true,
+      rememberUpgrade: false, // Don't remember transport upgrades
     });
 
     return socketRef.current;
   }, [socketUrl, enabled, agentId]);
 
   const disconnect = useCallback(() => {
+    if (heartbeatInterval.current) {
+      clearInterval(heartbeatInterval.current);
+      heartbeatInterval.current = null;
+    }
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
     setIsConnected(false);
     setConnectionStatus("Disconnected");
-    hasLoadedHistory.current = false; // Reset history flag
+    hasLoadedHistory.current = false;
+    isReconnecting.current = false;
+  }, []);
+
+  // Heartbeat for mobile connection stability
+  const startHeartbeat = useCallback(() => {
+    if (heartbeatInterval.current) return;
+    
+    heartbeatInterval.current = setInterval(() => {
+      if (socketRef.current?.connected) {
+        socketRef.current.emit('ping');
+      }
+    }, 25000); // Ping every 25 seconds
+  }, []);
+
+  const stopHeartbeat = useCallback(() => {
+    if (heartbeatInterval.current) {
+      clearInterval(heartbeatInterval.current);
+      heartbeatInterval.current = null;
+    }
   }, []);
 
   // Convert GroupChatMessage to ChatEntryProps
@@ -108,9 +139,11 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   const handleConnect = useCallback(() => {
     setIsConnected(true);
     setConnectionStatus("Connected");
+    reconnectAttempts.current = 0;
+    isReconnecting.current = false;
+    startHeartbeat();
 
     const socket = socketRef.current;
-    // Only load history if we haven't loaded it AND we don't have existing messages (prevents hot reload duplicates)
     if (
       socket &&
       agentId &&
@@ -123,31 +156,44 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
         room: `agent_${agentId}`,
       });
     }
-  }, [agentId, hasExistingMessages]);
+  }, [agentId, hasExistingMessages, startHeartbeat]);
 
   const handleDisconnect = useCallback(
     (reason: string) => {
       console.log("Disconnected:", reason);
       setIsConnected(false);
       setConnectionStatus("Disconnected");
-
-      // Reset history flag on any disconnect to prevent duplicates on reconnect
+      stopHeartbeat();
       hasLoadedHistory.current = false;
 
-      // Auto-reconnect for certain disconnect reasons (but not manual disconnects)
-      if (
-        reason === "io server disconnect" ||
-        reason === "transport close" ||
-        reason === "ping timeout"
-      ) {
-        setTimeout(() => {
-          console.log("Attempting to reconnect...");
-          setConnectionStatus("Connecting...");
-          connect();
-        }, 2000);
+      // Enhanced reconnection logic for mobile
+      if (!isReconnecting.current && reconnectAttempts.current < 10) {
+        isReconnecting.current = true;
+        reconnectAttempts.current += 1;
+        
+        const shouldReconnect = 
+          reason === "io server disconnect" ||
+          reason === "transport close" ||
+          reason === "ping timeout" ||
+          reason === "transport error" ||
+          reason === "io client disconnect";
+
+        if (shouldReconnect) {
+          // Exponential backoff with jitter
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current - 1), 30000);
+          const jitter = Math.random() * 1000;
+          
+          setTimeout(() => {
+            if (enabled && agentId) {
+              console.log(`Attempting to reconnect (${reconnectAttempts.current}/10)...`);
+              setConnectionStatus("Connecting...");
+              connect();
+            }
+          }, delay + jitter);
+        }
       }
     },
-    [connect]
+    [connect, stopHeartbeat, enabled, agentId]
   );
 
   const handleJoinSuccess = useCallback((data: JoinSuccessData) => {
@@ -190,6 +236,45 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     },
     [convertToChatEntry, onMessageUpdate]
   );
+
+  // Handle page visibility changes (critical for mobile)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Page became visible - check connection and reconnect if needed
+        if (enabled && agentId && (!socketRef.current || !socketRef.current.connected)) {
+          console.log('Page visible - checking connection');
+          reconnectAttempts.current = 0; // Reset attempts on manual focus
+          connect();
+        }
+      } else {
+        // Page hidden - stop heartbeat to save resources
+        stopHeartbeat();
+      }
+    };
+
+    const handleOnline = () => {
+      if (enabled && agentId) {
+        console.log('Network online - reconnecting');
+        reconnectAttempts.current = 0;
+        connect();
+      }
+    };
+
+    const handleOffline = () => {
+      stopHeartbeat();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [enabled, agentId, connect, stopHeartbeat]);
 
   // Initialize connection when enabled and agentId is available
   useEffect(() => {

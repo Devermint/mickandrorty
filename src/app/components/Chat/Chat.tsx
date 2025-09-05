@@ -202,14 +202,29 @@ const Chat = ({
   const count = messages?.length ?? 0;
   const msg = searchParams.get("message") ?? "";
 
-  // Auto-scroll
+  // Auto-scroll with user scroll detection
   useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      const el = containerRef.current;
-      if (!el) return;
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-    });
-    return () => cancelAnimationFrame(id);
+    const el = containerRef.current;
+    if (!el) return;
+
+    const isUserNearBottom = () => {
+      const threshold = 100; // pixels from bottom
+      return el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+    };
+
+    // Only auto-scroll if user is already near the bottom
+    if (isUserNearBottom()) {
+      // Use double requestAnimationFrame to ensure DOM is fully updated
+      const id1 = requestAnimationFrame(() => {
+        const id2 = requestAnimationFrame(() => {
+          if (el && isUserNearBottom()) { // Double-check user hasn't scrolled
+            el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+          }
+        });
+        return () => cancelAnimationFrame(id2);
+      });
+      return () => cancelAnimationFrame(id1);
+    }
   }, [count]);
 
   // Handle initial message from URL

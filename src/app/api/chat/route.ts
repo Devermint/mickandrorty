@@ -61,11 +61,10 @@ export async function POST(request: NextRequest) {
     let agentResponse;
 
     if (agentAction.action === "AGENT_CREATION") {
-      console.log("Triggered -------------------------------------------------------")
-      agentResponse = await getAgentResponse(filteredMessages, baseUrl, agentCreationSystemPrompt(baseUrl), 0.3);
+      agentResponse = await getAgentResponse(filteredMessages, baseUrl, agentCreationSystemPrompt(baseUrl), 0.5);
     }
     else if (agentAction.action === "TEXT")
-      agentResponse = await getAgentResponse(filteredMessages, baseUrl, videoCreationSystemPrompt, 0.7);
+      agentResponse = await getAgentResponse(filteredMessages, baseUrl, videoCreationSystemPrompt, 0.8);
 
 
 
@@ -126,7 +125,7 @@ async function getAgentResponse(messages: Message[], baseUrl: string, systemProm
     model: "gpt-4o-mini",
     messages: [{ role: "system", content: systemPrompt }, ...messages],
     temperature: temperature ?? 0.5,
-    max_tokens: 300,
+    max_tokens: 700,
   });
 
   return completion.choices[0]?.message?.content;

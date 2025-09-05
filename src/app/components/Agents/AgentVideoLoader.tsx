@@ -22,8 +22,8 @@ export const AgentVideoLoader = ({ progress }: JsonProgressProps) => {
         min={0}
         max={100}
         size="sm"
-        w={{ base: 100, md: "100%" }}
-        minW={{ base: 100, md: "100%" }}
+        w={{ base: "80%", md: "100%" }}
+        minW={{ base: "80%", md: "100%" }}
         striped
         animated
         style={
