@@ -1,7 +1,7 @@
 "use client";
 import { Box, Flex, Image, Text, Button } from "@chakra-ui/react";
 import { X } from "../icons/x";
-import { Telegram } from "../icons/telegram";
+import { TelegramIcon } from "../icons/telegram";
 import { Agent } from "@/app/types/agent";
 import { colorTokens } from "../theme/theme";
 
@@ -106,7 +106,12 @@ export const AgentCard = ({ isActive, agent }: AgentCardProps) => (
             border="none"
             bgColor="#090A0B"
           >
-            <Telegram h={13} w="14px" mr={0.5} color={colorTokens.green.erin} />
+            <TelegramIcon
+              h={13}
+              w="14px"
+              mr={0.5}
+              color={colorTokens.green.erin}
+            />
           </Button>
         </Flex>
       </Box>

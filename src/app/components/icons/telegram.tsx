@@ -1,6 +1,6 @@
 import { chakra, IconProps } from "@chakra-ui/react";
 
-export function Telegram(props: IconProps) {
+export function TelegramIcon(props: IconProps) {
   return (
     <chakra.svg viewBox="0 0 15 13" {...props}>
       <path

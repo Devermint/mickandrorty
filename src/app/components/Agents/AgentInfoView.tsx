@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import TokenSwapForm from "../Token/TokenSwapForm";
 import { IoChevronBackOutline } from "react-icons/io5";
-import { Telegram } from "../icons/telegram";
+import { TelegramIcon } from "../icons/telegram";
 import { X } from "../icons/x";
 import { useRouter } from "next/navigation";
 import { AgentMarketInfo } from "./AgentMarketInfo";
@@ -150,7 +150,7 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
               borderColor={colorTokens.gray.platinum}
               bgColor="#090A0B"
             >
-              <Telegram
+              <TelegramIcon
                 h={13}
                 w="14px"
                 mr={0.5}
