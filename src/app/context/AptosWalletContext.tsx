@@ -1,13 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { createContext, useContext, useMemo, useCallback } from "react";
+import { createContext, useContext, useMemo, useCallback, useState, useEffect } from "react";
 import type { PetraWallet } from "petra-plugin-wallet-adapter"; // type-only, keeps your exposed shape
-import {
-  AptosWalletAdapterProvider,
-  useWallet,
-} from "@aptos-labs/wallet-adapter-react";
-import {HexInput, Network} from "@aptos-labs/ts-sdk";
+import { AptosWalletAdapterProvider, useWallet } from "@aptos-labs/wallet-adapter-react";
+import { HexInput, Network } from "@aptos-labs/ts-sdk";
 
 interface PetraAccountInfo {
   address: HexInput;
@@ -19,6 +16,8 @@ interface AptosWalletContextType {
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   wallet: PetraWallet | null; // stays nullable; we don't hand out Petra's client under the standard
+  jwt: string | null;
+  user: any | null;
 }
 
 const AptosWalletContext = createContext<AptosWalletContextType | undefined>(undefined);
@@ -32,73 +31,142 @@ function WalletBridge({ children }: { children: ReactNode }) {
     disconnect: adapterDisconnect,
     wallets,
     signAndSubmitTransaction: adapterSignAndSubmitTransaction,
+    signMessage,
   } = useWallet();
 
+  const [jwt, setJwt] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("jwt");
+    }
+    return null;
+  });
+  const [user, setUser] = useState<any | null>(null);
+
+  const address = account?.address?.toString();
+  const publicKey = account?.publicKey?.toString();
+
+  const loginToBackend = async () => {
+    if (!address || !publicKey) return;
+    try {
+      const messageToSign = {
+        message: "Sign this message to authenticate with Aptos Agent Factory.",
+        nonce: `nonce-${Math.random().toString(16).substring(2)}`,
+      };
+      const signedMessage = await signMessage(messageToSign);
+
+      const response = await fetch("/api/auth/wallet-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          walletAddress: address,
+          publicKey: publicKey,
+          signature: signedMessage.signature,
+          fullMessage: signedMessage.fullMessage,
+        }),
+      });
+
+      if (response.ok) {
+        const { token, user: userData } = await response.json();
+        localStorage.setItem("jwt", token);
+        setJwt(token);
+        setUser(userData);
+      } else {
+        console.error("Backend login failed");
+      }
+    } catch (error) {
+      console.error("Error signing message or logging in:", error);
+    }
+  };
+  useEffect(() => {
+    loginToBackend();
+  }, [address, publicKey]);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!jwt) return;
+      try {
+        const response = await fetch("/api/users/me", {
+          headers: { "x-access-token": jwt },
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          localStorage.removeItem("jwt");
+          setJwt(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    if (jwt && !user) {
+      fetchUserProfile();
+    }
+  }, [jwt, user]);
+
   const accountOut: PetraAccountInfo | null = account
-      ? {
+    ? {
         address: account.address?.toString?.() ?? "",
         publicKey: account.publicKey?.toString?.() ?? "",
       }
-      : null;
+    : null;
 
   const connect = useCallback(async () => {
-    const target =
-        wallets.find((w) => w.name.toLowerCase().includes("petra")) ?? wallets[0];
+    const target = wallets.find((w) => w.name.toLowerCase().includes("petra")) ?? wallets[0];
     if (!target) throw new Error("No wallets detected");
     await adapterConnect(target.name);
   }, [wallets, adapterConnect]);
 
   const disconnect = useCallback(async () => {
     await adapterDisconnect();
+    localStorage.removeItem("jwt");
+    setJwt(null);
+    setUser(null);
   }, [adapterDisconnect]);
 
   // ---- Shim: looks like Petra for your SDK, but only implements what you use
   const shimWallet = useMemo(
-      () =>
-          adapterSignAndSubmitTransaction
-              ? ({
-                signAndSubmitTransaction: (tx: any) =>
-                    // Adapter expects InputTransactionData; if your payload matches, this just works.
-                    adapterSignAndSubmitTransaction(tx as any),
-              } as unknown as PetraWallet)
-              : null,
-      [adapterSignAndSubmitTransaction]
+    () =>
+      adapterSignAndSubmitTransaction
+        ? ({
+            signAndSubmitTransaction: (tx: any) =>
+              // Adapter expects InputTransactionData; if your payload matches, this just works.
+              adapterSignAndSubmitTransaction(tx as any),
+          } as unknown as PetraWallet)
+        : null,
+    [adapterSignAndSubmitTransaction]
   );
 
   const value: AptosWalletContextType = useMemo(
-      () => ({
-        account: accountOut,
-        isConnected: connected,
-        connect,
-        disconnect,
-        wallet: shimWallet, // <- not null after connect
-      }),
-      [accountOut, connected, connect, disconnect, shimWallet]
+    () => ({
+      account: accountOut,
+      isConnected: connected && !!jwt,
+      connect,
+      disconnect,
+      wallet: shimWallet, // <- not null after connect
+      jwt,
+      user,
+    }),
+    [accountOut, connected, connect, disconnect, shimWallet, jwt, user]
   );
 
-  return (
-      <AptosWalletContext.Provider value={value}>
-        {children}
-      </AptosWalletContext.Provider>
-  );
+  return <AptosWalletContext.Provider value={value}>{children}</AptosWalletContext.Provider>;
 }
-
 
 /** Public provider (signature unchanged) */
 export function AptosWalletProvider({
-                                      children,
-                                      sessionDuration, // unused; kept for compatibility
-                                    }: {
+  children,
+  sessionDuration, // unused; kept for compatibility
+}: {
   children: ReactNode;
   sessionDuration: number;
 }) {
   return (
-      <AptosWalletAdapterProvider
-          autoConnect
-          dappConfig={{ network: Network.MAINNET }}
-      >
-        <WalletBridge>{children}</WalletBridge>
-      </AptosWalletAdapterProvider>
+    <AptosWalletAdapterProvider dappConfig={{ network: Network.MAINNET }}>
+      <WalletBridge>{children}</WalletBridge>
+    </AptosWalletAdapterProvider>
   );
 }
 
