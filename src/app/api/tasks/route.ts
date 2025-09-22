@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
+  const authToken = request.headers.get("x-access-token");
+  if (!authToken) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const body = await request.json();
-    const backendResponse = await fetch(`${process.env.FLASK_BACKEND_URL}/auth/wallet-login`, {
-      method: 'POST',
+    const backendResponse = await fetch(`${process.env.FLASK_BACKEND_URL}/tasks`, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'x-access-token': authToken,
       },
-      body: JSON.stringify(body),
     });
 
     const data = await backendResponse.json();

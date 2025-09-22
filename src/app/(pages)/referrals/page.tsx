@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   Box,
@@ -9,41 +9,76 @@ import {
   Button,
   SimpleGrid,
   Image as ChakraImage,
-  Clipboard,
   useClipboard,
+  Spinner,
 } from "@chakra-ui/react";
 import { colorTokens } from "@/app/components/theme/theme";
 import { CheckmarkIcon } from "@/app/components/icons/checkmark";
 import { TelegramIcon } from "@/app/components/icons/telegram";
+import { useAptosWallet } from "@/app/context/AptosWalletContext";
 
-const demoTasks = [
-  { name: "Share your story", reward: 1000, isComplete: false },
-  { name: "Invite a friend", reward: 1500, isComplete: false },
-  { name: "Record a testimonial", reward: 800, isComplete: true },
-  { name: "Post on social media", reward: 1200, isComplete: false },
-  { name: "Host a webinar", reward: 2200, isComplete: false },
-  { name: "Publish a blog review", reward: 1800, isComplete: true },
-  { name: "Share the referral link", reward: 900, isComplete: false },
-  { name: "Introduce us to a partner", reward: 2500, isComplete: false },
-  { name: "Submit feedback", reward: 600, isComplete: true },
-  { name: "Create a video shoutout", reward: 2000, isComplete: false },
-  { name: "Host a webinar", reward: 2200, isComplete: false },
-  { name: "Publish a blog review", reward: 1800, isComplete: true },
-  { name: "Share the referral link", reward: 900, isComplete: false },
-  { name: "Introduce us to a partner", reward: 2500, isComplete: false },
-  { name: "Submit feedback", reward: 600, isComplete: true },
-  { name: "Create a video shoutout", reward: 2000, isComplete: false },
-];
+interface Task {
+  task_id: string;
+  name: string;
+  points: number;
+  status: "completed" | "available";
+}
 
 export default function ReferralsPage() {
-  const score = 123456;
-  const balance = 4141;
-  const referrals = 10;
-  const isTgConnected = false;
+  const { user, jwt, isConnected } = useAptosWallet();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const referralLink = "https://dapp.aptoslayer.ai/";
-
+  const referralLink = user?.referral_code
+    ? `https://dapp.aptoslayer.ai/?referralCode=${user.referral_code}`
+    : "";
   const clipboard = useClipboard({ value: referralLink });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (jwt) {
+        setLoading(true);
+        try {
+          const tasksResponse = await fetch("/api/tasks", {
+            headers: { "x-access-token": jwt },
+          });
+          if (tasksResponse.ok) {
+            const tasksData = await tasksResponse.json();
+            setTasks(tasksData);
+          } else {
+            console.error("Failed to fetch tasks");
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+  }, [jwt]);
+
+  if (!isConnected) {
+    return (
+      <Flex justify="center" align="center" h="100%">
+        <Text color="white">Please connect your wallet to see your referrals.</Text>
+      </Flex>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Flex justify="center" align="center" h="100%">
+        <Spinner color={colorTokens.green.erin} size="xl" />
+      </Flex>
+    );
+  }
+
+  const score = user?.score ?? 0;
+  const balance = user?.score ?? 0; // Assuming balance is same as score for now
+  const referrals = user?.referral_count ?? 0;
+  const isTgConnected = false; // This seems to be static for now
 
   return (
     <Box
@@ -63,24 +98,11 @@ export default function ReferralsPage() {
         display="flex"
         flexDirection="column"
       >
-        <SimpleGrid
-          templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
-          rowGap={4}
-        >
+        <SimpleGrid templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }} rowGap={4}>
           <Flex align="center" gap={4}>
-            <Image
-              src="/img/logo-mobile.png"
-              alt="Logo"
-              width={80}
-              height={80}
-            ></Image>
+            <Image src="/img/logo-mobile.png" alt="Logo" width={80} height={80}></Image>
             <Box>
-              <Text
-                color="white"
-                fontSize={25}
-                lineHeight={1.3}
-                fontWeight="bold"
-              >
+              <Text color="white" fontSize={25} lineHeight={1.3} fontWeight="bold">
                 {balance.toLocaleString()}
               </Text>
               <Text fontSize={11} lineHeight={1} fontWeight="bold">
@@ -100,14 +122,7 @@ export default function ReferralsPage() {
               py={15}
               borderRadius={14}
             >
-              <Box
-                position="absolute"
-                width="100%"
-                height="100%"
-                top={0}
-                left={0}
-                zIndex={0}
-              >
+              <Box position="absolute" width="100%" height="100%" top={0} left={0} zIndex={0}>
                 <ChakraImage
                   src="/img/invite-link-bg.webp"
                   alt="Invite link backdrop"
@@ -171,12 +186,7 @@ export default function ReferralsPage() {
               <Text fontSize={11} lineHeight={1}>
                 Your referrals
               </Text>
-              <Text
-                color="white"
-                fontSize={25}
-                lineHeight={1.3}
-                fontWeight="bold"
-              >
+              <Text color="white" fontSize={25} lineHeight={1.3} fontWeight="bold">
                 {referrals.toLocaleString()}
               </Text>
             </Box>
@@ -197,23 +207,14 @@ export default function ReferralsPage() {
               <Text fontSize={20} lineHeight={1.3} color="white">
                 Telegram
               </Text>
-              <Text
-                color={isTgConnected ? colorTokens.green.erin : "red"}
-                fontSize={12}
-              >
+              <Text color={isTgConnected ? colorTokens.green.erin : "red"} fontSize={12}>
                 {isTgConnected ? "Connected" : "Not connected"}
               </Text>
             </Box>
           </Flex>
         </SimpleGrid>
 
-        <Box
-          mt={10}
-          w="100%"
-          position="relative"
-          overflow="hidden"
-          flexShrink={0}
-        >
+        <Box mt={10} w="100%" position="relative" overflow="hidden" flexShrink={0}>
           <Box position="absolute" inset={0} zIndex={0}>
             <Image
               src="/img/green_clouds.webp"
@@ -244,30 +245,21 @@ export default function ReferralsPage() {
             >
               {score.toLocaleString()}
             </Text>
-            <Text
-              fontSize={13}
-              lineHeight={1}
-              color={colorTokens.gray.timberwolf}
-            >
+            <Text fontSize={13} lineHeight={1} color={colorTokens.gray.timberwolf}>
               Your score
             </Text>
           </Flex>
         </Box>
 
         <Box mt={10} position="relative" display="flex" flexDirection="column">
-          <Text
-            fontSize={16}
-            letterSpacing="wider"
-            color={colorTokens.gray.timberwolf}
-            mb={4}
-          >
+          <Text fontSize={16} letterSpacing="wider" color={colorTokens.gray.timberwolf} mb={4}>
             Tasks
           </Text>
 
           <Flex position="relative" flexDirection="column">
             <Flex flexDirection="column" gap={3}>
-              {demoTasks.map((task, idx) => (
-                <Flex key={idx} align="center" justify="space-between">
+              {tasks.map((task) => (
+                <Flex key={task.task_id} align="center" justify="space-between">
                   <Flex align="center" gap={4}>
                     <Flex
                       align="center"
@@ -285,7 +277,7 @@ export default function ReferralsPage() {
                     <Box>
                       <Text color="white">{task.name}</Text>
                       <Text color={colorTokens.gray.platinum} fontSize="sm">
-                        +{task.reward.toLocaleString()} Aptos
+                        +{task.points.toLocaleString()} Points
                       </Text>
                     </Box>
                   </Flex>
@@ -295,30 +287,32 @@ export default function ReferralsPage() {
                     h={10}
                     fontSize="sm"
                     fontWeight="semibold"
-                    cursor={task.isComplete ? "default" : "pointer"}
+                    cursor={task.status === "completed" ? "default" : "pointer"}
                     color={
-                      task.isComplete
+                      task.status === "completed"
                         ? colorTokens.gray.platinum
                         : colorTokens.blackCustom.a1
                     }
                     bg={
-                      task.isComplete
+                      task.status === "completed"
                         ? colorTokens.blackCustom.a3
                         : colorTokens.green.erin
                     }
                     _hover={{
-                      bg: task.isComplete
-                        ? colorTokens.blackCustom.a3
-                        : colorTokens.green.darkErin,
+                      bg:
+                        task.status === "completed"
+                          ? colorTokens.blackCustom.a3
+                          : colorTokens.green.darkErin,
                     }}
                     _active={{
-                      bg: task.isComplete
-                        ? colorTokens.blackCustom.a3
-                        : colorTokens.green.dark,
+                      bg:
+                        task.status === "completed"
+                          ? colorTokens.blackCustom.a3
+                          : colorTokens.green.dark,
                     }}
                     transition="background 0.2s ease"
                   >
-                    {task.isComplete ? "Done" : "Start"}
+                    {task.status === "completed" ? "Done" : "Start"}
                   </Button>
                 </Flex>
               ))}
