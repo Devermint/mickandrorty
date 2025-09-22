@@ -72,7 +72,7 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       reconnectionAttempts: 10, // More attempts for mobile
-      maxReconnectionAttempts: 10,
+      // reconnectionAttempts: 10,
       // Mobile-specific optimizations
       upgrade: true,
       rememberUpgrade: false, // Don't remember transport upgrades
