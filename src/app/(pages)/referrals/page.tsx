@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import {
   Box,
@@ -19,7 +19,7 @@ import { useAptosWallet } from "@/app/context/AptosWalletContext";
 
 interface Task {
   task_id: string;
-  name: string;
+  title: string;
   points: number;
   status: "completed" | "available";
 }
@@ -34,30 +34,62 @@ export default function ReferralsPage() {
     : "";
   const clipboard = useClipboard({ value: referralLink });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (jwt) {
-        setLoading(true);
-        try {
-          const tasksResponse = await fetch("/api/tasks", {
-            headers: { "x-access-token": jwt },
-          });
-          if (tasksResponse.ok) {
-            const tasksData = await tasksResponse.json();
-            setTasks(tasksData);
-          } else {
-            console.error("Failed to fetch tasks");
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        } finally {
-          setLoading(false);
+  const fetchData = useCallback(async () => {
+    if (jwt) {
+      setLoading(true);
+      try {
+        const tasksResponse = await fetch("/api/tasks", {
+          headers: { "x-access-token": jwt },
+        });
+        if (tasksResponse.ok) {
+          const tasksData = await tasksResponse.json();
+          setTasks(tasksData);
+        } else {
+          console.error("Failed to fetch tasks");
         }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
-    };
-
-    fetchData();
+    }
   }, [jwt]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleCompleteTask = async (taskId: string) => {
+    if (!jwt) {
+      console.error("No JWT available for authenticated request.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/tasks/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": jwt,
+        },
+        body: JSON.stringify({ task_id: taskId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+
+      if (data.action === "redirect" && data.authorization_url) {
+        window.location.href = data.authorization_url;
+      } else {
+        fetchData();
+      }
+    } catch (error) {
+      console.error("Error completing task:", error);
+    }
+  };
 
   if (!isConnected) {
     return (
@@ -275,7 +307,7 @@ export default function ReferralsPage() {
                       !
                     </Flex>
                     <Box>
-                      <Text color="white">{task.name}</Text>
+                      <Text color="white">{task.title}</Text>
                       <Text color={colorTokens.gray.platinum} fontSize="sm">
                         +{task.points.toLocaleString()} Points
                       </Text>
@@ -288,6 +320,8 @@ export default function ReferralsPage() {
                     fontSize="sm"
                     fontWeight="semibold"
                     cursor={task.status === "completed" ? "default" : "pointer"}
+                    disabled={task.status === "completed"}
+                    onClick={() => handleCompleteTask(task.task_id)}
                     color={
                       task.status === "completed"
                         ? colorTokens.gray.platinum
@@ -312,7 +346,7 @@ export default function ReferralsPage() {
                     }}
                     transition="background 0.2s ease"
                   >
-                    {task.status === "completed" ? "Done" : "Start"}
+                    {task.status === "completed" ? "Done" : "Complete"}
                   </Button>
                 </Flex>
               ))}

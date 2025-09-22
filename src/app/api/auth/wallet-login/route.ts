@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const backendResponse = await fetch(`${process.env.FLASK_BACKEND_URL}/auth/wallet-login`, {
+    const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/wallet-login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

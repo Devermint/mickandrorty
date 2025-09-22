@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const backendResponse = await fetch(`${process.env.FLASK_BACKEND_URL}/users/me`, {
+    const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const backendResponse = await fetch(`${process.env.FLASK_BACKEND_URL}/users/me`, {
+    const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
