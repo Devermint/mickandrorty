@@ -164,7 +164,7 @@ export function AptosWalletProvider({
   sessionDuration: number;
 }) {
   return (
-    <AptosWalletAdapterProvider dappConfig={{ network: Network.MAINNET }}>
+    <AptosWalletAdapterProvider autoConnect dappConfig={{ network: Network.MAINNET }}>
       <WalletBridge>{children}</WalletBridge>
     </AptosWalletAdapterProvider>
   );
