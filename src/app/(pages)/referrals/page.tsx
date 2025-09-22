@@ -71,6 +71,7 @@ export default function ReferralsPage() {
         headers: {
           "Content-Type": "application/json",
           "x-access-token": jwt,
+          credentials: "include",
         },
         body: JSON.stringify({ task_id: taskId }),
       });
