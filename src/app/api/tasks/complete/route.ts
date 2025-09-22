@@ -23,7 +23,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: data.message || 'An error occurred' }, { status: backendResponse.status });
     }
 
-    return NextResponse.json(data);
+    // *** THIS IS THE REQUIRED FIX ***
+    // 1. Create a response to send back to the client
+    const response = NextResponse.json(data);
+
+    // 2. Get the Set-Cookie header from the Python backend's response
+    const sessionCookie = backendResponse.headers.get('Set-Cookie');
+
+    // 3. If the cookie exists, forward it to the client's browser
+    if (sessionCookie) {
+      response.headers.set('Set-Cookie', sessionCookie);
+    }
+
+    return response;
+
   } catch (error) {
     console.error('Error proxying to backend:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
