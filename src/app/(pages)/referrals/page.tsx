@@ -11,11 +11,13 @@ import {
   Image as ChakraImage,
   useClipboard,
   Spinner,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { colorTokens } from "@/app/components/theme/theme";
 import { CheckmarkIcon } from "@/app/components/icons/checkmark";
 import { TelegramIcon } from "@/app/components/icons/telegram";
 import { useAptosWallet } from "@/app/context/AptosWalletContext";
+import { CreatePostModal } from "@/app/components/CreatePostModal/CreatePostModal";
 
 interface Task {
   task_id: string;
@@ -28,6 +30,12 @@ export default function ReferralsPage() {
   const { user, jwt, isConnected } = useAptosWallet();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const {
+    open: isCreatePostModalOpen,
+    onOpen: onCreatePostModalOpen,
+    onClose: onCreatePostModalClose,
+  } = useDisclosure();
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const referralLink = user?.referral_code
     ? `https://dapp.aptoslayer.ai/?referralCode=${user.referral_code}`
@@ -60,6 +68,15 @@ export default function ReferralsPage() {
   }, [fetchData]);
 
   const handleCompleteTask = async (taskId: string) => {
+    const task = tasks.find((t) => t.task_id === taskId);
+    if (!task) return;
+
+    if (taskId === "CREATE_POST") {
+      setSelectedTask(task);
+      onCreatePostModalOpen();
+      return;
+    }
+
     if (!jwt) {
       console.error("No JWT available for authenticated request.");
       return;
@@ -95,6 +112,29 @@ export default function ReferralsPage() {
     } catch (error) {
       console.error("Error completing task:", error);
     }
+  };
+
+  const handleCreatePostTask = async (tweetUrl: string) => {
+    if (!jwt || !selectedTask) {
+      throw new Error("Authentication error or no task selected.");
+    }
+
+    const response = await fetch("/api/tasks/complete", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": jwt,
+      },
+      body: JSON.stringify({ task_id: selectedTask.task_id, tweet_url: tweetUrl }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to complete task");
+    }
+
+    await fetchData();
   };
 
   if (!isConnected) {
@@ -360,6 +400,14 @@ export default function ReferralsPage() {
           </Flex>
         </Box>
       </Box>
+      {selectedTask && (
+        <CreatePostModal
+          isOpen={isCreatePostModalOpen}
+          onClose={onCreatePostModalClose}
+          onComplete={handleCreatePostTask}
+          taskTitle={selectedTask.title}
+        />
+      )}
     </Box>
   );
 }
