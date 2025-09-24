@@ -104,8 +104,8 @@ export default function ReferralsPage() {
 
       const data = await response.json();
 
-      if (data.action === "redirect" && data.authorization_url) {
-        window.location.href = data.authorization_url;
+      if (data.action === "redirect" && (data.authorization_url || data.url)) {
+        window.location.href = data.authorization_url || data.url;
       } else {
         fetchData();
       }
