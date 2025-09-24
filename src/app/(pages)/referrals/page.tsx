@@ -18,6 +18,7 @@ import { CheckmarkIcon } from "@/app/components/icons/checkmark";
 import { TelegramIcon } from "@/app/components/icons/telegram";
 import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { CreatePostModal } from "@/app/components/CreatePostModal/CreatePostModal";
+import TelegramLoginWidget from "@/app/components/TelegramLoginWidget/TelegramLoginWidget";
 
 interface Task {
   task_id: string;
@@ -156,7 +157,7 @@ export default function ReferralsPage() {
   const score = user?.score ?? 0;
   const balance = user?.score ?? 0; // Assuming balance is same as score for now
   const referrals = user?.referral_count ?? 0;
-  const isTgConnected = false; // This seems to be static for now
+  const isTgConnected = !!user?.telegram_id;
 
   return (
     <Box
@@ -289,6 +290,11 @@ export default function ReferralsPage() {
                 {isTgConnected ? "Connected" : "Not connected"}
               </Text>
             </Box>
+            {!isTgConnected && (
+              <Box ml={4}>
+                <TelegramLoginWidget onAuthSuccess={fetchData} />
+              </Box>
+            )}
           </Flex>
         </SimpleGrid>
 
