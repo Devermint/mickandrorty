@@ -19,6 +19,7 @@ import { TelegramIcon } from "@/app/components/icons/telegram";
 import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { CreatePostModal } from "@/app/components/CreatePostModal/CreatePostModal";
 import TelegramLoginWidget from "@/app/components/TelegramLoginWidget/TelegramLoginWidget";
+import WallOfFame from "@/app/components/Referrals/WallOfFame";
 
 interface Task {
   task_id: string;
@@ -29,7 +30,56 @@ interface Task {
 
 export default function ReferralsPage() {
   const { user, jwt, isConnected } = useAptosWallet();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      task_id: "LIKE_RETWEET_COMMENT",
+      title: "Like + retweet + comment on the latest X post",
+      points: 25,
+      status: "available",
+    },
+    {
+      task_id: "TAG_FRIENDS",
+      title: "Tag 3 friends under a latest post",
+      points: 25,
+      status: "available",
+    },
+    {
+      task_id: "INVITE_FRIEND_TELEGRAM",
+      title: "Invite a friend to join Telegram",
+      points: 25,
+      status: "available",
+    },
+    {
+      task_id: "CREATE_POST",
+      title: "Create a POST about the project using our ticker",
+      points: 100,
+      status: "available",
+    },
+    {
+      task_id: "CONNECT_WALLET",
+      title: "Connect your wallet",
+      points: 10,
+      status: "available",
+    },
+    {
+      task_id: "DEPLOY_AGENT",
+      title: "Deploy your first AI agent",
+      points: 100,
+      status: "available",
+    },
+    {
+      task_id: "DAILY_LOGIN",
+      title: "Daily login streaks",
+      points: 10,
+      status: "available",
+    },
+    {
+      task_id: "CONNECT_X",
+      title: "Connect X account",
+      points: 10,
+      status: "available",
+    },
+  ]);
   const [loading, setLoading] = useState(true);
   const {
     open: isCreatePostModalOpen,
@@ -40,7 +90,7 @@ export default function ReferralsPage() {
 
   const referralLink = user?.referral_code
     ? `https://dapp.aptoslayer.ai/?referralCode=${user.referral_code}`
-    : "";
+    : "https://dapp.aptoslayer.ai/?referralCode=DEHOFT";
   const clipboard = useClipboard({ value: referralLink });
 
   const fetchData = useCallback(async () => {
@@ -127,7 +177,10 @@ export default function ReferralsPage() {
         "Content-Type": "application/json",
         "x-access-token": jwt,
       },
-      body: JSON.stringify({ task_id: selectedTask.task_id, tweet_url: tweetUrl }),
+      body: JSON.stringify({
+        task_id: selectedTask.task_id,
+        tweet_url: tweetUrl,
+      }),
     });
 
     if (!response.ok) {
@@ -138,26 +191,26 @@ export default function ReferralsPage() {
     await fetchData();
   };
 
-  if (!isConnected) {
-    return (
-      <Flex justify="center" align="center" h="100%">
-        <Text color="white">Please connect your wallet to see your referrals.</Text>
-      </Flex>
-    );
-  }
+  // if (!isConnected) {
+  //   return (
+  //     <Flex justify="center" align="center" h="100%">
+  //       <Text color="white">Please connect your wallet to see your referrals.</Text>
+  //     </Flex>
+  //   );
+  // }
 
-  if (loading) {
-    return (
-      <Flex justify="center" align="center" h="100%">
-        <Spinner color={colorTokens.green.erin} size="xl" />
-      </Flex>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <Flex justify="center" align="center" h="100%">
+  //       <Spinner color={colorTokens.green.erin} size="xl" />
+  //     </Flex>
+  //   );
+  // }
 
-  const score = user?.score ?? 0;
-  const balance = user?.score ?? 0; // Assuming balance is same as score for now
-  const referrals = user?.referral_count ?? 0;
-  const isTgConnected = !!user?.telegram_id;
+  const score = user?.score ?? 123456;
+  const balance = user?.score ?? 12345; // Assuming balance is same as score for now
+  const referrals = user?.referral_count ?? 15;
+  const isTgConnected = true;
 
   return (
     <Box
@@ -177,11 +230,24 @@ export default function ReferralsPage() {
         display="flex"
         flexDirection="column"
       >
-        <SimpleGrid templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }} rowGap={4}>
+        <SimpleGrid
+          templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
+          rowGap={4}
+        >
           <Flex align="center" gap={4}>
-            <Image src="/img/logo-mobile.png" alt="Logo" width={80} height={80}></Image>
+            <Image
+              src="/img/logo-mobile.png"
+              alt="Logo"
+              width={80}
+              height={80}
+            ></Image>
             <Box>
-              <Text color="white" fontSize={25} lineHeight={1.3} fontWeight="bold">
+              <Text
+                color="white"
+                fontSize={25}
+                lineHeight={1.3}
+                fontWeight="bold"
+              >
                 {balance.toLocaleString()}
               </Text>
               <Text fontSize={11} lineHeight={1} fontWeight="bold">
@@ -201,7 +267,14 @@ export default function ReferralsPage() {
               py={15}
               borderRadius={14}
             >
-              <Box position="absolute" width="100%" height="100%" top={0} left={0} zIndex={0}>
+              <Box
+                position="absolute"
+                width="100%"
+                height="100%"
+                top={0}
+                left={0}
+                zIndex={0}
+              >
                 <ChakraImage
                   src="/img/invite-link-bg.webp"
                   alt="Invite link backdrop"
@@ -265,7 +338,12 @@ export default function ReferralsPage() {
               <Text fontSize={11} lineHeight={1}>
                 Your referrals
               </Text>
-              <Text color="white" fontSize={25} lineHeight={1.3} fontWeight="bold">
+              <Text
+                color="white"
+                fontSize={25}
+                lineHeight={1.3}
+                fontWeight="bold"
+              >
                 {referrals.toLocaleString()}
               </Text>
             </Box>
@@ -286,7 +364,10 @@ export default function ReferralsPage() {
               <Text fontSize={20} lineHeight={1.3} color="white">
                 Telegram
               </Text>
-              <Text color={isTgConnected ? colorTokens.green.erin : "red"} fontSize={12}>
+              <Text
+                color={isTgConnected ? colorTokens.green.erin : "red"}
+                fontSize={12}
+              >
                 {isTgConnected ? "Connected" : "Not connected"}
               </Text>
             </Box>
@@ -298,7 +379,13 @@ export default function ReferralsPage() {
           </Flex>
         </SimpleGrid>
 
-        <Box mt={10} w="100%" position="relative" overflow="hidden" flexShrink={0}>
+        <Box
+          mt={10}
+          w="100%"
+          position="relative"
+          overflow="hidden"
+          flexShrink={0}
+        >
           <Box position="absolute" inset={0} zIndex={0}>
             <Image
               src="/img/green_clouds.webp"
@@ -329,14 +416,23 @@ export default function ReferralsPage() {
             >
               {score.toLocaleString()}
             </Text>
-            <Text fontSize={13} lineHeight={1} color={colorTokens.gray.timberwolf}>
+            <Text
+              fontSize={13}
+              lineHeight={1}
+              color={colorTokens.gray.timberwolf}
+            >
               Your score
             </Text>
           </Flex>
         </Box>
 
         <Box mt={10} position="relative" display="flex" flexDirection="column">
-          <Text fontSize={16} letterSpacing="wider" color={colorTokens.gray.timberwolf} mb={4}>
+          <Text
+            fontSize={16}
+            letterSpacing="wider"
+            color={colorTokens.gray.timberwolf}
+            mb={4}
+          >
             Tasks
           </Text>
 
@@ -405,6 +501,7 @@ export default function ReferralsPage() {
             </Flex>
           </Flex>
         </Box>
+        <WallOfFame />
       </Box>
       {selectedTask && (
         <CreatePostModal
