@@ -154,11 +154,10 @@ export default function ReferralsPage() {
     );
   }
 
-  const score = user?.score ?? 0;
-  const balance = user?.score ?? 0; // Assuming balance is same as score for now
+  const score = user?.points ?? 0;
+  const balance = user?.points ?? 0; // Assuming balance is same as score for now
   const referrals = user?.referral_count ?? 0;
   const isTgConnected = !!user?.telegram_id;
-
   return (
     <Box
       position="relative"
