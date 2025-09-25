@@ -30,6 +30,7 @@
     "@walletconnect/types": "^2.21.8",
     "@walletconnect/utils": "^2.21.8",
     "aptos": "^1.21.0",
+    "axios": "^1.12.2",
     "deepmerge": "^4.3.1",
     "express": "^5.1.0",
     "firebase": "^11.3.1",

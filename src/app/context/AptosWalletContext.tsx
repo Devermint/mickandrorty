@@ -5,6 +5,7 @@ import { createContext, useContext, useMemo, useCallback, useState, useEffect } 
 import type { PetraWallet } from "petra-plugin-wallet-adapter"; // type-only, keeps your exposed shape
 import { AptosWalletAdapterProvider, useWallet } from "@aptos-labs/wallet-adapter-react";
 import { HexInput, Network } from "@aptos-labs/ts-sdk";
+import api from "@/lib/api";
 
 interface PetraAccountInfo {
   address: HexInput;
@@ -54,50 +55,39 @@ function WalletBridge({ children }: { children: ReactNode }) {
       };
       const signedMessage = await signMessage(messageToSign);
 
-      const response = await fetch("/api/auth/wallet-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          walletAddress: address,
-          publicKey: publicKey,
-          signature: signedMessage.signature,
-          fullMessage: signedMessage.fullMessage,
-        }),
+      const { data } = await api.post("/auth/wallet-login", {
+        walletAddress: address,
+        publicKey: publicKey,
+        signature: signedMessage.signature,
+        fullMessage: signedMessage.fullMessage,
       });
 
-      if (response.ok) {
-        const { token, user: userData } = await response.json();
-        localStorage.setItem("jwt", token);
-        setJwt(token);
-        setUser(userData);
-      } else {
-        console.error("Backend login failed");
-      }
+      const { token, user: userData } = data;
+      localStorage.setItem("jwt", token);
+      setJwt(token);
+      setUser(userData);
     } catch (error) {
       console.error("Error signing message or logging in:", error);
     }
   };
+
   useEffect(() => {
-    loginToBackend();
-  }, [address, publicKey]);
+    if (!jwt && address && publicKey) {
+      loginToBackend();
+    }
+  }, [address, publicKey, jwt]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!jwt) return;
       try {
-        const response = await fetch("/api/users/me", {
-          headers: { "x-access-token": jwt },
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        } else {
-          localStorage.removeItem("jwt");
-          setJwt(null);
-        }
+        const { data: userData } = await api.get("/users/me");
+        setUser(userData);
       } catch (error) {
         console.error("Error fetching user profile:", error);
+        localStorage.removeItem("jwt");
+        setJwt(null);
+        setUser(null);
       }
     };
 
