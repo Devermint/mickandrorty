@@ -182,8 +182,10 @@ const buildRightElement = (
   if (highlight === "self") {
     return (
       <Flex
-        px={3}
-        py={1}
+        align="center"
+        justify="center"
+        w={10}
+        h={10}
         borderRadius="999px"
         bg={styles.badgeBg}
         border="1px solid"
@@ -233,6 +235,7 @@ const renderRowBody = (
             fontWeight={highlight === "default" ? "medium" : "semibold"}
             fontSize="md"
           >
+            {entry.isSelf ? "(You) " : ""}
             {entry.name}
           </Text>
           <Text color={styles.pointsColor} fontSize="sm">
