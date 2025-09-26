@@ -1,19 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-  createContext,
-  useContext,
-  useMemo,
-  useCallback,
-  useState,
-  useEffect,
-} from "react";
+import { createContext, useContext, useMemo, useCallback, useState, useEffect } from "react";
 import type { PetraWallet } from "petra-plugin-wallet-adapter"; // type-only, keeps your exposed shape
-import {
-  AptosWalletAdapterProvider,
-  useWallet,
-} from "@aptos-labs/wallet-adapter-react";
+import { AptosWalletAdapterProvider, useWallet } from "@aptos-labs/wallet-adapter-react";
 import { HexInput, Network, Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 import api from "@/lib/api";
 
@@ -21,7 +11,21 @@ interface PetraAccountInfo {
   address: HexInput;
   publicKey: HexInput;
 }
-
+type User = {
+  wallet_address?: string;
+  username?: string;
+  points?: number;
+  referral_code?: string;
+  referral_count?: number;
+  completed_tasks?: number[];
+  task_history?: any[];
+  telegram_user_id?: string;
+  telegram_username?: string;
+  telegram_photo_url?: string;
+  x_user_id?: string;
+  x_username?: string;
+  x_oauth_token?: string;
+};
 interface AptosWalletContextType {
   account: PetraAccountInfo | null;
   isConnected: boolean;
@@ -29,7 +33,7 @@ interface AptosWalletContextType {
   disconnect: () => Promise<void>;
   wallet: PetraWallet | null; // stays nullable; we don't hand out Petra's client under the standard
   jwt: string | null;
-  user: any | null;
+  user: User | null;
   refreshUser: () => Promise<void>;
   balance: string | null; // APT balance in octas (1 APT = 100,000,000 octas)
   balanceInApt: string | null; // APT balance in human-readable format
@@ -37,9 +41,7 @@ interface AptosWalletContextType {
   refreshBalance: () => Promise<void>;
 }
 
-const AptosWalletContext = createContext<AptosWalletContextType | undefined>(
-  undefined
-);
+const AptosWalletContext = createContext<AptosWalletContextType | undefined>(undefined);
 
 // Create Aptos client instance
 const aptosConfig = new AptosConfig({ network: Network.MAINNET });
@@ -63,7 +65,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
     }
     return null;
   });
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
@@ -176,8 +178,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
     : null;
 
   const connect = useCallback(async () => {
-    const target =
-      wallets.find((w) => w.name.toLowerCase().includes("petra")) ?? wallets[0];
+    const target = wallets.find((w) => w.name.toLowerCase().includes("petra")) ?? wallets[0];
     if (!target) throw new Error("No wallets detected");
     await adapterConnect(target.name);
   }, [wallets, adapterConnect]);
@@ -234,11 +235,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
     ]
   );
 
-  return (
-    <AptosWalletContext.Provider value={value}>
-      {children}
-    </AptosWalletContext.Provider>
-  );
+  return <AptosWalletContext.Provider value={value}>{children}</AptosWalletContext.Provider>;
 }
 
 /** Public provider (signature unchanged) */
@@ -250,10 +247,7 @@ export function AptosWalletProvider({
   sessionDuration: number;
 }) {
   return (
-    <AptosWalletAdapterProvider
-      autoConnect
-      dappConfig={{ network: Network.MAINNET }}
-    >
+    <AptosWalletAdapterProvider autoConnect dappConfig={{ network: Network.MAINNET }}>
       <WalletBridge>{children}</WalletBridge>
     </AptosWalletAdapterProvider>
   );
@@ -261,9 +255,6 @@ export function AptosWalletProvider({
 
 export function useAptosWallet() {
   const ctx = useContext(AptosWalletContext);
-  if (!ctx)
-    throw new Error(
-      "useAptosWallet must be used within an AptosWalletProvider"
-    );
+  if (!ctx) throw new Error("useAptosWallet must be used within an AptosWalletProvider");
   return ctx;
 }

@@ -223,7 +223,7 @@ export default function ReferralsPage() {
 
   const score = user?.points ?? 0;
   const referrals = user?.referral_count ?? 0;
-  const isTgConnected = !!user?.telegram_id;
+  const isTgConnected = !!user?.telegram_user_id;
   return (
     <Box
       position="relative"
@@ -346,12 +346,27 @@ export default function ReferralsPage() {
               justify="center"
               align="center"
             >
-              <TelegramIcon color={colorTokens.green.erin} h={4} w={4} />
+              {isTgConnected ? (
+                <img
+                  src={user?.telegram_photo_url}
+                  alt="Telegram"
+                  style={{ height: "100%", width: "100%" }}
+                />
+              ) : (
+                <TelegramIcon color={colorTokens.green.erin} h={4} w={4} />
+              )}
             </Flex>
             <Box>
-              <Text fontSize={20} lineHeight={1.3} color="white">
-                Telegram
-              </Text>
+              {isTgConnected ? (
+                <Text fontSize={20} lineHeight={1.3} color="white">
+                  {user?.telegram_username}
+                </Text>
+              ) : (
+                <Text fontSize={20} lineHeight={1.3} color="white">
+                  Telegram
+                </Text>
+              )}
+
               <Text color={isTgConnected ? colorTokens.green.erin : "red"} fontSize={12}>
                 {isTgConnected ? "Connected" : "Not connected"}
               </Text>
