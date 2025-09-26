@@ -88,7 +88,7 @@ export default function Footer() {
             textAlign={{ base: "left", md: "right", lg: "right" }}
             color={colorTokens.gray.platinum}
           >
-            © Copyrights reserved by AptosLayer <br /> 2025
+            © Copyrights reserved by Aptos AI Layer <br /> 2025
           </Box>
         </Flex>
       </Flex>

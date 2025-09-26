@@ -135,7 +135,7 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
                   <GlobeIcon h="1.5rem" w="1.5rem" />
                   Visit AptosLayerAI
                 </Button>
-                <span>© Copyrights reserved by AptosLayer 2025</span>
+                <span>© Copyrights reserved by Aptos AI Layer 2025</span>
               </Box>
             </Flex>
           </Flex>
