@@ -9,7 +9,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/auth/telegram/callback`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/telegram/callback`;
+    console.log("Backend URL:", backendUrl);
     const backendResponse = await fetch(backendUrl, {
       method: "POST",
       headers: {
