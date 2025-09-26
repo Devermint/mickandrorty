@@ -24,15 +24,30 @@ export async function GET(request: NextRequest) {
 
     const payload: unknown = await backendResponse.json();
 
+    if (
+      payload &&
+      typeof payload === "object" &&
+      "weekly" in payload &&
+      "monthly" in payload &&
+      !("all_time" in payload)
+    ) {
+      const payloadRecord = payload as Record<string, unknown>;
+      payloadRecord["all_time"] = payloadRecord["monthly"];
+      delete payloadRecord["monthly"];
+    }
+
     if (!backendResponse.ok) {
       const message =
         typeof payload === "object" && payload !== null && "message" in payload
-          ? String((payload as { message?: unknown }).message ?? "An error occurred")
+          ? String(
+              (payload as { message?: unknown }).message ?? "An error occurred"
+            )
           : "An error occurred";
 
       return NextResponse.json({ message }, { status: backendResponse.status });
     }
 
+    console.log(payload);
     if (!isLeaderboardResponse(payload)) {
       return NextResponse.json(
         { message: "Invalid leaderboard payload" },

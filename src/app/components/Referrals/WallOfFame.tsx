@@ -10,7 +10,7 @@ import type {
 
 const LEADERBOARD_TABS = [
   { key: "weekly", label: "Weekly" },
-  { key: "monthly", label: "Monthly" },
+  { key: "all_time", label: "All Time" },
 ] as const;
 
 type LeaderboardTabKey = (typeof LEADERBOARD_TABS)[number]["key"];
@@ -257,7 +257,13 @@ const WallOfFame = ({
   const [activeTab, setActiveTab] = useState<LeaderboardTabKey>("weekly");
 
   const { displayEntries, totalScore } = useMemo(() => {
-    const periodEntries = leaderboard?.[activeTab]?.entries ?? [];
+    const period = leaderboard
+      ? activeTab === "weekly"
+        ? leaderboard.weekly
+        : leaderboard.all_time
+      : null;
+
+    const periodEntries = period?.entries ?? [];
     const sortedEntries = [...periodEntries].sort((a, b) => a.rank - b.rank);
     const topEntries = sortedEntries.slice(0, MAX_VISIBLE_ROWS);
     const foundSelf = sortedEntries.find((entry) => entry.isSelf);
@@ -282,6 +288,9 @@ const WallOfFame = ({
     : loading
     ? "..."
     : "0";
+
+  const totalScoreLabel =
+    activeTab === "weekly" ? "weekly points" : "lifetime points";
 
   return (
     <>
@@ -329,7 +338,7 @@ const WallOfFame = ({
             color={colorTokens.gray.timberwolf}
             opacity={0.8}
           >
-            {totalScoreDisplay} lifetime points
+            {totalScoreDisplay} {totalScoreLabel}
           </Text>
         </Flex>
       </Box>

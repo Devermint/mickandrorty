@@ -7,14 +7,14 @@ export type LeaderboardEntry = {
 };
 
 export type LeaderboardPeriod = {
-  range_start: string;
+  range_start: string | null;
   range_end: string;
   entries: LeaderboardEntry[];
 };
 
 export type LeaderboardResponse = {
   weekly: LeaderboardPeriod;
-  monthly: LeaderboardPeriod;
+  all_time: LeaderboardPeriod;
 };
 
 const isFiniteNumber = (value: unknown): value is number =>
@@ -45,7 +45,7 @@ const isLeaderboardPeriod = (value: unknown): value is LeaderboardPeriod => {
   const entries = record.entries;
 
   return (
-    typeof record.range_start === "string" &&
+    (typeof record.range_start === "string" || record.range_start === null) &&
     typeof record.range_end === "string" &&
     Array.isArray(entries) &&
     entries.every(isLeaderboardEntry)
@@ -61,7 +61,7 @@ export const isLeaderboardResponse = (
 
   const record = value as Record<string, unknown>;
   const weekly = record.weekly;
-  const monthly = record.monthly;
+  const all_time = record.all_time;
 
-  return isLeaderboardPeriod(weekly) && isLeaderboardPeriod(monthly);
+  return isLeaderboardPeriod(weekly) && isLeaderboardPeriod(all_time);
 };

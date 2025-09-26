@@ -20,8 +20,6 @@ export async function GET(request: NextRequest) {
 
     const data = await backendResponse.json();
 
-    console.log(data);
-
     if (!backendResponse.ok) {
       return NextResponse.json(
         { message: data.message || "An error occurred" },
