@@ -20,6 +20,10 @@ import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { CreatePostModal } from "@/app/components/CreatePostModal/CreatePostModal";
 import TelegramLoginWidget from "@/app/components/TelegramLoginWidget/TelegramLoginWidget";
 import WallOfFame from "@/app/components/Referrals/WallOfFame";
+import {
+  isLeaderboardResponse,
+  type LeaderboardResponse,
+} from "@/app/types/leaderboard";
 
 interface Task {
   task_id: string;
@@ -81,6 +85,11 @@ export default function ReferralsPage() {
     },
   ]);
   const [loading, setLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(
+    null
+  );
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
   const {
     open: isCreatePostModalOpen,
     onOpen: onCreatePostModalOpen,
@@ -90,33 +99,81 @@ export default function ReferralsPage() {
 
   const referralLink = user?.referral_code
     ? `https://dapp.aptoslayer.ai/?referralCode=${user.referral_code}`
-    : "https://dapp.aptoslayer.ai/?referralCode=DEHOFT";
+    : "";
   const clipboard = useClipboard({ value: referralLink });
 
   const fetchData = useCallback(async () => {
-    if (jwt) {
-      setLoading(true);
-      try {
-        const tasksResponse = await fetch("/api/tasks", {
-          headers: { "x-access-token": jwt },
-        });
-        if (tasksResponse.ok) {
-          const tasksData = await tasksResponse.json();
-          setTasks(tasksData);
-        } else {
-          console.error("Failed to fetch tasks");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+    if (!jwt) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const tasksResponse = await fetch("/api/tasks", {
+        headers: { "x-access-token": jwt },
+      });
+      if (tasksResponse.ok) {
+        const tasksData = await tasksResponse.json();
+        setTasks(tasksData);
+      } else {
+        console.error("Failed to fetch tasks");
       }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [jwt]);
+
+  const fetchLeaderboard = useCallback(async () => {
+    if (!jwt) {
+      setLeaderboard(null);
+      setLeaderboardError(null);
+      setLeaderboardLoading(false);
+      return;
+    }
+
+    setLeaderboardLoading(true);
+    setLeaderboardError(null);
+
+    try {
+      const response = await fetch("/api/tasks/leaderboard", {
+        headers: { "x-access-token": jwt },
+      });
+
+      const payload: unknown = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const message =
+          payload && typeof payload === "object" && "message" in payload
+            ? String(
+                (payload as { message?: unknown }).message ??
+                  "Failed to fetch leaderboard"
+              )
+            : "Failed to fetch leaderboard";
+        throw new Error(message);
+      }
+
+      if (!isLeaderboardResponse(payload)) {
+        throw new Error("Invalid leaderboard payload");
+      }
+
+      setLeaderboard(payload);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      setLeaderboardError(
+        error instanceof Error ? error.message : "Unable to load leaderboard"
+      );
+    } finally {
+      setLeaderboardLoading(false);
     }
   }, [jwt]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    fetchLeaderboard();
+  }, [fetchData, fetchLeaderboard]);
 
   const handleCompleteTask = async (taskId: string) => {
     const task = tasks.find((t) => t.task_id === taskId);
@@ -191,21 +248,23 @@ export default function ReferralsPage() {
     await fetchData();
   };
 
-  // if (!isConnected) {
-  //   return (
-  //     <Flex justify="center" align="center" h="100%">
-  //       <Text color="white">Please connect your wallet to see your referrals.</Text>
-  //     </Flex>
-  //   );
-  // }
+  if (!isConnected) {
+    return (
+      <Flex justify="center" align="center" h="100%">
+        <Text color="white">
+          Please connect your wallet to see your referrals.
+        </Text>
+      </Flex>
+    );
+  }
 
-  // if (loading) {
-  //   return (
-  //     <Flex justify="center" align="center" h="100%">
-  //       <Spinner color={colorTokens.green.erin} size="xl" />
-  //     </Flex>
-  //   );
-  // }
+  if (loading) {
+    return (
+      <Flex justify="center" align="center" h="100%">
+        <Spinner color={colorTokens.green.erin} size="xl" />
+      </Flex>
+    );
+  }
 
   const score = user?.points ?? 0;
   const balance = user?.points ?? 0; // Assuming balance is same as score for now
@@ -250,7 +309,7 @@ export default function ReferralsPage() {
                 {balance.toLocaleString()}
               </Text>
               <Text fontSize={11} lineHeight={1} fontWeight="bold">
-                APTOS
+                POINTS
               </Text>
             </Box>
           </Flex>
@@ -370,11 +429,11 @@ export default function ReferralsPage() {
                 {isTgConnected ? "Connected" : "Not connected"}
               </Text>
             </Box>
-            {!isTgConnected && (
+            {/* {!isTgConnected && (
               <Box ml={4}>
                 <TelegramLoginWidget onAuthSuccess={fetchData} />
               </Box>
-            )}
+            )} */}
           </Flex>
         </SimpleGrid>
 
@@ -500,7 +559,12 @@ export default function ReferralsPage() {
             </Flex>
           </Flex>
         </Box>
-        <WallOfFame />
+        <WallOfFame
+          leaderboard={leaderboard}
+          loading={leaderboardLoading}
+          error={leaderboardError}
+          onRetry={fetchLeaderboard}
+        />
       </Box>
       {selectedTask && (
         <CreatePostModal
