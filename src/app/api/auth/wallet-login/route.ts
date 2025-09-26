@@ -10,14 +10,17 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(body),
     });
+    const text = await backendResponse.text();
 
-    const data = await backendResponse.json();
-
-    if (!backendResponse.ok) {
-      return NextResponse.json({ message: data.message || 'An error occurred' }, { status: backendResponse.status });
+    try {
+      const data = JSON.parse(text);
+      if (!backendResponse.ok) {
+        return NextResponse.json({ message: data.message || 'An error occurred' }, { status: backendResponse.status });
+      }
+      return NextResponse.json(data);
+    } catch (e) {
+      return new NextResponse(text, { status: backendResponse.status });
     }
-
-    return NextResponse.json(data);
   } catch (error) {
     console.error('Error proxying to backend:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });

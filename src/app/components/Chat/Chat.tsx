@@ -47,7 +47,6 @@ const Chat = ({
   // Track the last message count to detect new AI responses
   const lastMessageCountRef = useRef(messages.length);
 
-
   // Group chat integration with agent-specific room
   const handleGroupMessage = useCallback(
     (groupMessage: ChatEntryProps, isFromHistory = false) => {
@@ -59,22 +58,28 @@ const Chat = ({
   // Handle message updates from WebSocket
   const handleMessageUpdate = useCallback(
     (updatedMessage: ChatEntryProps) => {
-      setMessages(prev => prev.map(msg => {
-        // Match by message ID
-        const messageId = updatedMessage.data?.messageId || updatedMessage.data?._id;
-        const currentMessageId = msg.data?.messageId || msg.data?._id;
+      setMessages((prev) =>
+        prev.map((msg) => {
+          // Match by message ID
+          const messageId =
+            updatedMessage.data?.messageId || updatedMessage.data?._id;
+          const currentMessageId = msg.data?.messageId || msg.data?._id;
 
-        if (messageId && currentMessageId === messageId) {
-          return { ...msg, ...updatedMessage };
-        }
+          if (messageId && currentMessageId === messageId) {
+            return { ...msg, ...updatedMessage };
+          }
 
-        // Fallback: match by job_id for video messages
-        if (updatedMessage.data?.job_id && msg.data?.job_id === updatedMessage.data.job_id) {
-          return { ...msg, ...updatedMessage };
-        }
+          // Fallback: match by job_id for video messages
+          if (
+            updatedMessage.data?.job_id &&
+            msg.data?.job_id === updatedMessage.data.job_id
+          ) {
+            return { ...msg, ...updatedMessage };
+          }
 
-        return msg;
-      }));
+          return msg;
+        })
+      );
     },
     [setMessages]
   );
@@ -155,7 +160,9 @@ const Chat = ({
         // Don't broadcast messages that came from group chat
 
         // Create a unique identifier for this message to prevent duplicate broadcasts
-        const messageId = `${newestMessage.content}_${newestMessage.data?.job_id || ''}_${Date.now()}`;
+        const messageId = `${newestMessage.content}_${
+          newestMessage.data?.job_id || ""
+        }_${Date.now()}`;
 
         if (!broadcastedMessagesRef.current.has(messageId)) {
           broadcastedMessagesRef.current.add(messageId);
@@ -169,7 +176,7 @@ const Chat = ({
                 agent_id: agent.fa_id,
                 user_type: "agent",
                 type: "video",
-                job_id: newestMessage.data.job_id
+                job_id: newestMessage.data.job_id,
               });
             }
           } else {
@@ -211,10 +218,9 @@ const Chat = ({
     const timeoutId = setTimeout(() => {
       el.scrollTo({ top: 0, behavior: "smooth" });
     }, 50);
-    
+
     return () => clearTimeout(timeoutId);
   }, [count]);
-
 
   // Handle initial message from URL
   useEffect(() => {
@@ -364,11 +370,6 @@ const Chat = ({
           justify="center"
           flexShrink={0}
         >
-          <ChatHelperButton
-            label="Video generator"
-            onButtonClick={handleHelperButtonClick}
-            chatEntry="Can you help me generate a video?"
-          />
           <ChatHelperButton
             label="Agent creation"
             onButtonClick={handleHelperButtonClick}
