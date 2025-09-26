@@ -33,7 +33,7 @@ interface Task {
 }
 
 export default function ReferralsPage() {
-  const { user, jwt, isConnected } = useAptosWallet();
+  const { user, jwt, isConnected, refreshUser } = useAptosWallet();
   const [tasks, setTasks] = useState<Task[]>([
     {
       task_id: "LIKE_RETWEET_COMMENT",
@@ -215,7 +215,7 @@ export default function ReferralsPage() {
       if (data.action === "redirect" && (data.authorization_url || data.url)) {
         window.location.href = data.authorization_url || data.url;
       } else {
-        fetchData();
+        await Promise.all([fetchData(), fetchLeaderboard(), refreshUser()]);
       }
     } catch (error) {
       console.error("Error completing task:", error);
@@ -245,7 +245,7 @@ export default function ReferralsPage() {
       throw new Error(errorData.error || "Failed to complete task");
     }
 
-    await fetchData();
+    await Promise.all([fetchData(), fetchLeaderboard(), refreshUser()]);
   };
 
   if (!isConnected) {

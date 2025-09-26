@@ -19,6 +19,7 @@ interface AptosWalletContextType {
   wallet: PetraWallet | null; // stays nullable; we don't hand out Petra's client under the standard
   jwt: string | null;
   user: any | null;
+  refreshUser: () => Promise<void>;
 }
 
 const AptosWalletContext = createContext<AptosWalletContextType | undefined>(undefined);
@@ -79,24 +80,24 @@ function WalletBridge({ children }: { children: ReactNode }) {
     }
   }, [address, publicKey, jwt]);
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!jwt) return;
-      try {
-        const { data: userData } = await api.get("/users/me");
-        setUser(userData);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-        localStorage.removeItem("jwt");
-        setJwt(null);
-        setUser(null);
-      }
-    };
+  const fetchUserProfile = useCallback(async () => {
+    if (!jwt) return;
+    try {
+      const { data: userData } = await api.get("/users/me");
+      setUser(userData);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      localStorage.removeItem("jwt");
+      setJwt(null);
+      setUser(null);
+    }
+  }, [jwt]);
 
+  useEffect(() => {
     if (jwt && !user) {
       fetchUserProfile();
     }
-  }, [jwt, user]);
+  }, [jwt, user, fetchUserProfile]);
 
   const accountOut: PetraAccountInfo | null = account
     ? {
@@ -140,8 +141,9 @@ function WalletBridge({ children }: { children: ReactNode }) {
       wallet: shimWallet, // <- not null after connect
       jwt,
       user,
+      refreshUser: fetchUserProfile,
     }),
-    [accountOut, connected, connect, disconnect, shimWallet, jwt, user]
+    [accountOut, connected, connect, disconnect, shimWallet, jwt, user, fetchUserProfile]
   );
 
   return <AptosWalletContext.Provider value={value}>{children}</AptosWalletContext.Provider>;
