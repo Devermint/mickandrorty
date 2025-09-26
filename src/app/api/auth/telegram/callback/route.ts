@@ -19,8 +19,21 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     });
 
+    const responseText = await backendResponse.text();
+    console.log("Backend response status:", backendResponse.status);
+    console.log("Backend response text:", responseText);
 
-    const data = await backendResponse.json();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error("Failed to parse backend response as JSON:", parseError);
+      console.error("Response was:", responseText);
+      return NextResponse.json(
+        { error: "Invalid response from backend" },
+        { status: 502 }
+      );
+    }
 
     if (!backendResponse.ok) {
       return NextResponse.json(
