@@ -23,6 +23,18 @@ body {
   min-height: 100vh;
 }
 
+@media (max-width: 480px) {
+  body {
+    background-image: url("/background2-min.webp"),
+      radial-gradient(
+        ellipse 80% 60% at 50% 40%,
+        /* Even wider for small screens */ rgba(13, 43, 24, 0.9) 0%,
+        rgba(13, 43, 24, 0.7) 30%,
+        rgba(2, 9, 9, 0.95) 60%
+      );
+  }
+}
+
 /* View Transitions API styles */
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -82,6 +94,6 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #6A6B6A;
+  background: #6a6b6a;
   border-radius: 16px;
 }

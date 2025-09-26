@@ -33,7 +33,16 @@ interface Task {
 }
 
 export default function ReferralsPage() {
-  const { user, jwt, isConnected, refreshUser } = useAptosWallet();
+  const {
+    user,
+    jwt,
+    isConnected,
+    refreshUser,
+    account,
+    balanceInApt,
+    isLoadingBalance,
+    refreshBalance,
+  } = useAptosWallet();
   const [tasks, setTasks] = useState<Task[]>();
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(
@@ -225,7 +234,6 @@ export default function ReferralsPage() {
   }
 
   const score = user?.points ?? 0;
-  const balance = user?.points ?? 0; // Assuming balance is same as score for now
   const referrals = user?.referral_count ?? 0;
   const isTgConnected = !!user?.telegram_id;
   return (
@@ -245,29 +253,35 @@ export default function ReferralsPage() {
         bg="transparent"
         display="flex"
         flexDirection="column"
+        mt={{ base: 10, md: 0 }}
       >
         <SimpleGrid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
           rowGap={4}
         >
-          <Flex align="center" gap={4}>
+          <Flex
+            align="center"
+            justify="center"
+            direction={{ base: "column", md: "row" }}
+            gap={4}
+          >
             <Image
               src="/img/logo-mobile.png"
               alt="Logo"
               width={80}
               height={80}
             ></Image>
-            <Box>
+            <Box textAlign={{ base: "center", md: "left" }}>
               <Text
                 color="white"
                 fontSize={25}
                 lineHeight={1.3}
                 fontWeight="bold"
               >
-                {balance.toLocaleString()}
+                {isLoadingBalance ? <Spinner /> : `${balanceInApt || "0"}`}
               </Text>
               <Text fontSize={11} lineHeight={1} fontWeight="bold">
-                POINTS
+                APTOS
               </Text>
             </Box>
           </Flex>
@@ -465,8 +479,8 @@ export default function ReferralsPage() {
                       <Flex
                         align="center"
                         justify="center"
-                        w={10}
-                        h={10}
+                        minW={10}
+                        minH={10}
                         borderRadius="full"
                         bg={colorTokens.blackCustom.a3}
                         color={colorTokens.gray.timberwolf}
@@ -476,17 +490,22 @@ export default function ReferralsPage() {
                         !
                       </Flex>
                       <Box>
-                        <Text color="white">{task.title}</Text>
-                        <Text color={colorTokens.gray.platinum} fontSize="sm">
+                        <Text color="white" fontSize={{ base: "sm", md: "md" }}>
+                          {task.title}
+                        </Text>
+                        <Text
+                          color={colorTokens.gray.platinum}
+                          fontSize={{ base: "sm", md: "sm" }}
+                        >
                           +{task.points.toLocaleString()} Points
                         </Text>
                       </Box>
                     </Flex>
                     <Button
                       borderRadius="full"
-                      px={6}
-                      h={10}
-                      fontSize="sm"
+                      px={{ base: 4, md: 6 }}
+                      h={{ base: 8, md: 10 }}
+                      fontSize={{ base: "xs", md: "sm" }}
                       fontWeight="semibold"
                       cursor={
                         task.status === "completed" ? "default" : "pointer"

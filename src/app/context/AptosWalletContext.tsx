@@ -1,16 +1,27 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { createContext, useContext, useMemo, useCallback, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+} from "react";
 import type { PetraWallet } from "petra-plugin-wallet-adapter"; // type-only, keeps your exposed shape
-import { AptosWalletAdapterProvider, useWallet } from "@aptos-labs/wallet-adapter-react";
-import { HexInput, Network } from "@aptos-labs/ts-sdk";
+import {
+  AptosWalletAdapterProvider,
+  useWallet,
+} from "@aptos-labs/wallet-adapter-react";
+import { HexInput, Network, Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 import api from "@/lib/api";
 
 interface PetraAccountInfo {
   address: HexInput;
   publicKey: HexInput;
 }
+
 interface AptosWalletContextType {
   account: PetraAccountInfo | null;
   isConnected: boolean;
@@ -20,9 +31,19 @@ interface AptosWalletContextType {
   jwt: string | null;
   user: any | null;
   refreshUser: () => Promise<void>;
+  balance: string | null; // APT balance in octas (1 APT = 100,000,000 octas)
+  balanceInApt: string | null; // APT balance in human-readable format
+  isLoadingBalance: boolean;
+  refreshBalance: () => Promise<void>;
 }
 
-const AptosWalletContext = createContext<AptosWalletContextType | undefined>(undefined);
+const AptosWalletContext = createContext<AptosWalletContextType | undefined>(
+  undefined
+);
+
+// Create Aptos client instance
+const aptosConfig = new AptosConfig({ network: Network.MAINNET });
+const aptos = new Aptos(aptosConfig);
 
 /** Bridge adapter -> your context shape */
 function WalletBridge({ children }: { children: ReactNode }) {
@@ -43,9 +64,52 @@ function WalletBridge({ children }: { children: ReactNode }) {
     return null;
   });
   const [user, setUser] = useState<any | null>(null);
+  const [balance, setBalance] = useState<string | null>(null);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
   const address = account?.address?.toString();
   const publicKey = account?.publicKey?.toString();
+
+  // Convert octas to APT (1 APT = 100,000,000 octas)
+  const balanceInApt = useMemo(() => {
+    if (!balance) return null;
+    const aptAmount = parseInt(balance) / 100_000_000;
+    return aptAmount.toFixed(8).replace(/\.?0+$/, ""); // Remove trailing zeros
+  }, [balance]);
+
+  const fetchBalance = useCallback(async () => {
+    if (!address) {
+      setBalance(null);
+      return;
+    }
+
+    setIsLoadingBalance(true);
+    try {
+      const balance = await aptos.getAccountAPTAmount({
+        accountAddress: address,
+      });
+
+      setBalance(balance.toString());
+    } catch (error) {
+      try {
+        const formattedAddress = address.startsWith("0x")
+          ? "0x" + address.slice(2).padStart(64, "0")
+          : "0x" + address.padStart(64, "0");
+
+        const resources = await aptos.getAccountResource({
+          accountAddress: formattedAddress,
+          resourceType: "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>",
+        });
+
+        const coinBalance = (resources as any)?.coin?.value;
+        setBalance(coinBalance || "0");
+      } catch {
+        setBalance("0");
+      }
+    } finally {
+      setIsLoadingBalance(false);
+    }
+  }, [address]);
 
   const loginToBackend = async () => {
     if (!address || !publicKey) return;
@@ -80,6 +144,11 @@ function WalletBridge({ children }: { children: ReactNode }) {
     }
   }, [address, publicKey, jwt]);
 
+  // Fetch balance when address changes
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
+
   const fetchUserProfile = useCallback(async () => {
     if (!jwt) return;
     try {
@@ -107,7 +176,8 @@ function WalletBridge({ children }: { children: ReactNode }) {
     : null;
 
   const connect = useCallback(async () => {
-    const target = wallets.find((w) => w.name.toLowerCase().includes("petra")) ?? wallets[0];
+    const target =
+      wallets.find((w) => w.name.toLowerCase().includes("petra")) ?? wallets[0];
     if (!target) throw new Error("No wallets detected");
     await adapterConnect(target.name);
   }, [wallets, adapterConnect]);
@@ -117,6 +187,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
     localStorage.removeItem("jwt");
     setJwt(null);
     setUser(null);
+    setBalance(null);
   }, [adapterDisconnect]);
 
   // ---- Shim: looks like Petra for your SDK, but only implements what you use
@@ -142,11 +213,32 @@ function WalletBridge({ children }: { children: ReactNode }) {
       jwt,
       user,
       refreshUser: fetchUserProfile,
+      balance,
+      balanceInApt,
+      isLoadingBalance,
+      refreshBalance: fetchBalance,
     }),
-    [accountOut, connected, connect, disconnect, shimWallet, jwt, user, fetchUserProfile]
+    [
+      accountOut,
+      connected,
+      connect,
+      disconnect,
+      shimWallet,
+      jwt,
+      user,
+      fetchUserProfile,
+      balance,
+      balanceInApt,
+      isLoadingBalance,
+      fetchBalance,
+    ]
   );
 
-  return <AptosWalletContext.Provider value={value}>{children}</AptosWalletContext.Provider>;
+  return (
+    <AptosWalletContext.Provider value={value}>
+      {children}
+    </AptosWalletContext.Provider>
+  );
 }
 
 /** Public provider (signature unchanged) */
@@ -158,7 +250,10 @@ export function AptosWalletProvider({
   sessionDuration: number;
 }) {
   return (
-    <AptosWalletAdapterProvider autoConnect dappConfig={{ network: Network.MAINNET }}>
+    <AptosWalletAdapterProvider
+      autoConnect
+      dappConfig={{ network: Network.MAINNET }}
+    >
       <WalletBridge>{children}</WalletBridge>
     </AptosWalletAdapterProvider>
   );
@@ -166,6 +261,9 @@ export function AptosWalletProvider({
 
 export function useAptosWallet() {
   const ctx = useContext(AptosWalletContext);
-  if (!ctx) throw new Error("useAptosWallet must be used within an AptosWalletProvider");
+  if (!ctx)
+    throw new Error(
+      "useAptosWallet must be used within an AptosWalletProvider"
+    );
   return ctx;
 }
