@@ -54,12 +54,14 @@ function WalletBridge({ children }: { children: ReactNode }) {
         nonce: `nonce-${Math.random().toString(16).substring(2)}`,
       };
       const signedMessage = await signMessage(messageToSign);
-
+      const urlParams = new URLSearchParams(window.location.search);
+      const referralCode = urlParams.get("referralCode");
       const { data } = await api.post("/auth/wallet-login", {
         walletAddress: address,
         publicKey: publicKey,
         signature: signedMessage.signature,
         fullMessage: signedMessage.fullMessage,
+        referralCode: referralCode,
       });
 
       const { token, user: userData } = data;
