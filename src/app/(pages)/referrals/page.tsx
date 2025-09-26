@@ -34,56 +34,7 @@ interface Task {
 
 export default function ReferralsPage() {
   const { user, jwt, isConnected, refreshUser } = useAptosWallet();
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      task_id: "LIKE_RETWEET_COMMENT",
-      title: "Like + retweet + comment on the latest X post",
-      points: 25,
-      status: "available",
-    },
-    {
-      task_id: "TAG_FRIENDS",
-      title: "Tag 3 friends under a latest post",
-      points: 25,
-      status: "available",
-    },
-    {
-      task_id: "INVITE_FRIEND_TELEGRAM",
-      title: "Invite a friend to join Telegram",
-      points: 25,
-      status: "available",
-    },
-    {
-      task_id: "CREATE_POST",
-      title: "Create a POST about the project using our ticker",
-      points: 100,
-      status: "available",
-    },
-    {
-      task_id: "CONNECT_WALLET",
-      title: "Connect your wallet",
-      points: 10,
-      status: "available",
-    },
-    {
-      task_id: "DEPLOY_AGENT",
-      title: "Deploy your first AI agent",
-      points: 100,
-      status: "available",
-    },
-    {
-      task_id: "DAILY_LOGIN",
-      title: "Daily login streaks",
-      points: 10,
-      status: "available",
-    },
-    {
-      task_id: "CONNECT_X",
-      title: "Connect X account",
-      points: 10,
-      status: "available",
-    },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>();
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(
     null
@@ -176,7 +127,7 @@ export default function ReferralsPage() {
   }, [fetchData, fetchLeaderboard]);
 
   const handleCompleteTask = async (taskId: string) => {
-    const task = tasks.find((t) => t.task_id === taskId);
+    const task = tasks?.find((t) => t.task_id === taskId);
     if (!task) return;
 
     if (taskId === "CREATE_POST") {
@@ -212,11 +163,18 @@ export default function ReferralsPage() {
 
       const data = await response.json();
 
-      if (data.action === "redirect" && (data.authorization_url || data.url)) {
-        window.location.href = data.authorization_url || data.url;
-      } else {
-        await Promise.all([fetchData(), fetchLeaderboard(), refreshUser()]);
+      if (data.action === "redirect") {
+        const targetUrl = data.authorization_url || data.url;
+        if (targetUrl) {
+          const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
+          if (!popup) {
+            window.location.href = targetUrl;
+            return;
+          }
+        }
       }
+
+      await Promise.all([fetchData(), fetchLeaderboard(), refreshUser()]);
     } catch (error) {
       console.error("Error completing task:", error);
     }
@@ -248,20 +206,20 @@ export default function ReferralsPage() {
     await Promise.all([fetchData(), fetchLeaderboard(), refreshUser()]);
   };
 
+  if (loading) {
+    return (
+      <Flex justify="center" align="center" h="100%">
+        <Spinner color={colorTokens.green.erin} size="xl" />
+      </Flex>
+    );
+  }
+
   if (!isConnected) {
     return (
       <Flex justify="center" align="center" h="100%">
         <Text color="white">
           Please connect your wallet to see your referrals.
         </Text>
-      </Flex>
-    );
-  }
-
-  if (loading) {
-    return (
-      <Flex justify="center" align="center" h="100%">
-        <Spinner color={colorTokens.green.erin} size="xl" />
       </Flex>
     );
   }
@@ -494,70 +452,78 @@ export default function ReferralsPage() {
             Tasks
           </Text>
 
-          <Flex position="relative" flexDirection="column">
-            <Flex flexDirection="column" gap={3}>
-              {tasks.map((task) => (
-                <Flex key={task.task_id} align="center" justify="space-between">
-                  <Flex align="center" gap={4}>
-                    <Flex
-                      align="center"
-                      justify="center"
-                      w={10}
-                      h={10}
-                      borderRadius="full"
-                      bg={colorTokens.blackCustom.a3}
-                      color={colorTokens.gray.timberwolf}
-                      fontSize="lg"
-                      fontWeight="semibold"
-                    >
-                      !
-                    </Flex>
-                    <Box>
-                      <Text color="white">{task.title}</Text>
-                      <Text color={colorTokens.gray.platinum} fontSize="sm">
-                        +{task.points.toLocaleString()} Points
-                      </Text>
-                    </Box>
-                  </Flex>
-                  <Button
-                    borderRadius="full"
-                    px={6}
-                    h={10}
-                    fontSize="sm"
-                    fontWeight="semibold"
-                    cursor={task.status === "completed" ? "default" : "pointer"}
-                    disabled={task.status === "completed"}
-                    onClick={() => handleCompleteTask(task.task_id)}
-                    color={
-                      task.status === "completed"
-                        ? colorTokens.gray.platinum
-                        : colorTokens.blackCustom.a1
-                    }
-                    bg={
-                      task.status === "completed"
-                        ? colorTokens.blackCustom.a3
-                        : colorTokens.green.erin
-                    }
-                    _hover={{
-                      bg:
-                        task.status === "completed"
-                          ? colorTokens.blackCustom.a3
-                          : colorTokens.green.darkErin,
-                    }}
-                    _active={{
-                      bg:
-                        task.status === "completed"
-                          ? colorTokens.blackCustom.a3
-                          : colorTokens.green.dark,
-                    }}
-                    transition="background 0.2s ease"
+          {tasks && (
+            <Flex position="relative" flexDirection="column">
+              <Flex flexDirection="column" gap={3}>
+                {tasks.map((task) => (
+                  <Flex
+                    key={task.task_id}
+                    align="center"
+                    justify="space-between"
                   >
-                    {task.status === "completed" ? "Done" : "Complete"}
-                  </Button>
-                </Flex>
-              ))}
+                    <Flex align="center" gap={4}>
+                      <Flex
+                        align="center"
+                        justify="center"
+                        w={10}
+                        h={10}
+                        borderRadius="full"
+                        bg={colorTokens.blackCustom.a3}
+                        color={colorTokens.gray.timberwolf}
+                        fontSize="lg"
+                        fontWeight="semibold"
+                      >
+                        !
+                      </Flex>
+                      <Box>
+                        <Text color="white">{task.title}</Text>
+                        <Text color={colorTokens.gray.platinum} fontSize="sm">
+                          +{task.points.toLocaleString()} Points
+                        </Text>
+                      </Box>
+                    </Flex>
+                    <Button
+                      borderRadius="full"
+                      px={6}
+                      h={10}
+                      fontSize="sm"
+                      fontWeight="semibold"
+                      cursor={
+                        task.status === "completed" ? "default" : "pointer"
+                      }
+                      disabled={task.status === "completed"}
+                      onClick={() => handleCompleteTask(task.task_id)}
+                      color={
+                        task.status === "completed"
+                          ? colorTokens.gray.platinum
+                          : colorTokens.blackCustom.a1
+                      }
+                      bg={
+                        task.status === "completed"
+                          ? colorTokens.blackCustom.a3
+                          : colorTokens.green.erin
+                      }
+                      _hover={{
+                        bg:
+                          task.status === "completed"
+                            ? colorTokens.blackCustom.a3
+                            : colorTokens.green.darkErin,
+                      }}
+                      _active={{
+                        bg:
+                          task.status === "completed"
+                            ? colorTokens.blackCustom.a3
+                            : colorTokens.green.dark,
+                      }}
+                      transition="background 0.2s ease"
+                    >
+                      {task.status === "completed" ? "Done" : "Complete"}
+                    </Button>
+                  </Flex>
+                ))}
+              </Flex>
             </Flex>
-          </Flex>
+          )}
         </Box>
         <WallOfFame
           leaderboard={leaderboard}
