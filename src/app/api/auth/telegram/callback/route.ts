@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const backendUrl = `${process.env.API_URL}/users/auth/telegram/callback`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/auth/telegram/callback`;
     const backendResponse = await fetch(backendUrl, {
       method: "POST",
       headers: {
@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify(body),
     });
+
 
     const data = await backendResponse.json();
 
