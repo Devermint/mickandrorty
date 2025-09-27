@@ -11,7 +11,7 @@ interface PetraAccountInfo {
   address: HexInput;
   publicKey: HexInput;
 }
-type User = {
+export type User = {
   wallet_address?: string;
   username?: string;
   points?: number;
