@@ -35,8 +35,7 @@ type HighlightStyle = {
 
 const HIGHLIGHT_STYLES: Record<HighlightVariant, HighlightStyle> = {
   gold: {
-    containerBg:
-      "linear-gradient(90deg, rgba(115, 88, 29, 0.48) 0%, rgba(20, 15, 5, 0.92) 100%)",
+    containerBg: "linear-gradient(90deg, rgba(115, 88, 29, 0.48) 0%, rgba(20, 15, 5, 0.92) 100%)",
     containerBorder: "rgba(246, 202, 86, 0.32)",
     avatarBg: "rgba(246, 202, 86, 0.18)",
     avatarColor: "#F6CA56",
@@ -47,8 +46,7 @@ const HIGHLIGHT_STYLES: Record<HighlightVariant, HighlightStyle> = {
     badgeColor: "#F6CA56",
   },
   silver: {
-    containerBg:
-      "linear-gradient(90deg, rgba(86, 90, 96, 0.44) 0%, rgba(18, 19, 22, 0.92) 100%)",
+    containerBg: "linear-gradient(90deg, rgba(86, 90, 96, 0.44) 0%, rgba(18, 19, 22, 0.92) 100%)",
     containerBorder: "rgba(170, 176, 190, 0.26)",
     avatarBg: "rgba(195, 199, 213, 0.2)",
     avatarColor: "#D7DBE7",
@@ -59,8 +57,7 @@ const HIGHLIGHT_STYLES: Record<HighlightVariant, HighlightStyle> = {
     badgeColor: "#E0E3EF",
   },
   bronze: {
-    containerBg:
-      "linear-gradient(90deg, rgba(120, 62, 24, 0.52) 0%, rgba(26, 13, 6, 0.92) 100%)",
+    containerBg: "linear-gradient(90deg, rgba(120, 62, 24, 0.52) 0%, rgba(26, 13, 6, 0.92) 100%)",
     containerBorder: "rgba(255, 164, 102, 0.28)",
     avatarBg: "rgba(255, 164, 102, 0.2)",
     avatarColor: "#FFA466",
@@ -71,8 +68,7 @@ const HIGHLIGHT_STYLES: Record<HighlightVariant, HighlightStyle> = {
     badgeColor: "#FFA466",
   },
   self: {
-    containerBg:
-      "linear-gradient(90deg, rgba(9, 32, 15, 0.88) 0%, rgba(6, 24, 10, 0.92) 100%)",
+    containerBg: "linear-gradient(90deg, rgba(9, 32, 15, 0.88) 0%, rgba(6, 24, 10, 0.92) 100%)",
     containerBorder: "rgba(81, 254, 83, 0.22)",
     avatarBg: "rgba(81, 254, 83, 0.18)",
     avatarColor: "#51FE53",
@@ -156,11 +152,7 @@ const buildRightElement = (
   highlight: HighlightVariant,
   styles: HighlightStyle
 ) => {
-  if (
-    highlight === "gold" ||
-    highlight === "silver" ||
-    highlight === "bronze"
-  ) {
+  if (highlight === "gold" || highlight === "silver" || highlight === "bronze") {
     return (
       <Flex
         align="center"
@@ -248,12 +240,7 @@ const renderRowBody = (
   );
 };
 
-const WallOfFame = ({
-  leaderboard,
-  loading = false,
-  error = null,
-  onRetry,
-}: WallOfFameProps) => {
+const WallOfFame = ({ leaderboard, loading = false, error = null, onRetry }: WallOfFameProps) => {
   const [activeTab, setActiveTab] = useState<LeaderboardTabKey>("weekly");
 
   const { displayEntries, totalScore } = useMemo(() => {
@@ -267,13 +254,8 @@ const WallOfFame = ({
     const sortedEntries = [...periodEntries].sort((a, b) => a.rank - b.rank);
     const topEntries = sortedEntries.slice(0, MAX_VISIBLE_ROWS);
     const foundSelf = sortedEntries.find((entry) => entry.isSelf);
-    const isSelfInTop = Boolean(
-      foundSelf && foundSelf.rank <= MAX_VISIBLE_ROWS
-    );
-    const totalPoints = sortedEntries.reduce(
-      (sum, entry) => sum + entry.points,
-      0
-    );
+    const isSelfInTop = Boolean(foundSelf && foundSelf.rank <= MAX_VISIBLE_ROWS);
+    const totalPoints = sortedEntries.reduce((sum, entry) => sum + entry.points, 0);
 
     const additionalEntries = foundSelf && !isSelfInTop ? [foundSelf] : [];
 
@@ -283,25 +265,13 @@ const WallOfFame = ({
     };
   }, [leaderboard, activeTab]);
 
-  const totalScoreDisplay = leaderboard
-    ? totalScore.toLocaleString()
-    : loading
-    ? "..."
-    : "0";
+  const totalScoreDisplay = leaderboard ? totalScore.toLocaleString() : loading ? "..." : "0";
 
-  const totalScoreLabel =
-    activeTab === "weekly" ? "weekly points" : "lifetime points";
+  const totalScoreLabel = activeTab === "weekly" ? "weekly points" : "lifetime points";
 
   return (
     <>
-      <Box
-        mt={10}
-        w="100%"
-        position="relative"
-        overflow="hidden"
-        flexShrink={0}
-        borderRadius="24px"
-      >
+      <Box mt={10} w="100%" position="relative" flexShrink={0} borderRadius="24px">
         <Box position="absolute" inset={0} zIndex={0}>
           <Image
             src="/img/green_clouds.webp"
@@ -324,20 +294,10 @@ const WallOfFame = ({
           px={6}
           gap={2}
         >
-          <Text
-            color={colorTokens.gray.timberwolf}
-            fontSize={24}
-            lineHeight={1}
-            fontWeight="bold"
-          >
+          <Text color={colorTokens.gray.timberwolf} fontSize={24} lineHeight={1} fontWeight="bold">
             Wall Of Fame
           </Text>
-          <Text
-            fontSize={14}
-            lineHeight={1}
-            color={colorTokens.gray.timberwolf}
-            opacity={0.8}
-          >
+          <Text fontSize={14} lineHeight={1} color={colorTokens.gray.timberwolf} opacity={0.8}>
             {totalScoreDisplay} {totalScoreLabel}
           </Text>
         </Flex>
@@ -373,9 +333,7 @@ const WallOfFame = ({
                     : "transparent"
                 }
                 border="1px solid"
-                borderColor={
-                  isActive ? "rgba(81, 254, 83, 0.38)" : "transparent"
-                }
+                borderColor={isActive ? "rgba(81, 254, 83, 0.38)" : "transparent"}
                 transition="all 0.2s ease"
               >
                 {tab.label}
@@ -384,13 +342,7 @@ const WallOfFame = ({
           })}
         </Flex>
 
-        <Flex
-          flexDirection="column"
-          gap={`${ROW_GAP_PX}px`}
-          overflowY="auto"
-          pr="4px"
-          position="relative"
-        >
+        <Flex flexDirection="column" gap={`${ROW_GAP_PX}px`} pr="4px" position="relative">
           {loading ? (
             <Flex align="center" justify="center" minH={`${ROW_MIN_HEIGHT}px`}>
               <Text color={colorTokens.gray.platinum} fontSize="sm">

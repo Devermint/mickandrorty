@@ -34,7 +34,7 @@ export const Tasks: React.FC<TasksProps> = ({
   userScore,
 }) => {
   return (
-    <Box>
+    <Box className="overflow-y-auto">
       <Text fontSize="2xl" fontWeight="bold" mb={4}>
         Tasks
       </Text>
@@ -84,9 +84,15 @@ export const Tasks: React.FC<TasksProps> = ({
               <Button
                 colorScheme="primary"
                 onClick={() => onCompleteTask(task.task_id)}
-                isDisabled={task.status === "completed"}
+                disabled={task.status === "completed"}
+                _hover={{
+                  bg:
+                    task.status === "completed"
+                      ? colorTokens.blackCustom.a3
+                      : colorTokens.green.darkErin,
+                }}
               >
-                {task.status === "completed" ? "Completed" : "Complete Task"}
+                {task.status === "completed" ? "Done" : "Open on Web"}
               </Button>
             </Flex>
           ))}

@@ -6,6 +6,10 @@ import { Tasks } from "../components/Tasks";
 import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { isLeaderboardResponse, type LeaderboardResponse } from "@/app/types/leaderboard";
 import { useState, useCallback, useEffect } from "react";
+import { Flex, Spinner, Text } from "@chakra-ui/react";
+import { toaster } from "@/components/ui/toaster";
+import { colorTokens } from "@/app/components/theme/theme";
+
 export interface Task {
   task_id: string;
   title: string;
@@ -13,12 +17,12 @@ export interface Task {
   status: "completed" | "available";
 }
 
-export default function TmaTasksPage() {
+export default function TmaLeaderboardPage() {
   const { user, jwt, isConnected, refreshUser } = useAptosWallet();
   const [tasks, setTasks] = useState<Task[]>();
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -90,61 +94,50 @@ export default function TmaTasksPage() {
   }, [fetchData, fetchLeaderboard]);
 
   const handleCompleteTask = async (taskId: string) => {
-    const task = tasks?.find((t) => t.task_id === taskId);
-    if (!task) return;
+    toaster.create({
+      title: "Switching to Web App",
+      description: "Please complete tasks on the main web application.",
+      type: "info",
+      duration: 5000,
+      closable: true,
+    });
 
-    if (taskId === "CREATE_POST") {
-      // Handle create post task if necessary in TMA
-      return;
-    }
-
-    if (!jwt) {
-      console.error("No JWT available for authenticated request.");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/tasks/complete", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "x-access-token": jwt,
-        },
-        body: JSON.stringify({ task_id: taskId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("API request failed");
-      }
-
-      const data = await response.json();
-
-      if (data.action === "redirect") {
-        const targetUrl = data.authorization_url || data.url;
-        if (targetUrl) {
-          // In TMA, we might want to use openLink
-          (window as any)?.Telegram?.WebApp?.openLink(targetUrl);
-        }
-      }
-
-      await Promise.all([fetchData(), fetchLeaderboard(), refreshUser()]);
-    } catch (error) {
-      console.error("Error completing task:", error);
+    const webAppUrl = "https://dapp.aptoslayer.ai/referrals";
+    if ((window as any)?.Telegram?.WebApp) {
+      (window as any).Telegram.WebApp.openLink(webAppUrl);
+    } else {
+      window.open(webAppUrl, "_blank");
     }
   };
 
+  if (!isConnected) {
+    return (
+      <Flex justify="center" align="center" h="100%">
+        <Text color="white">Please connect your wallet.</Text>
+      </Flex>
+    );
+  }
+
   return (
-    <Box>
-      <Tasks
-        tasks={tasks}
-        onCompleteTask={handleCompleteTask}
-        leaderboard={leaderboard}
-        leaderboardLoading={leaderboardLoading}
-        leaderboardError={leaderboardError}
-        onRetryLeaderboard={fetchLeaderboard}
-        userScore={user?.points ?? 0}
-      />
+    <Box p={4}>
+      <Text fontSize="2xl" fontWeight="bold" color="white" mb={4}>
+        Leaderboard
+      </Text>
+      {loading || leaderboardLoading ? (
+        <Flex justify="center" align="center" h="calc(100vh - 150px)">
+          <Spinner color={colorTokens.green.erin} size="xl" />
+        </Flex>
+      ) : (
+        <Tasks
+          tasks={tasks}
+          onCompleteTask={handleCompleteTask}
+          leaderboard={leaderboard}
+          leaderboardLoading={leaderboardLoading}
+          leaderboardError={leaderboardError}
+          onRetryLeaderboard={fetchLeaderboard}
+          userScore={user?.points ?? 0}
+        />
+      )}
     </Box>
   );
 }
