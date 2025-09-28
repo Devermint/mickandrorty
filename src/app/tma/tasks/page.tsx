@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import { Box, Flex, Spinner, Text, Tabs } from "@chakra-ui/react";
-import { colorTokens } from "@/app/components/theme/theme";
+import React from "react";
+import { Box } from "@chakra-ui/react";
+import { Tasks } from "../components/Tasks";
 import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { isLeaderboardResponse, type LeaderboardResponse } from "@/app/types/leaderboard";
-import { Tasks } from "./components/Tasks";
-import { Referrals } from "./components/Referrals";
-
+import { useState, useCallback, useEffect } from "react";
 export interface Task {
   task_id: string;
   title: string;
@@ -136,40 +134,17 @@ export default function TmaTasksPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <Flex justify="center" align="center" h="100vh" bg={colorTokens.blackCustom.a1}>
-        <Spinner color={colorTokens.green.erin} size="xl" />
-      </Flex>
-    );
-  }
-
   return (
-    <Box bg={colorTokens.blackCustom.a1} minH="100vh" color="white">
-      <Tabs.Root fitted variant="enclosed" defaultValue="tasks">
-        <Tabs.List borderBottomColor="gray.700">
-          <Tabs.Trigger value="tasks" _selected={{ color: "white", bg: "green.500" }}>
-            Tasks
-          </Tabs.Trigger>
-          <Tabs.Trigger value="frens" _selected={{ color: "white", bg: "green.500" }}>
-            Frens
-          </Tabs.Trigger>
-        </Tabs.List>
-        <Tabs.Content value="tasks">
-          <Tasks
-            tasks={tasks}
-            onCompleteTask={handleCompleteTask}
-            leaderboard={leaderboard}
-            leaderboardLoading={leaderboardLoading}
-            leaderboardError={leaderboardError}
-            onRetryLeaderboard={fetchLeaderboard}
-            userScore={user?.points ?? 0}
-          />
-        </Tabs.Content>
-        <Tabs.Content value="frens">
-          <Referrals user={user} />
-        </Tabs.Content>
-      </Tabs.Root>
+    <Box>
+      <Tasks
+        tasks={tasks}
+        onCompleteTask={handleCompleteTask}
+        leaderboard={leaderboard}
+        leaderboardLoading={leaderboardLoading}
+        leaderboardError={leaderboardError}
+        onRetryLeaderboard={fetchLeaderboard}
+        userScore={user?.points ?? 0}
+      />
     </Box>
   );
 }
