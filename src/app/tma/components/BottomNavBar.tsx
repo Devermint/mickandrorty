@@ -1,16 +1,14 @@
 "use client";
 
-import React from "react";
-import NextLink from "next/link";
-import { usePathname } from "next/navigation";
-import { Box, Flex, Text, Link } from "@chakra-ui/react";
 import { HomeIcon } from "@/app/components/icons/HomeIcon";
 import { TasksIcon } from "@/app/components/icons/TasksIcon";
-import { FriendsIcon } from "@/app/components/icons/FriendsIcon";
+import { Box, Flex, Link, Text } from "@chakra-ui/react";
+import NextLink from "next/link";
+import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/tma/home", label: "Home", icon: HomeIcon },
   { href: "/tma/leaderboard", label: "Leaderboard", icon: TasksIcon },
+  { href: "/tma/tasks", label: "Tasks", icon: TasksIcon },
 ];
 
 export const BottomNavBar = () => {

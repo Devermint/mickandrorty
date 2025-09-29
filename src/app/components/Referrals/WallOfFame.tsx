@@ -303,7 +303,7 @@ const WallOfFame = ({ leaderboard, loading = false, error = null, onRetry }: Wal
         </Flex>
       </Box>
 
-      <Flex position="relative" flexDirection="column" gap={4} mt={6}>
+      <Flex position="relative" flexDirection="column" gap={4} px={4} mt={6}>
         <Flex
           align="center"
           bg={colorTokens.blackCustom.a2}

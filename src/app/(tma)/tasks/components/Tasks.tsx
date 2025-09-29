@@ -5,8 +5,14 @@ import { Box, Text, Flex, Button, Spinner } from "@chakra-ui/react";
 import Image from "next/image";
 import WallOfFame from "@/app/components/Referrals/WallOfFame";
 import { colorTokens } from "@/app/components/theme/theme";
-import type { Task } from "../page";
 import { LeaderboardResponse } from "@/app/types/leaderboard";
+
+interface Task {
+  task_id: string;
+  title: string;
+  points: number;
+  status: "completed" | "available";
+}
 
 interface TasksProps {
   tasks?: Task[];
