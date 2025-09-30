@@ -1,19 +1,14 @@
 "use client";
 
-import React from "react";
-import { Box, Flex, Spinner, Text } from "@chakra-ui/react";
-import FullHeightLayout from "@/app/components/Layout/FullHeightLayout";
 import { AgentView } from "@/app/components/Agents/AgentView";
 import { MobileAgentView } from "@/app/components/Agents/MobileAgentView";
-import { useAgent } from "@/app/hooks/useAgent";
-import { testAgents } from "@/app/types/agent";
+import FullHeightLayout from "@/app/components/Layout/FullHeightLayout";
 import { colorTokens } from "@/app/components/theme/theme";
+import { useAgent } from "@/app/hooks/useAgent";
+import { Box, Flex, Spinner, Text } from "@chakra-ui/react";
+import React from "react";
 
-export default function Page({
-  params,
-}: {
-  params: Promise<{ agent: string }>;
-}) {
+export default function Page({ params }: { params: Promise<{ agent: string }> }) {
   const { agent: faId } = React.use(params);
 
   const { data: agent, isLoading, isError, error } = useAgent(faId);
@@ -21,12 +16,7 @@ export default function Page({
   if (isLoading) {
     return (
       <FullHeightLayout>
-        <Flex
-          justify="center"
-          align="center"
-          h="100%"
-          color={colorTokens.green.erin}
-        >
+        <Flex justify="center" align="center" h="100%" color={colorTokens.green.erin}>
           <Spinner size="xl" />
         </Flex>
       </FullHeightLayout>
@@ -47,14 +37,7 @@ export default function Page({
 
   return (
     <FullHeightLayout>
-      <Box
-        as="main"
-        flex="1"
-        overflowY="auto"
-        overflowX="hidden"
-        position="relative"
-        minH={0}
-      >
+      <Box as="main" flex="1" overflowY="auto" overflowX="hidden" position="relative" minH={0}>
         <Flex
           w="full"
           h="full"

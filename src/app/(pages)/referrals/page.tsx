@@ -142,11 +142,7 @@ export default function ReferralsPage() {
 
     try {
       const response = await fetch("/api/tasks/complete", {
-        // This calls your Next.js proxy
         method: "POST",
-
-        // *** THIS IS THE REQUIRED FIX ***
-        // 'credentials' must be a top-level option, NOT inside 'headers'
         credentials: "include",
 
         headers: {
@@ -166,10 +162,10 @@ export default function ReferralsPage() {
         const targetUrl = data.authorization_url || data.url;
         if (targetUrl) {
           const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
-          if (!popup) {
-            window.location.href = targetUrl;
-            return;
-          }
+          // if (popup === null) {
+          //   window.location.href = targetUrl;
+          //   return;
+          // }
         }
       }
 

@@ -159,7 +159,6 @@ export default function AgentExplorerPage() {
   const border = "rgba(86, 240, 159, 0.18)";
 
   const openAgent = (faId: string) => router.push(`/agent/${faId}`);
-
   return (
     <Box position="relative" overflowX="hidden" overflowY="scroll">
       <Box
@@ -229,7 +228,6 @@ export default function AgentExplorerPage() {
         {isError && (
           <Text color="red.400">Failed to load agents. Please try again.</Text>
         )}
-
         <SimpleGrid
           w={{ base: "90%", md: "70%" }}
           minChildWidth="220px"

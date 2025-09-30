@@ -6,6 +6,7 @@ import type { PetraWallet } from "petra-plugin-wallet-adapter"; // type-only, ke
 import { AptosWalletAdapterProvider, useWallet } from "@aptos-labs/wallet-adapter-react";
 import { HexInput, Network, Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 import api from "@/lib/api";
+import { useIsMobile } from "@/app/hooks/useIsMobile";
 
 interface PetraAccountInfo {
   address: HexInput;
@@ -39,6 +40,8 @@ interface AptosWalletContextType {
   balanceInApt: string | null; // APT balance in human-readable format
   isLoadingBalance: boolean;
   refreshBalance: () => Promise<void>;
+  login: () => Promise<void>;
+  isWalletConnected: boolean;
 }
 
 const AptosWalletContext = createContext<AptosWalletContextType | undefined>(undefined);
@@ -59,6 +62,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
     signMessage,
   } = useWallet();
 
+  const isMobile = useIsMobile();
   const [jwt, setJwt] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("jwt");
@@ -113,7 +117,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
     }
   }, [address]);
 
-  const loginToBackend = async () => {
+  const login = useCallback(async () => {
     if (!address || !publicKey) return;
     try {
       const messageToSign = {
@@ -138,13 +142,13 @@ function WalletBridge({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Error signing message or logging in:", error);
     }
-  };
+  }, [address, publicKey, signMessage]);
 
   useEffect(() => {
-    if (!jwt && address && publicKey) {
-      loginToBackend();
+    if (!isMobile && !jwt && address && publicKey) {
+      login();
     }
-  }, [address, publicKey, jwt]);
+  }, [address, publicKey, jwt, isMobile, login]);
 
   // Fetch balance when address changes
   useEffect(() => {
@@ -208,6 +212,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
     () => ({
       account: accountOut,
       isConnected: connected && !!jwt,
+      isWalletConnected: connected,
       connect,
       disconnect,
       wallet: shimWallet, // <- not null after connect
@@ -218,6 +223,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
       balanceInApt,
       isLoadingBalance,
       refreshBalance: fetchBalance,
+      login,
     }),
     [
       accountOut,
@@ -232,6 +238,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
       balanceInApt,
       isLoadingBalance,
       fetchBalance,
+      login,
     ]
   );
 
