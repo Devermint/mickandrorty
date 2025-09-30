@@ -39,6 +39,8 @@ interface AptosWalletContextType {
   balanceInApt: string | null; // APT balance in human-readable format
   isLoadingBalance: boolean;
   refreshBalance: () => Promise<void>;
+  login: () => Promise<void>;
+  isWalletConnected: boolean;
 }
 
 const AptosWalletContext = createContext<AptosWalletContextType | undefined>(undefined);
@@ -113,7 +115,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
     }
   }, [address]);
 
-  const loginToBackend = async () => {
+  const login = useCallback(async () => {
     if (!address || !publicKey) return;
     try {
       const messageToSign = {
@@ -138,11 +140,11 @@ function WalletBridge({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Error signing message or logging in:", error);
     }
-  };
+  }, [address, publicKey, signMessage]);
 
   useEffect(() => {
     if (!jwt && address && publicKey) {
-      loginToBackend();
+      // loginToBackend();
     }
   }, [address, publicKey, jwt]);
 
@@ -208,6 +210,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
     () => ({
       account: accountOut,
       isConnected: connected && !!jwt,
+      isWalletConnected: connected,
       connect,
       disconnect,
       wallet: shimWallet, // <- not null after connect
@@ -218,6 +221,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
       balanceInApt,
       isLoadingBalance,
       refreshBalance: fetchBalance,
+      login,
     }),
     [
       accountOut,
@@ -232,6 +236,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
       balanceInApt,
       isLoadingBalance,
       fetchBalance,
+      login,
     ]
   );
 

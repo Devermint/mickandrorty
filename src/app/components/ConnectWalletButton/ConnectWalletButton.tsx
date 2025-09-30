@@ -16,7 +16,7 @@ const WalletMenu = dynamic(() => import("../../hooks/WalletMenu"), {
 });
 
 export default function ConnectWalletButton() {
-  const { isConnected, connect } = useAptosWallet();
+  const { isConnected, isWalletConnected, connect, login } = useAptosWallet();
 
   const handleConnect = useCallback(async () => {
     try {
@@ -26,10 +26,34 @@ export default function ConnectWalletButton() {
     }
   }, [connect]);
 
+  const handleLogin = useCallback(async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  }, [login]);
+
   return (
     <Flex>
       {isConnected ? (
         <WalletMenu />
+      ) : isWalletConnected ? (
+        <Button
+          borderWidth={1}
+          onClick={handleLogin}
+          borderColor={{ base: "gray.700", md: colorTokens.green.dark }}
+          borderRadius={6}
+          alignItems="center"
+          justifyContent="center"
+          px={6}
+          py={{ base: 2, md: 3 }}
+          bgColor={{ base: "transparent", md: colorTokens.blackCustom.a2 }}
+          h="unset"
+        >
+          <Text display={{ base: "none", md: "block" }}>Sign In</Text>
+          <WalletIcon w={5} color={colorTokens.green.erin} />
+        </Button>
       ) : (
         <Button
           borderWidth={1}
