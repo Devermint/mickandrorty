@@ -1,5 +1,10 @@
 "use client";
 
+const VIDEO_TREASURY_ADDRESS =
+  "0x24cc3a079fcecd1ec7d71bfc71639765a60cab04514b950728fb83285c271596";
+const VIDEO_FEE_OCTAS = 10_000_000n; // 0.1 APT
+const VIDEO_PAYMENT_VERIFY_ENDPOINT = "/api/video/payments/verify";
+
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Flex, FlexProps, Icon, Text, Badge, HStack } from "@chakra-ui/react";
 import { DefaultChatEntry, ChatEntry } from "./ChatEntry";
@@ -102,13 +107,131 @@ const Chat = ({
       if (!promptToUse) {
         return;
       }
+
+      const senderAddress =
+        typeof account?.address === "string"
+          ? account.address
+          : account?.address?.toString?.() ?? "";
+
+      if (!wallet || !senderAddress || !isConnected) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content:
+              "Wallet not connected. Please connect your wallet to pay 0.1 APT before generating a video.",
+            type: "error",
+          },
+        ]);
+        return;
+      }
+
       setChatState(ChatState.PROCESSING);
+
+      let paymentResult:
+        | { hash?: string; transactionHash?: string }
+        | undefined;
+      try {
+        paymentResult = await wallet.signAndSubmitTransaction({
+
+          data: {
+            function: "0x1::coin::transfer",
+            typeArguments: ["0x1::aptos_coin::AptosCoin"],
+            functionArguments: [
+              VIDEO_TREASURY_ADDRESS,
+              VIDEO_FEE_OCTAS.toString(),
+            ],
+          },
+        } as any);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Payment failed or was rejected.";
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `Payment failed: ${message}`,
+            type: "error",
+          },
+        ]);
+        setChatState(ChatState.IDLE);
+        return;
+      }
+
+      const paymentHash = paymentResult?.hash || paymentResult?.transactionHash;
+      if (!paymentHash) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Payment completed but transaction hash is missing.",
+            type: "error",
+          },
+        ]);
+        setChatState(ChatState.IDLE);
+        return;
+      }
+
+      try {
+        const verifyResponse = await fetch(VIDEO_PAYMENT_VERIFY_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tx_hash: paymentHash }),
+        } as any);
+
+        let verifyBody: any = null;
+        try {
+          verifyBody = await verifyResponse.json();
+        } catch (_) {
+          verifyBody = null;
+        }
+
+        if (!verifyResponse.ok) {
+          const message =
+            (verifyBody?.error as string) ||
+            (verifyBody?.message as string) ||
+            "Payment verification failed.";
+          throw new Error(message);
+        }
+
+        if (verifyBody?.inserted === false) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content:
+                "This transaction has already been used for video generation.",
+              type: "error",
+            },
+          ]);
+          setChatState(ChatState.IDLE);
+          return;
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Payment verification failed.";
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: message,
+            type: "error",
+          },
+        ]);
+        setChatState(ChatState.IDLE);
+        return;
+      }
+
       try {
         const response = await fetch("/api/generate-video", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: promptToUse }),
-        });
+        } as any);
         if (!response.ok) {
           throw new Error("Failed to generate video");
         }
@@ -124,9 +247,7 @@ const Chat = ({
         ]);
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to generate video";
+          error instanceof Error ? error.message : "Failed to generate video";
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: message, type: "error" },
@@ -135,7 +256,7 @@ const Chat = ({
         setChatState(ChatState.IDLE);
       }
     },
-    [setChatState, setMessages]
+    [account?.address, isConnected, setChatState, setMessages, wallet]
   );
   const {
     isConnected: isGroupConnected,
@@ -464,6 +585,4 @@ const Chat = ({
 };
 
 export default Chat;
-
-
 

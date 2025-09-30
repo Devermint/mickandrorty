@@ -30,11 +30,7 @@ export class RegularChatHandler extends MessageHandler {
 
       if (action === "GENERATE_VIDEO") {
         const videoPrompt = message;
-        const displayContent = `PROMPT:
-
-> ${videoPrompt}
-
-Sign and generate when you're ready.`;
+        const displayContent = `I can generate a video with the following prompt:\n\n> ${videoPrompt}\n\nClick **Generate video** to pay 0.1 APT and start the job.`;
 
         this.context.setMessages((prev) => [
           ...prev,
@@ -42,7 +38,7 @@ Sign and generate when you're ready.`;
             role: "assistant",
             content: displayContent,
             type: "video_request",
-            data: { prompt: videoPrompt },
+            data: { prompt: videoPrompt, isGroupMessage: false },
           },
         ]);
 
@@ -65,3 +61,4 @@ Sign and generate when you're ready.`;
 
   // Video generation logic moved to useGroupChat hook
 }
+
