@@ -10,7 +10,8 @@ interface GroupChatMessage {
   timestamp: string;
   user_type: "user" | "agent";
   agent_id?: string;
-  type: "text" | "video";
+  type: "text" | "video" | "video_request";
+  data?: any;
   job_id?: string;
   message?: string
 }
@@ -117,19 +118,31 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   // Convert GroupChatMessage to ChatEntryProps
   const convertToChatEntry = useCallback(
     (message: GroupChatMessage): ChatEntryProps => {
+      const baseData: Record<string, unknown> = {
+        isGroupMessage: true,
+        userType: message.user_type,
+        agentId: message.agent_id,
+        messageId: message._id || message.id,
+        _id: message._id,
+        job_id: message.job_id,
+        message: message.message,
+      };
+
+      if (message.data && typeof message.data === "object") {
+        baseData.extra = message.data;
+        Object.assign(baseData, message.data);
+      }
+
+      baseData.isGroupMessage = true;
+      if (baseData.prompt == null && message.type === "video_request") {
+        baseData.prompt = message.content;
+      }
+
       return {
         role: message.user_type === "agent" ? "assistant" : "user",
         content: message.content,
         type: message.type,
-        data: {
-          isGroupMessage: true,
-          userType: message.user_type,
-          agentId: message.agent_id,
-          messageId: message._id || message.id, // Include unique ID for duplicate checking
-          _id: message._id,
-          job_id: message.job_id,
-          message: message.message
-        },
+        data: baseData,
       };
     },
     []
@@ -337,7 +350,11 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
 
   // Send agent response to group chat (for AI responses)
   const sendAgentMessage = useCallback(
-    (content: string) => {
+    (
+      content: string,
+      type: ChatEntryProps["type"] = "text",
+      data?: any
+    ) => {
       if (!enabled || !socketRef.current || !content.trim() || !agentId)
         return false;
 
@@ -345,12 +362,13 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
         content: content.trim(),
         agent_id: agentId,
         user_type: "agent",
+        type,
+        data,
       });
       return true;
     },
     [enabled, agentId]
   );
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -368,3 +386,4 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     clearError: useCallback(() => setError(""), []),
   };
 };
+

@@ -2,7 +2,6 @@ import { ChatState } from "@/app/types/message";
 import { MessageHandler } from "./base/MessageHandler";
 
 export class RegularChatHandler extends MessageHandler {
-
   async handleMessage(text: string): Promise<void> {
     this.addUserMessage(text);
     this.context.setChatState(ChatState.PROCESSING);
@@ -30,36 +29,34 @@ export class RegularChatHandler extends MessageHandler {
       const { message, action } = await response.json();
 
       if (action === "GENERATE_VIDEO") {
-        await this.handleVideoGeneration(message);
+        const videoPrompt = message;
+        const displayContent = `PROMPT:
+
+> ${videoPrompt}
+
+Sign and generate when you're ready.`;
+
+        this.context.setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: displayContent,
+            type: "video_request",
+            data: { prompt: videoPrompt },
+          },
+        ]);
+
+        this.context.sendAgentMessage?.({
+          content: displayContent,
+          type: "video_request",
+          data: { prompt: videoPrompt },
+        });
+
+        this.context.setChatState(ChatState.IDLE);
       } else {
         this.addAssistantMessage(message, "text");
         this.context.setChatState(ChatState.IDLE);
       }
-    } catch (error) {
-      this.addErrorMessage(error);
-      this.context.setChatState(ChatState.IDLE);
-    }
-  }
-
-  private async handleVideoGeneration(prompt: string): Promise<void> {
-    try {
-      const response = await fetch("/api/generate-video", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate video");
-      }
-
-      const { jobId } = await response.json();
-      
-      // Store job_id in message with empty content
-      this.addAssistantMessage("", "video", { job_id: jobId });
-      
-      // Video generation progress will be handled by Python backend via WebSockets
-      this.context.setChatState(ChatState.IDLE);
     } catch (error) {
       this.addErrorMessage(error);
       this.context.setChatState(ChatState.IDLE);

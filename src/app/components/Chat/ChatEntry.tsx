@@ -1,7 +1,7 @@
 // ChatEntry.tsx (Clean version without timestamps/usernames)
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Box,
   Flex,
@@ -19,6 +19,7 @@ import { ChatEntryProps } from "@/app/types/message";
 
 interface ChatEntryComponentProps extends ChatEntryProps {
   job_id?: string;
+  onGenerateVideo?: (prompt: string) => void;
 }
 
 export const ChatEntry = ({
@@ -28,7 +29,8 @@ export const ChatEntry = ({
   data,
   job_id,
   onAgentCreate,
-  onTokenImageUploaded
+  onTokenImageUploaded,
+  onGenerateVideo,
 }: ChatEntryComponentProps) => {
   const isMyMessage = role === "user" && !data?.isGroupMessage;
   const isAgent = role === "assistant";
@@ -79,6 +81,30 @@ export const ChatEntry = ({
           >
             {content}
           </MarkdownView>
+        )}
+        {type === "video_request" && (
+          <>
+            <MarkdownView
+              color={color}
+              lineHeight={1.5}
+              fontSize={14}
+              p={1}
+              isMyMessage={isMyMessage}
+            >
+              {content}
+            </MarkdownView>
+            <Button
+              size="sm"
+              borderWidth={1}
+              borderColor={colorTokens.gray.platinum}
+              onClick={() => {
+                onGenerateVideo?.(data?.prompt ?? content);
+              }}
+              mt={2}
+            >
+              Generate video
+            </Button>
+          </>
         )}
         {type === "image-upload" && (
           <>
@@ -183,3 +209,4 @@ export const DefaultChatEntry = () => (
     type="text"
   />
 );
+

@@ -1,30 +1,4 @@
-import { ChatState } from "@/app/types/message";
-
-export interface MessageContext {
-  messages: ChatEntryProps[];
-  setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
-  setChatState: React.Dispatch<React.SetStateAction<ChatState>>;
-  wallet?: any;
-  account?: any;
-  isConnected: boolean;
-  swapSDK?: any;
-}
-
-export type ChatEntryProps = {
-  role: "user" | "assistant";
-  content: string;
-  type?: "text" | "video" | "video-loader" | "loader" | "error" | "image-upload" | "signature-required";
-  _id?: string;
-  id?: string;
-  agent_id?: string;
-  timestamp?: string;
-  user_type?: "user" | "agent";
-  edited?: boolean;
-  job_id?: string;
-  last_updated?: string;
-  data?: any;
-};
-
+import type { ChatEntryProps, MessageContext } from "@/app/types/message";
 
 export abstract class MessageHandler {
   protected context: MessageContext;

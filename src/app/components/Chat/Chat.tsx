@@ -50,12 +50,27 @@ const Chat = ({
   // Group chat integration with agent-specific room
   const handleGroupMessage = useCallback(
     (groupMessage: ChatEntryProps, isFromHistory = false) => {
-      setMessages((prev) => [...prev, groupMessage]);
+      setMessages((prev) => {
+        if (
+          groupMessage.type === "video_request" &&
+          groupMessage.data?.isGroupMessage &&
+          prev.some(
+            (msg) =>
+              msg.type === "video_request" &&
+              !msg.data?.isGroupMessage &&
+              (msg.data?.prompt ?? msg.content) ===
+                (groupMessage.data?.prompt ?? groupMessage.content)
+          )
+        ) {
+          return prev;
+        }
+
+        return [...prev, groupMessage];
+      });
     },
     [setMessages]
   );
 
-  // Handle message updates from WebSocket
   const handleMessageUpdate = useCallback(
     (updatedMessage: ChatEntryProps) => {
       setMessages((prev) =>
@@ -64,11 +79,9 @@ const Chat = ({
           const messageId =
             updatedMessage.data?.messageId || updatedMessage.data?._id;
           const currentMessageId = msg.data?.messageId || msg.data?._id;
-
           if (messageId && currentMessageId === messageId) {
             return { ...msg, ...updatedMessage };
           }
-
           // Fallback: match by job_id for video messages
           if (
             updatedMessage.data?.job_id &&
@@ -76,7 +89,6 @@ const Chat = ({
           ) {
             return { ...msg, ...updatedMessage };
           }
-
           return msg;
         })
       );
@@ -84,6 +96,47 @@ const Chat = ({
     [setMessages]
   );
 
+  const handleVideoGenerationRequest = useCallback(
+    async (prompt: string | undefined) => {
+      const promptToUse = (prompt ?? "").trim();
+      if (!promptToUse) {
+        return;
+      }
+      setChatState(ChatState.PROCESSING);
+      try {
+        const response = await fetch("/api/generate-video", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: promptToUse }),
+        });
+        if (!response.ok) {
+          throw new Error("Failed to generate video");
+        }
+        const { jobId } = await response.json();
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "",
+            type: "video",
+            data: { job_id: jobId, prompt: promptToUse },
+          },
+        ]);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to generate video";
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: message, type: "error" },
+        ]);
+      } finally {
+        setChatState(ChatState.IDLE);
+      }
+    },
+    [setChatState, setMessages]
+  );
   const {
     isConnected: isGroupConnected,
     error: groupError,
@@ -113,6 +166,7 @@ const Chat = ({
     setChatState,
     socket,
     agentId: agent.fa_id,
+    sendAgentMessage,
   });
 
   // Enhanced message send that sends to both AI and group chat
@@ -180,7 +234,11 @@ const Chat = ({
               });
             }
           } else {
-            sendAgentMessage(newestMessage.content);
+            sendAgentMessage(
+              newestMessage.content,
+              newestMessage.type,
+              newestMessage.data
+            );
           }
 
           // Clean up old message IDs to prevent memory leaks (keep last 100)
@@ -354,6 +412,14 @@ const Chat = ({
                         ? handleTokenImageUploaded
                         : undefined
                     }
+                    onGenerateVideo={
+                      m.type === "video_request"
+                        ? (prompt) =>
+                            handleVideoGenerationRequest(
+                              prompt ?? m.data?.prompt ?? m.content
+                            )
+                        : undefined
+                    }
                   />
                 );
               })}
@@ -398,3 +464,6 @@ const Chat = ({
 };
 
 export default Chat;
+
+
+
