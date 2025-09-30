@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Box,
-  Button,
-  Flex,
-  SimpleGrid,
-  Spinner,
-  Text,
-  Skeleton,
-} from "@chakra-ui/react";
+import { Box, Button, Flex, SimpleGrid, Spinner, Text, Skeleton } from "@chakra-ui/react";
 import { useTransitionRouter } from "next-view-transitions";
 import { useAgentsInfinite } from "@/app/hooks/useAgentsInfinite";
 import type { Agent } from "@/app/types/agent";
@@ -34,14 +26,8 @@ export default function AgentExplorerPage() {
   const [sort, setSort] = useState<Sort>("newest");
   const debounced = useDebounced(query, 350);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useAgentsInfinite({ search: debounced, sort, limit: 24 });
+  const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage, error } =
+    useAgentsInfinite({ search: debounced, sort, limit: 24 });
 
   const agents: Agent[] = useMemo(
     () => (data?.pages ?? []).flatMap((p) => p.items) as Agent[],
@@ -67,7 +53,6 @@ export default function AgentExplorerPage() {
   const border = "rgba(86, 240, 159, 0.18)";
 
   const openAgent = (faId: string) => router.push(`/agent/${faId}`);
-
   return (
     <Box position="relative" overflowX="hidden" overflowY="scroll">
       <Box
@@ -89,10 +74,7 @@ export default function AgentExplorerPage() {
         align="center"
       >
         {isLoading && !data && (
-          <SimpleGrid
-            columns={{ base: 2, sm: 2, md: 3, lg: 4, xl: 5 }}
-            gap="2rem 2rem"
-          >
+          <SimpleGrid columns={{ base: 2, sm: 2, md: 3, lg: 4, xl: 5 }} gap="2rem 2rem">
             {Array.from({ length: 12 }).map((_, i) => (
               <Skeleton
                 key={i}
@@ -108,10 +90,7 @@ export default function AgentExplorerPage() {
           </SimpleGrid>
         )}
 
-        {isError && (
-          <Text color="red.400">Failed to load agents. Please try again.</Text>
-        )}
-
+        {isError && <Text color="red.400">Failed to load agents. Please try again.</Text>}
         <SimpleGrid
           w={{ base: "90%", md: "70%" }}
           minChildWidth="220px"

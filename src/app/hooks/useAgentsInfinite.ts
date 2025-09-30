@@ -28,10 +28,7 @@ export function useAgentsInfinite({
     queryFn: async ({ pageParam }) => {
       const page = (pageParam as number) ?? 1;
 
-      const url = new URL(
-        `${process.env.NEXT_PUBLIC_API_URL}/all-agents`,
-        window.location.origin
-      );
+      const url = new URL("/api/agents", window.location.origin);
       url.searchParams.set("page", String(page));
       url.searchParams.set("limit", String(limit));
       if (search) url.searchParams.set("search", search);
