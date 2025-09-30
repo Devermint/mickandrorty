@@ -142,11 +142,7 @@ export default function ReferralsPage() {
 
     try {
       const response = await fetch("/api/tasks/complete", {
-        // This calls your Next.js proxy
         method: "POST",
-
-        // *** THIS IS THE REQUIRED FIX ***
-        // 'credentials' must be a top-level option, NOT inside 'headers'
         credentials: "include",
 
         headers: {
