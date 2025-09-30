@@ -162,10 +162,10 @@ export default function ReferralsPage() {
         const targetUrl = data.authorization_url || data.url;
         if (targetUrl) {
           const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
-          if (!popup) {
-            window.location.href = targetUrl;
-            return;
-          }
+          // if (popup === null) {
+          //   window.location.href = targetUrl;
+          //   return;
+          // }
         }
       }
 
