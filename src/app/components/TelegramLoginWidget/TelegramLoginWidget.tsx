@@ -91,7 +91,7 @@ const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({ onAuthSuccess
     };
   }, [jwt, onAuthSuccess]);
 
-  return <div id="telegram-login-widget"></div>;
+  return <div id="telegram-login-widget" />;
 };
 
 export default TelegramLoginWidget;

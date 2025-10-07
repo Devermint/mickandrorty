@@ -346,7 +346,7 @@ export default function ReferralsPage() {
                 <img
                   src={user?.telegram_photo_url}
                   alt="Telegram"
-                  style={{ height: "100%", width: "100%" }}
+                  style={{ height: "100%", width: "100%", borderRadius: "100%" }}
                 />
               ) : (
                 <TelegramIcon color={colorTokens.green.erin} h={4} w={4} />
@@ -368,7 +368,7 @@ export default function ReferralsPage() {
               </Text>
             </Box>
             {!isTgConnected && (
-              <Box ml={4}>
+              <Box borderRadius="full" ml={4}>
                 <TelegramLoginWidget onAuthSuccess={fetchData} />
               </Box>
             )}
