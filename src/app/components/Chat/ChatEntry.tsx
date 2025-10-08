@@ -155,16 +155,20 @@ export const ChatEntry = ({
                     size="sm"
                     variant="ghost"
                     color={colorTokens.gray.timberwolf}
-                    border="none"
+                    borderWidth="1px"
+                    borderColor={colorTokens.blackCustom.a3}
+                    borderRadius="lg"
                     minW={7}
                     h={7}
                     px={0}
                     _hover={{
                       color: colorTokens.green.erin,
+                      borderColor: colorTokens.green.erin,
                       backgroundColor: "transparent",
                     }}
                     _active={{
                       color: colorTokens.green.erin,
+                      borderColor: colorTokens.green.erin,
                       backgroundColor: "transparent",
                     }}
                     _focusVisible={{
@@ -180,16 +184,20 @@ export const ChatEntry = ({
                   size="sm"
                   variant="ghost"
                   color={colorTokens.gray.timberwolf}
-                  border="none"
+                  borderWidth="1px"
+                  borderColor={colorTokens.blackCustom.a3}
+                  borderRadius="lg"
                   minW={7}
                   h={7}
                   px={0}
                   _hover={{
                     color: colorTokens.green.erin,
+                    borderColor: colorTokens.green.erin,
                     backgroundColor: "transparent",
                   }}
                   _active={{
                     color: colorTokens.green.erin,
+                    borderColor: colorTokens.green.erin,
                     backgroundColor: "transparent",
                   }}
                   _focusVisible={{
@@ -204,16 +212,20 @@ export const ChatEntry = ({
                   size="sm"
                   variant="ghost"
                   color={colorTokens.gray.timberwolf}
-                  border="none"
+                  borderWidth="1px"
+                  borderColor={colorTokens.blackCustom.a3}
+                  borderRadius="lg"
                   minW={7}
                   h={7}
                   px={0}
                   _hover={{
                     color: colorTokens.green.erin,
+                    borderColor: colorTokens.green.erin,
                     backgroundColor: "transparent",
                   }}
                   _active={{
                     color: colorTokens.green.erin,
+                    borderColor: colorTokens.green.erin,
                     backgroundColor: "transparent",
                   }}
                   _focusVisible={{

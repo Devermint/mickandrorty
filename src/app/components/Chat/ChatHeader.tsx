@@ -20,8 +20,7 @@ export const ChatHeader = ({
   activeTab,
   onTabChange,
 }: ChatHeaderProps) => {
-  const title =
-    chatName || `${agentDisplayName || "Agent"} group chat`.trim();
+  const title = chatName || `${agentDisplayName || "Agent"} group chat`.trim();
 
   const handleTabChange = (value: string) => {
     if (value === "chat" || value === "media") {
@@ -73,12 +72,12 @@ export const ChatHeader = ({
         variant="plain"
         size="md"
         px={{ base: 2, md: 3 }}
-        pt={{ base: 2, md: chatName ? 1 : 2 }}
+        pt={0}
         pb={0}
       >
         <Tabs.List
-          gap={1}
           pb={1}
+          gap={2}
           justifyContent={{ base: "center", md: "flex-start" }}
         >
           <TabTrigger value="chat" label="Chat" />
@@ -98,13 +97,12 @@ const TabTrigger = ({
 }) => (
   <Tabs.Trigger
     value={value}
-    px={{ base: 3, md: 4 }}
-    py={{ base: 1.5, md: 2 }}
-    borderRadius="999px"
+    px={0}
+    py={0}
+    h="100%"
     fontSize="sm"
     fontWeight="medium"
-    letterSpacing="wide"
-    textTransform="uppercase"
+    letterSpacing="normal"
     color={colorTokens.gray.timberwolf}
     _hover={{
       color: colorTokens.green.erin,
