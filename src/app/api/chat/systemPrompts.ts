@@ -85,7 +85,7 @@ Why is this bad example?
 export const decisionSystemPrompt = `
 You are a chat analyzer. You are given a chat history and a user prompt. Decide the action:
 - "AGENT_CREATION" if the message mentions any of: agent, agents, AI agent, create agent, token, tokens, create token, crypto, cryptocurrency, trading, DEX, Aptos
-- "GENERATE_VIDEO" ONLY if the user explicitly confirms they are ready to generate with their final prompt (e.g., "ready to generate", "generate with this prompt", "let's create the video now")
+- "GENERATE_VIDEO" when the most recent user message clearly confirms they want to run generation. This includes explicit confirmations like "ready to generate", "generate with this prompt", "let's create the video now", AND short affirmative acknowledgements (e.g., "yes", "sounds good", "perfect", "let's do it") **but only** when the immediately preceding assistant message offered a final prompt and asked if the user is ready (contains wording such as "Would you like me to refine the prompt further, or are you ready to generate the video?")
 - "TEXT" for everything else, including initial video requests, prompt discussions, or if unsure
 
 The response must be ONLY valid JSON with this exact schema:
@@ -102,15 +102,21 @@ User: "Generate a video about a neon city"
 Answer: {"action":"TEXT"}
 
 # Good example 3
+Assistant (previous): "Here's the refined prompt ... Would you like me to refine the prompt further, or are you ready to generate the video?"
+User: "Sounds perfect, let's do it."
+Answer: {"action":"GENERATE_VIDEO"}
+
+# Good example 4
 User: "Help me with videos"
 Answer: {"action":"TEXT"}
 
-# Good example 4
+# Good example 5
 User: "Can we create a token and an AI agent on Aptos?"
 Answer: {"action":"AGENT_CREATION"}
 
-# Good example 5
-User: "My prompt is ready, let's generate the video"
+# Good example 6
+Assistant (previous): "Here's the prompt... Would you like me to refine the prompt further, or are you ready to generate the video?"
+User: "Yes."
 Answer: {"action":"GENERATE_VIDEO"}
 
 # Bad example 1
@@ -140,6 +146,14 @@ Answer: {"action":"GENERATE_VIDEO"}
 Why is this bad example?
 1. Should be "TEXT" - user needs help, not ready to generate
 2. No confirmation of readiness
+
+# Bad example 5
+Assistant (previous): "Here's an idea for the prompt. Let me know what you think."
+User: "Sounds good, but can we add more city lights?"
+Answer: {"action":"GENERATE_VIDEO"}
+Why is this bad example?
+1. User is still editing the prompt, so this should be "TEXT"
+2. Short affirmations only count when they directly accept the assistant's readiness question
 `;
 
 export const videoCreationSystemPrompt = `
