@@ -28,6 +28,7 @@ export class RegularChatHandler extends MessageHandler {
 
       const { message, action } = await response.json();
 
+      console.log("action", action);
       if (action === "GENERATE_VIDEO") {
         const videoPrompt = message;
         const displayContent = `I can generate a video with the following prompt:\n\n> ${videoPrompt}\n\nClick **Generate video** to pay 0.1 APT and start the job.`;
@@ -61,4 +62,3 @@ export class RegularChatHandler extends MessageHandler {
 
   // Video generation logic moved to useGroupChat hook
 }
-
