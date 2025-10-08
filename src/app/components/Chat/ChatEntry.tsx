@@ -9,12 +9,17 @@ import {
   Button,
   DownloadTrigger,
   Spinner,
+  IconButton,
+  Icon,
 } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
 import { MarkdownView } from "../MarkdownView/MarkdownView";
 import { ImageUpload } from "../ImageUpload/ImageUpload";
 import { AiOutlineSignature } from "react-icons/ai";
+import { FiDownload } from "react-icons/fi";
+import { X as TwitterIcon } from "../icons/x";
+import { TelegramIcon } from "../icons/telegram";
 import { ChatEntryProps } from "@/app/types/message";
 
 interface ChatEntryComponentProps extends ChatEntryProps {
@@ -125,28 +130,101 @@ export const ChatEntry = ({
         )}
         {type === "video" && content && (
           <>
-            <video
-              src={content}
-              controls
-              aria-label="Generated video"
-              style={{
-                maxWidth: "100%",
-                borderRadius: "0.375rem",
-              }}
-            />
-            <DownloadTrigger
-              data={async () => {
-                const blob = await fetch(content).then((r) => r.blob());
-                return blob;
-              }}
-              fileName={content.split("/").pop() || "video.mp4"}
-              mimeType="video/mp4"
-              asChild
-            >
-              <Button size="sm" mt={2} colorScheme="teal">
-                Download Video
-              </Button>
-            </DownloadTrigger>
+            <Box position="relative">
+              <video
+                src={content}
+                controls
+                aria-label="Generated video"
+                style={{
+                  maxWidth: "100%",
+                  borderRadius: "0.375rem",
+                }}
+              />
+              <Flex justify="flex-end" mt={2} gap={1.5}>
+                <DownloadTrigger
+                  data={async () => {
+                    const blob = await fetch(content).then((r) => r.blob());
+                    return blob;
+                  }}
+                  fileName={content.split("/").pop() || "video.mp4"}
+                  mimeType="video/mp4"
+                  asChild
+                >
+                  <IconButton
+                    aria-label="Download video"
+                    size="sm"
+                    variant="ghost"
+                    color={colorTokens.gray.timberwolf}
+                    border="none"
+                    minW={7}
+                    h={7}
+                    px={0}
+                    _hover={{
+                      color: colorTokens.green.erin,
+                      backgroundColor: "transparent",
+                    }}
+                    _active={{
+                      color: colorTokens.green.erin,
+                      backgroundColor: "transparent",
+                    }}
+                    _focusVisible={{
+                      boxShadow: "none",
+                      color: colorTokens.green.erin,
+                    }}
+                  >
+                    <Icon as={FiDownload} boxSize={3} m={0} p={0} />
+                  </IconButton>
+                </DownloadTrigger>
+                <IconButton
+                  aria-label="Share to X"
+                  size="sm"
+                  variant="ghost"
+                  color={colorTokens.gray.timberwolf}
+                  border="none"
+                  minW={7}
+                  h={7}
+                  px={0}
+                  _hover={{
+                    color: colorTokens.green.erin,
+                    backgroundColor: "transparent",
+                  }}
+                  _active={{
+                    color: colorTokens.green.erin,
+                    backgroundColor: "transparent",
+                  }}
+                  _focusVisible={{
+                    boxShadow: "none",
+                    color: colorTokens.green.erin,
+                  }}
+                >
+                  <TwitterIcon boxSize={3} m={0} p={0} />
+                </IconButton>
+                <IconButton
+                  aria-label="Share to Telegram"
+                  size="sm"
+                  variant="ghost"
+                  color={colorTokens.gray.timberwolf}
+                  border="none"
+                  minW={7}
+                  h={7}
+                  px={0}
+                  _hover={{
+                    color: colorTokens.green.erin,
+                    backgroundColor: "transparent",
+                  }}
+                  _active={{
+                    color: colorTokens.green.erin,
+                    backgroundColor: "transparent",
+                  }}
+                  _focusVisible={{
+                    boxShadow: "none",
+                    color: colorTokens.green.erin,
+                  }}
+                >
+                  <TelegramIcon boxSize={3} m={0} p={0} />
+                </IconButton>
+              </Flex>
+            </Box>
           </>
         )}
         {type === "video" && !content && job_id && (
