@@ -9,11 +9,19 @@ interface ChatMessageListProps {
   onTokenImageUploaded?: ChatEntryProps["onTokenImageUploaded"];
   onGenerateVideo: (prompt: string | undefined) => void | Promise<void>;
   emptyState?: React.ReactNode;
+  showPredictionMarket?: boolean;
 }
 
 export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
   (
-    { messages, chatState, onTokenImageUploaded, onGenerateVideo, emptyState },
+    {
+      messages,
+      chatState,
+      onTokenImageUploaded,
+      onGenerateVideo,
+      emptyState,
+      showPredictionMarket = false,
+    },
     ref
   ) => {
     const hasMessages = messages.length > 0;
@@ -66,6 +74,9 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                           prompt ?? message.data?.prompt ?? message.content
                         )
                     : undefined
+                }
+                showPredictionMarket={
+                  showPredictionMarket && message.type === "video"
                 }
               />
             ))}

@@ -21,10 +21,12 @@ import { FiDownload } from "react-icons/fi";
 import { X as TwitterIcon } from "../icons/x";
 import { TelegramIcon } from "../icons/telegram";
 import { ChatEntryProps } from "@/app/types/message";
+import { PredictionMarket } from "../Media/PredictionMarket";
 
 interface ChatEntryComponentProps extends ChatEntryProps {
   job_id?: string;
   onGenerateVideo?: (prompt: string) => void;
+  showPredictionMarket?: boolean;
 }
 
 export const ChatEntry = ({
@@ -36,10 +38,24 @@ export const ChatEntry = ({
   onAgentCreate,
   onTokenImageUploaded,
   onGenerateVideo,
+  showPredictionMarket = false,
 }: ChatEntryComponentProps) => {
   const isMyMessage = role === "user" && !data?.isGroupMessage;
   const isAgent = role === "assistant";
   const align = isAgent ? "flex-start" : "flex-end";
+  const videoId = data?.job_id ?? job_id ?? undefined;
+
+  const handlePredictionSelection = (
+    direction: "for" | "against",
+    videoIdentifier?: string,
+    stake?: number
+  ) => {
+    console.log(
+      `[prediction-market] User selected ${direction} for video ${
+        videoIdentifier ?? videoId ?? "unknown"
+      } with stake ${stake ?? 0}`
+    );
+  };
 
   // Background colors
   const bg = isMyMessage
@@ -55,8 +71,17 @@ export const ChatEntry = ({
     ? colorTokens.gray.timberwolf
     : colorTokens.gray.platinum;
 
+  const mediaWidth = showPredictionMarket ? "100%" : undefined;
+  const messageMaxWidth = showPredictionMarket ? "100%" : "80%";
+  const messageWidth = showPredictionMarket ? "100%" : isAgent ? "80%" : "auto";
+
   return (
-    <Flex direction="column" alignItems={align} mb="10px">
+    <Flex
+      direction="column"
+      alignItems={showPredictionMarket ? "stretch" : align}
+      mb="10px"
+      w={mediaWidth}
+    >
       {role && isAgent && (
         <Text fontSize="12px" mb="2px">
           Agent
@@ -67,8 +92,8 @@ export const ChatEntry = ({
         py={1}
         bgColor={bg}
         borderRadius={{ base: 16, md: 28 }}
-        maxW="80%"
-        w={isAgent ? "80%" : "auto"}
+        maxW={messageMaxWidth}
+        w={messageWidth}
         textAlign={isAgent ? "left" : "right"}
         overflow="hidden"
         borderLeft={isAgent ? `3px solid ${colorTokens.green.erin}` : "none"}
@@ -237,6 +262,12 @@ export const ChatEntry = ({
                 </IconButton>
               </Flex>
             </Box>
+            {showPredictionMarket && (
+              <PredictionMarket
+                videoId={videoId}
+                onPredict={handlePredictionSelection}
+                />
+            )}
           </>
         )}
         {type === "video" && !content && job_id && (

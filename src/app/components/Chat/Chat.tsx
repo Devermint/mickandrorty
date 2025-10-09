@@ -192,6 +192,7 @@ const Chat = ({
           onTokenImageUploaded={handleTokenImageUploaded}
           onGenerateVideo={handleVideoGenerationRequest}
           emptyState={activeTab === "media" ? mediaEmptyState : undefined}
+          showPredictionMarket={activeTab === "media"}
         />
 
         {activeTab === "chat" ? (
