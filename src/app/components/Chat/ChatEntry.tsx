@@ -27,6 +27,7 @@ interface ChatEntryComponentProps extends ChatEntryProps {
   job_id?: string;
   onGenerateVideo?: (prompt: string) => void;
   showPredictionMarket?: boolean;
+  agentDisplayName?: string;
 }
 
 export const ChatEntry = ({
@@ -39,6 +40,7 @@ export const ChatEntry = ({
   onTokenImageUploaded,
   onGenerateVideo,
   showPredictionMarket = false,
+  agentDisplayName = "Agent",
 }: ChatEntryComponentProps) => {
   const isMyMessage = role === "user" && !data?.isGroupMessage;
   const isAgent = role === "assistant";
@@ -74,6 +76,24 @@ export const ChatEntry = ({
   const mediaWidth = showPredictionMarket ? "100%" : undefined;
   const messageMaxWidth = showPredictionMarket ? "100%" : "80%";
   const messageWidth = showPredictionMarket ? "100%" : isAgent ? "80%" : "auto";
+  const handleShare = (platform: "twitter" | "telegram") => {
+    if (!content) return;
+    const encodedUrl = encodeURIComponent(content);
+    const shareText = encodeURIComponent(
+      `🤖 ${agentDisplayName} just dropped a new clip!\n✨ Check out this video and let me know what you think.`
+    );
+    let shareUrl = "";
+
+    if (platform === "twitter") {
+      shareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${shareText}&hashtags=AptosAI,AITrading`;
+    } else {
+      shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${shareText}`;
+    }
+
+    if (typeof window !== "undefined") {
+      window.open(shareUrl, "_blank", "noopener,noreferrer");
+    }
+  };
 
   return (
     <Flex
@@ -229,6 +249,7 @@ export const ChatEntry = ({
                     boxShadow: "none",
                     color: colorTokens.green.erin,
                   }}
+                  onClick={() => handleShare("twitter")}
                 >
                   <TwitterIcon boxSize={3} m={0} p={0} />
                 </IconButton>
@@ -257,6 +278,7 @@ export const ChatEntry = ({
                     boxShadow: "none",
                     color: colorTokens.green.erin,
                   }}
+                  onClick={() => handleShare("telegram")}
                 >
                   <TelegramIcon boxSize={3} m={0} p={0} />
                 </IconButton>

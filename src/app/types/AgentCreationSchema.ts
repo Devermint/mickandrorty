@@ -15,6 +15,14 @@ export const AgentSchema = z.object({
     .regex(/^[A-Z]{2,5}$/, "Ticker must be 2-5 uppercase letters"),
   tokenDescription: z.string().min(10).max(500),
   tokenImage: ImageUrl,
+  telegramBotToken: z
+    .string()
+    .regex(/^\d+:[A-Za-z0-9_-]{20,}$/, "Telegram bot token format is invalid")
+    .max(128)
+    .optional()
+    .describe(
+      "Optional Telegram bot token (format: <digits>:<alphanumeric>). Required only if the user wants to connect a Telegram bot."
+    ),
 });
 
 // Extended schema for tool submission
