@@ -1,10 +1,8 @@
 import { useCallback } from "react";
-import {
-  VIDEO_FEE_OCTAS,
-  VIDEO_PAYMENT_VERIFY_ENDPOINT,
-  VIDEO_TREASURY_ADDRESS,
-} from "../constants";
 import { ChatEntryProps, ChatState } from "@/app/types/message";
+
+const VIDEO_FEE_OCTAS = 10_000_000n; // 0.1 APT
+const VIDEO_PAYMENT_VERIFY_ENDPOINT = "/api/video/payments/verify";
 
 type WalletClient =
   | {
@@ -93,7 +91,10 @@ export const useVideoGeneration = ({
           data: {
             function: "0x1::coin::transfer",
             typeArguments: ["0x1::aptos_coin::AptosCoin"],
-            functionArguments: [VIDEO_TREASURY_ADDRESS, VIDEO_FEE_OCTAS.toString()],
+            functionArguments: [
+              process.env.NEXT_PUBLIC_TRANSACTIONS_WALLET,
+              VIDEO_FEE_OCTAS.toString(),
+            ],
           },
         });
 

@@ -71,8 +71,8 @@ export const ChatHeader = ({
         onValueChange={({ value }) => handleTabChange(value)}
         variant="plain"
         size="md"
-        px={{ base: 2, md: 3 }}
-        pt={0}
+        px={{ base: 4, md: 3 }}
+        pt={{ base: 4, md: 0 }}
         pb={0}
       >
         <Tabs.List
