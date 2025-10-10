@@ -6,12 +6,26 @@ import {
   NumberInput,
   Text,
   chakra,
+  type IconProps,
 } from "@chakra-ui/react";
-import { CloseIcon } from "@chakra-ui/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { colorTokens } from "../theme/theme";
 import type { NumberInputValueChangeDetails } from "@chakra-ui/react";
+
+const CloseIcon = (props: IconProps) => (
+  <chakra.svg
+    viewBox="0 0 12 12"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M3 3l6 6M9 3L3 9" />
+  </chakra.svg>
+);
 
 type PredictionDirection = "for" | "against";
 

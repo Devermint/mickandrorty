@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
 import z from "zod";
-import { agentCreationSystemPrompt, decisionSystemPrompt, tldrSystemPrompt, videoCreationSystemPrompt } from "./systemPrompts";
+import {
+  agentCreationSystemPrompt,
+  decisionSystemPrompt,
+  tldrSystemPrompt,
+  getAgentPrompt,
+} from "./systemPrompts";
 
 type Message = {
   role: "system" | "user" | "assistant";
@@ -13,8 +18,6 @@ type Message = {
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,9 +34,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
-      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : `${request.nextUrl.protocol}//${request.nextUrl.host}`;
 
     const agentAction = await getAgentAction(filteredMessages);
     if (agentAction.action === "") {
@@ -61,12 +65,21 @@ export async function POST(request: NextRequest) {
     let agentResponse;
 
     if (agentAction.action === "AGENT_CREATION") {
-      agentResponse = await getAgentResponse(filteredMessages, baseUrl, agentCreationSystemPrompt(baseUrl), 0.5);
+      agentResponse = await getAgentResponse(
+        filteredMessages,
+        baseUrl,
+        agentCreationSystemPrompt(baseUrl),
+        0.5
+      );
+    } else if (agentAction.action === "TEXT") {
+      const videoCreationSystemPrompt = getAgentPrompt(baseUrl);
+      agentResponse = await getAgentResponse(
+        filteredMessages,
+        baseUrl,
+        videoCreationSystemPrompt,
+        0.8
+      );
     }
-    else if (agentAction.action === "TEXT")
-      agentResponse = await getAgentResponse(filteredMessages, baseUrl, videoCreationSystemPrompt, 0.8);
-
-
 
     if (!agentResponse) {
       return NextResponse.json(
@@ -86,7 +99,7 @@ export async function POST(request: NextRequest) {
 }
 
 const AgentAction = z.object({
-  action: z.enum(["TEXT", "GENERATE_VIDEO", "AGENT_CREATION"])
+  action: z.enum(["TEXT", "GENERATE_VIDEO", "AGENT_CREATION"]),
 });
 
 async function getAgentAction(messages: Message[]) {
@@ -95,16 +108,16 @@ async function getAgentAction(messages: Message[]) {
     messages: [{ role: "system", content: decisionSystemPrompt }, ...messages],
     temperature: 0.1,
     max_tokens: 300,
-    response_format: zodResponseFormat(AgentAction, "agent_action")
+    response_format: zodResponseFormat(AgentAction, "agent_action"),
   });
   const content = completion.choices[0]?.message?.content;
 
-  console.log("Agent action", content)
+  console.log("Agent action", content);
   return JSON.parse(content || "");
 }
 
 const TldrObject = z.object({
-  prompt: z.string()
+  prompt: z.string(),
 });
 
 async function getTldr(messages: Message[]) {
@@ -113,14 +126,19 @@ async function getTldr(messages: Message[]) {
     messages: [{ role: "system", content: tldrSystemPrompt }, ...messages],
     temperature: 0.7,
     max_tokens: 300,
-    response_format: zodResponseFormat(TldrObject, "tldr_object")
+    response_format: zodResponseFormat(TldrObject, "tldr_object"),
   });
 
   const content = completion.choices[0]?.message?.content;
   return JSON.parse(content || "");
 }
 
-async function getAgentResponse(messages: Message[], baseUrl: string, systemPrompt: string, temperature?: number) {
+async function getAgentResponse(
+  messages: Message[],
+  baseUrl: string,
+  systemPrompt: string,
+  temperature?: number
+) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [{ role: "system", content: systemPrompt }, ...messages],
