@@ -11,6 +11,7 @@ import {
   Spinner,
   IconButton,
   Icon,
+  Stack,
 } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
@@ -22,6 +23,7 @@ import { X as TwitterIcon } from "../icons/x";
 import { TelegramIcon } from "../icons/telegram";
 import { ChatEntryProps } from "@/app/types/message";
 import { PredictionMarket } from "../Media/PredictionMarket";
+import { TelegramChannelDetector } from "../TelegramChannelDetector/TelegramChannelDetector";
 
 interface ChatEntryComponentProps extends ChatEntryProps {
   job_id?: string;
@@ -38,6 +40,7 @@ export const ChatEntry = ({
   job_id,
   onAgentCreate,
   onTokenImageUploaded,
+  onChannelsDetected,
   onGenerateVideo,
   showPredictionMarket = false,
   agentDisplayName = "Agent",
@@ -168,6 +171,21 @@ export const ChatEntry = ({
             />
           </>
         )}
+        {type === "channel-detect" && (
+          <Stack gap={3} align="stretch">
+            {content && (
+              <MarkdownView color={color} lineHeight={1.5} fontSize={14} p={1}>
+                {content}
+              </MarkdownView>
+            )}
+            <TelegramChannelDetector
+              botToken={data?.botToken ?? ""}
+              onComplete={(result) => {
+                void onChannelsDetected?.(result);
+              }}
+            />
+          </Stack>
+        )}
         {type === "error" && (
           <Text lineHeight={1.5} fontSize={14} color="red">
             {content}
@@ -288,7 +306,7 @@ export const ChatEntry = ({
               <PredictionMarket
                 videoId={videoId}
                 onPredict={handlePredictionSelection}
-                />
+              />
             )}
           </>
         )}
@@ -321,6 +339,7 @@ export const ChatEntry = ({
               borderColor={colorTokens.gray.platinum}
               onClick={() => {
                 if (onAgentCreate && data) {
+                  console.log(data);
                   onAgentCreate(data);
                 }
               }}
@@ -341,7 +360,6 @@ export const DemoVideoEntry = () => (
     role="assistant"
     content="https://www.w3schools.com/html/mov_bbb.mp4"
     type="video"
-
   />
 );
 
@@ -352,4 +370,3 @@ export const DefaultChatEntry = () => (
     type="text"
   />
 );
-

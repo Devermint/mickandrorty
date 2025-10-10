@@ -8,6 +8,7 @@ import { ChatEntryProps, ChatState } from "@/app/types/message";
 import { useAgentCreation } from "@/app/lib/utils/agentCreation";
 import { useMessageHandler } from "@/app/hooks/useMessageHandler";
 import { useTokenImageUpload } from "@/app/hooks/useTokenImageUpload";
+import { useTelegramChannelDetection } from "@/app/hooks/useTelegramChannelDetection";
 import { colorTokens } from "../theme/theme";
 import { ChatHeader } from "./ChatHeader";
 import { ChatMessageList } from "./ChatMessageList";
@@ -127,6 +128,12 @@ const Chat = ({
     onMessageSend,
   });
 
+  const { handleChannelsDetected } = useTelegramChannelDetection({
+    setMessages,
+    inputMessage,
+    onMessageSend,
+  });
+
   const handleHelperButtonClick = useCallback(
     (chatMessage: string) => {
       if (inputMessage.current === null) return;
@@ -204,10 +211,11 @@ const Chat = ({
 
         <ChatMessageList
           ref={containerRef}
-          messages={displayedMessages}
-          chatState={chatState}
-          onTokenImageUploaded={handleTokenImageUploaded}
-          onGenerateVideo={handleVideoGenerationRequest}
+        messages={displayedMessages}
+        chatState={chatState}
+        onTokenImageUploaded={handleTokenImageUploaded}
+        onChannelsDetected={handleChannelsDetected}
+        onGenerateVideo={handleVideoGenerationRequest}
           emptyState={
             showTabs && activeTab === "media" ? mediaEmptyState : undefined
           }

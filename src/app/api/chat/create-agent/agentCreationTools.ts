@@ -65,4 +65,23 @@ export const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "detect_telegram_channels",
+      description:
+        "Prompt the UI to help the user detect Telegram channels connected to their bot token before continuing. Use after collecting a valid telegramBotToken.",
+      parameters: {
+        type: "object",
+        properties: {
+          botToken: {
+            type: "string",
+            description:
+              "Telegram bot token in the format <digits>:<alphanumeric>. The widget will use it to fetch channel memberships.",
+          },
+        },
+        required: ["botToken"],
+      },
+    },
+  },
 ] satisfies OpenAI.Chat.Completions.ChatCompletionTool[];

@@ -1,12 +1,19 @@
 import { Flex } from "@chakra-ui/react";
 import React, { forwardRef } from "react";
 import { DefaultChatEntry, ChatEntry } from "./ChatEntry";
-import { ChatEntryProps, ChatState } from "@/app/types/message";
+import {
+  ChatEntryProps,
+  ChatState,
+  TelegramChannelDetectionResult,
+} from "@/app/types/message";
 
 interface ChatMessageListProps {
   messages: ChatEntryProps[];
   chatState: ChatState;
   onTokenImageUploaded?: ChatEntryProps["onTokenImageUploaded"];
+  onChannelsDetected?: (
+    payload: TelegramChannelDetectionResult
+  ) => void | Promise<void>;
   onGenerateVideo: (prompt: string | undefined) => void | Promise<void>;
   emptyState?: React.ReactNode;
   showPredictionMarket?: boolean;
@@ -20,6 +27,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       chatState,
       onTokenImageUploaded,
       onGenerateVideo,
+      onChannelsDetected,
       emptyState,
       showPredictionMarket = false,
       agentDisplayName,
@@ -67,6 +75,11 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                 onTokenImageUploaded={
                   message.type === "image-upload"
                     ? onTokenImageUploaded
+                    : undefined
+                }
+                onChannelsDetected={
+                  message.type === "channel-detect"
+                    ? onChannelsDetected
                     : undefined
                 }
                 onGenerateVideo={

@@ -2,6 +2,21 @@ import type { Dispatch, SetStateAction } from "react";
 import { AgentCreationData } from "../lib/utils/agentCreation";
 import { ClientRef } from "../lib/clientImageStore";
 
+export type TelegramChannelInfo = {
+  chatId: number;
+  type: string;
+  title: string | null;
+  username: string | null;
+  status: string | null;
+  description?: string | null;
+  inviteLink?: string | null;
+};
+
+export type TelegramChannelDetectionResult = {
+  botToken: string;
+  channels: TelegramChannelInfo[];
+};
+
 export type ChatEntryProps = {
   role: "user" | "assistant";
   content: string;
@@ -12,11 +27,15 @@ export type ChatEntryProps = {
     | "loader"
     | "error"
     | "image-upload"
+    | "channel-detect"
     | "signature-required"
     | "video_request";
   data?: any;
   onAgentCreate?: (agentData: AgentCreationData) => Promise<void>;
   onTokenImageUploaded?: (ref: ClientRef) => void | Promise<void>;
+  onChannelsDetected?: (
+    payload: TelegramChannelDetectionResult
+  ) => void | Promise<void>;
 };
 
 export interface MessageContext {
