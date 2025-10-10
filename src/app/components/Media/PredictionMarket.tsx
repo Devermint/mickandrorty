@@ -367,7 +367,7 @@ export const PredictionMarket = ({
           _hover={{ color: AGAINST_COLOR, bg: "transparent" }}
           onClick={handleReset}
         >
-          <CloseIcon boxSize="10px" />
+          <CloseIcon boxSize="16px" />
         </IconButton>
       </Flex>
 
