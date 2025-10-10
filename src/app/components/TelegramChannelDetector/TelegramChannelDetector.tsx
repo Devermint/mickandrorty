@@ -90,7 +90,8 @@ export const TelegramChannelDetector = ({
     <Stack spacing={4}>
       <Text color={colorTokens.gray.timberwolf} fontSize="sm">
         Add this bot as an administrator to the channels you plan to use, then
-        click the button below to detect them.
+        click the button below to detect them. Press <strong>Done</strong> to
+        send the channel IDs back to the assistant.
       </Text>
 
       <Flex gap={3} wrap="wrap">
@@ -218,19 +219,16 @@ export const TelegramChannelDetector = ({
                       color={colorTokens.gray.platinum}
                       fontSize="sm"
                     >
-                      {channel.title ?? channel.username ?? channel.chatId}
-                    </Text>
-                    <Text color="rgba(255,255,255,0.6)" fontSize="xs">
-                      ID: <Text as="span">{channel.chatId}</Text>
-                    </Text>
-                    <Text color="rgba(255,255,255,0.6)" fontSize="xs">
-                      Type: {channel.type}
+                      {channel.title ?? channel.username ?? "Unnamed channel"}
                     </Text>
                     {channel.username && (
                       <Text color="rgba(255,255,255,0.6)" fontSize="xs">
-                        Username: @{channel.username}
+                        @{channel.username}
                       </Text>
                     )}
+                    <Text color="rgba(255,255,255,0.6)" fontSize="xs">
+                      Type: {channel.type}
+                    </Text>
                     {channel.status && (
                       <Text color="rgba(255,255,255,0.6)" fontSize="xs">
                         Status: {channel.status}
@@ -246,6 +244,11 @@ export const TelegramChannelDetector = ({
               and promoted as an administrator, then try again.
             </Text>
           )}
+
+          <Text color="rgba(255,255,255,0.45)" fontSize="xs">
+            Channel IDs are saved automatically with this detection and will be
+            included in the confirmation step.
+          </Text>
         </Stack>
       )}
     </Stack>

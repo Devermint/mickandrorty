@@ -10,6 +10,7 @@ export interface AgentCreationData {
   tokenDescription: string;
   tokenImage: string;
   telegramBotToken?: string;
+  telegramChannelIds?: string[];
 }
 
 export interface AgentCreationResult {

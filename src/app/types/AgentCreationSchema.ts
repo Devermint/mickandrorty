@@ -23,6 +23,18 @@ export const AgentSchema = z.object({
     .describe(
       "Optional Telegram bot token (format: <digits>:<alphanumeric>). Required only if the user wants to connect a Telegram bot."
     ),
+  telegramChannelIds: z
+    .array(
+      z
+        .string()
+        .regex(/^(-?\d+)$/, "Channel IDs must be numeric values, e.g., -1001234567890")
+    )
+    .min(1, "Provide at least one channel ID or omit the field entirely.")
+    .max(50, "Limit channel collection to 50 entries.")
+    .optional()
+    .describe(
+      "Numeric Telegram channel IDs captured after running the detector. Include only if the user confirms channels."
+    ),
 });
 
 // Extended schema for tool submission

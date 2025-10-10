@@ -85,11 +85,20 @@ export class AgentCreatorHandler extends MessageHandler {
     agentData: AgentCreationData,
     result: any
   ): string {
+    const telegramBotLine = `**Telegram Bot:** ${
+      agentData.telegramBotToken ?? "Not linked"
+    }`;
+    const telegramChannelsLine = `**Telegram Channels:** ${
+      agentData.telegramChannelIds && agentData.telegramChannelIds.length
+        ? agentData.telegramChannelIds.join(", ")
+        : "None linked"
+    }`;
+
     return `Agent created successfully!\n\n**Token Name:** ${
       agentData.tokenName
     }\n**Symbol:** ${agentData.tokenTicker}\n**Transaction Hash:** \`${
       result.agentHash
-    }\`\n\n${
+    }\`\n${telegramBotLine}\n${telegramChannelsLine}\n\n${
       result.poolHash ? `**Pool Created:** \`${result.poolHash}\`\n` : ""
     }${
       result.liquidityHash

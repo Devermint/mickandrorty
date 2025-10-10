@@ -33,23 +33,26 @@ export const useTelegramChannelDetection = ({
         return;
       }
 
-      const channelLines =
-        channels.length > 0
-          ? channels.map((channel) => {
-              const label =
-                channel.title ??
-                (channel.username ? `@${channel.username}` : null) ??
-                channel.chatId.toString();
-              return `- ${label} — ID: ${channel.chatId} (${channel.type})`;
-            })
-          : [
-              "- No channels detected. The bot may not yet be an administrator of any channels.",
-            ];
+      const channelIds = channels.map((channel) => channel.chatId.toString());
+      const channelDetail = channels.map((channel) => ({
+        chatId: channel.chatId,
+        title: channel.title,
+        username: channel.username,
+        type: channel.type,
+        status: channel.status ?? undefined,
+      }));
 
-      target.value = [
-        "Here are the Telegram channels connected to our bot:",
-        ...channelLines,
-      ].join("\n");
+      const payloadLines: string[] = [
+        `telegram_channel_ids: ${JSON.stringify(channelIds)}`,
+      ];
+
+      if (channelDetail.length > 0) {
+        payloadLines.push(
+          `telegram_channels_detail: ${JSON.stringify(channelDetail)}`
+        );
+      }
+
+      target.value = payloadLines.join("\n");
 
       await Promise.resolve(onMessageSend());
     },
