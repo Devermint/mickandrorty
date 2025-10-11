@@ -10,6 +10,7 @@ interface ChatHeaderProps {
   isGroupConnected: boolean;
   activeTab: "chat" | "media";
   onTabChange: (tab: "chat" | "media") => void;
+  showTabs?: boolean;
 }
 
 export const ChatHeader = ({
@@ -19,6 +20,7 @@ export const ChatHeader = ({
   isGroupConnected,
   activeTab,
   onTabChange,
+  showTabs = true,
 }: ChatHeaderProps) => {
   const title = chatName || `${agentDisplayName || "Agent"} group chat`.trim();
 
@@ -66,24 +68,26 @@ export const ChatHeader = ({
         )}
       </Flex>
 
-      <Tabs.Root
-        value={activeTab}
-        onValueChange={({ value }) => handleTabChange(value)}
-        variant="plain"
-        size="md"
-        px={{ base: 4, md: 3 }}
-        pt={{ base: 4, md: 0 }}
-        pb={0}
-      >
-        <Tabs.List
-          pb={1}
-          gap={2}
-          justifyContent={{ base: "center", md: "flex-start" }}
+      {showTabs && (
+        <Tabs.Root
+          value={activeTab}
+          onValueChange={({ value }) => handleTabChange(value)}
+          variant="plain"
+          size="md"
+          px={{ base: 4, md: 3 }}
+          pt={{ base: 4, md: 0 }}
+          pb={0}
         >
-          <TabTrigger value="chat" label="Chat" />
-          <TabTrigger value="media" label="Media" />
-        </Tabs.List>
-      </Tabs.Root>
+          <Tabs.List
+            pb={1}
+            gap={2}
+            justifyContent={{ base: "center", md: "flex-start" }}
+          >
+            <TabTrigger value="chat" label="Chat" />
+            <TabTrigger value="media" label="Media" />
+          </Tabs.List>
+        </Tabs.Root>
+      )}
     </Flex>
   );
 };

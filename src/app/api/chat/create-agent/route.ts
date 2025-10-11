@@ -32,42 +32,141 @@ type UploadArgs = {
   minHeight?: number;
 };
 
+function formatContent(content: unknown): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === "string") return part;
+        if (part && typeof part === "object" && "text" in part) {
+          return (part as { text?: string }).text ?? "";
+        }
+        return JSON.stringify(part);
+      })
+      .join("");
+  }
+  if (content == null) return "null";
+  return JSON.stringify(content);
+}
+
+function logTranscript(label: string, messages: any[]) {
+  console.log(
+    `[agent:create] ${label} transcript --------------------------------`
+  );
+  (messages ?? []).forEach((message: any, index: number) => {
+    if (!message) return;
+    const { role, type, content, data } = message;
+    console.log(
+      `[agent:create] [${index}] role=${role ?? "unknown"} type=${
+        type ?? "n/a"
+      } content=${formatContent(content)}${
+        data ? ` data=${JSON.stringify(data)}` : ""
+      }`
+    );
+  });
+  console.log(
+    `[agent:create] ${label} transcript end ----------------------------`
+  );
+}
+
+function logAssistantResponse(
+  message: OpenAI.Chat.Completions.ChatCompletionMessage
+) {
+  if (!message) return;
+  const { role, content, refusal, tool_calls } = message;
+  console.log(
+    "[agent:create] assistant response ---------------------------------"
+  );
+  console.log(
+    `[agent:create] role=${role} content=${formatContent(content)} refusal=${
+      refusal ? JSON.stringify(refusal) : "null"
+    }`
+  );
+  tool_calls?.forEach((tc, index) => {
+    const name = tc.type === "function" ? tc.function?.name : tc.type;
+    const args = tc.type === "function" ? tc.function?.arguments : undefined;
+    console.log(
+      `[agent:create] tool_call[${index}] name=${name} args=${args ?? ""}`
+    );
+  });
+  console.log(
+    "[agent:create] assistant response end ----------------------------"
+  );
+}
+
 const SYSTEM = `
-You are a careful form assistant for creating Aptos agents.
-1) Ask only for missing/ambiguous fields (tokenName, tokenTicker, tokenDescription).
-2) Validate constraints as you go.
-3) When all fields are known, present them ONCE and ask for confirmation.
-4) Only after explicit "yes", call submit_agent with final values and requiresSignature=true.
+You are a helpful assistant that guides users through creating Aptos agents. Your goal is to collect required information naturally through conversation, validate it, and submit the agent once confirmed.
 
-Formatting rules for any NON-tool reply (Markdown):
-- Do NOT include any repeated fields.
-- Use GitHub-flavored Markdown.
-- Use headings (#, ##), bullet lists, numbered lists, paragraphs and fenced code blocks with language tags (e.g., \`\`\`ts).
-- Do NOT output raw HTML.
+## Required Fields
 
-- tokenName: {{tokenName or blank}}
-- tokenTicker: {{tokenTicker or blank}}
-- tokenDescription: {{tokenDescription or blank}}
-- tokenImage: {{tokenImage or blank}}
+Collect these fields through natural conversation:
+- **tokenName**: 1-100 characters
+- **tokenTicker**: 2-5 uppercase letters only
+- **tokenDescription**: 10-500 characters describing the project
+- **tokenImage**: Image URL (you'll request upload)
+- **telegramBotToken**: Optional
 
-CRITICAL IMAGE UPLOAD PROTOCOL (mandatory and immediate):
-• As soon as tokenName, tokenTicker, and tokenDescription are all present, and tokenImage is not yet set, you MUST IMMEDIATELY call the tool \`request_token_image\`.
-• Do not ask the user whether they have an image. Do not phrase it as an option. Always trigger the upload request automatically.
-• Call with minimal args unless constraints change:
-  { prompt: "Please upload your token image", includeInResponse: false }
-  (All other parameters fall back to tool defaults.)
-• In that turn, you MUST send only the tool call — no natural language, no explanation, no markdown, no code fences. 
-• Do not say you are "prompting" or "calling" the tool. Just call it.
-• After the tool result, validate mime/type/size/dimensions; if invalid, call \`request_token_image\` again with a revised \`prompt\` inside the tool arguments. 
-• Do NOT call submit_agent until tokenImage is present AND the user has explicitly answered "yes".
-• When confirming and tokenImage is present, include the preview:
-  ![Token image]({tokenImage.url})
-• Never narrate or display raw tool-call JSON or code.
+## Conversation Flow
 
-FINAL ACTION SANITY CHECK (pre-send guard):
-Before sending any assistant message, if tokenName, tokenTicker, and tokenDescription are present but tokenImage is missing, replace the message with a \`request_token_image\` tool call.
+1. **Gather basic info**: Ask for token name, ticker, and description. Be conversational and ask follow-up questions if anything is unclear or invalid.
 
-Confirm? (yes/no)
+2. **Handle Telegram bot token**: Ask once if they'd like to link a Telegram bot. If yes, collect and validate the token. If no or they don't have one, proceed without it.
+
+3. **Request token image**: Once you have name, ticker, and description, immediately call \`request_token_image\` without any explanation or announcement. Just call the tool directly.
+
+4. **Handle image responses**:
+   - If user provides an https:// URL directly, extract it, validate format, and use it silently
+   - When tool returns an image result, validate it silently in the background
+   - Do NOT announce validation steps, show the URL, or explain what you're checking
+   - If validation succeeds, proceed directly to confirmation
+   - Only if validation fails, briefly explain the issue and request again
+
+5. **Confirm before submitting**: Once all fields are collected (including tokenImage), show a summary ONLY ONCE with the image preview and ask for explicit confirmation. Do not repeat the details before this confirmation:
+
+   Here's your agent configuration:
+   - **Token Name**: {tokenName}
+   - **Token Ticker**: {tokenTicker}
+   - **Token Description**: {tokenDescription}
+   - **Telegram Bot**: {telegramBotToken or "Not linked"}
+   
+   ![Token Image]({tokenImage})
+   
+   Does everything look correct? Reply "yes" to create your agent.
+
+6. **Submit**: Only after explicit "yes", call \`submit_agent\` with all values and \`requiresSignature: true\`.
+
+## Validation Rules
+
+Apply these as you collect information:
+- **tokenName**: Not empty, max 100 characters
+- **tokenTicker**: 2-5 characters, uppercase letters only (A-Z)
+- **tokenDescription**: 10-500 characters minimum
+- **telegramBotToken**: Optional. If provided, must match format: numbers, colon, alphanumeric
+- **tokenImage**: Must be a valid https:// URL after upload/submission
+
+If validation fails, explain the issue clearly and ask the user to try again.
+
+## Image Upload Details
+
+- Call \`request_token_image\` with: \`{ prompt: "Please upload your token image" }\`
+- Only request image once all other required fields are collected
+- Don't request image again unless user explicitly wants to change it
+- Show image preview when confirming final details
+
+## Response Formatting
+
+- Use clear, friendly language
+- Format responses with Markdown (headings, lists, code blocks where appropriate)
+- Don't show raw JSON or technical details of tool calls to users
+- Be concise but complete
+- **Avoid repeating information** - when moving from one step to the next, acknowledge what was collected but don't list everything again until the final confirmation
+
+## Edge Cases
+
+- If user provides incomplete info, ask specific follow-up questions
+- If user wants to change a field after providing it, allow updates before final submission
+- If user provides all info in first message, acknowledge and proceed through each step (validate, request image, confirm)
+- Never submit without explicit "yes" confirmation
 `;
 
 function toMarkdown(content: unknown): string {
@@ -82,6 +181,7 @@ function toMarkdown(content: unknown): string {
 
 export async function POST(req: NextRequest) {
   const { messages } = await req.json();
+  logTranscript("input", messages);
 
   const resp = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -93,6 +193,7 @@ export async function POST(req: NextRequest) {
   });
 
   const msg = resp.choices[0].message;
+  logAssistantResponse(msg);
 
   console.log(msg);
   if (msg.tool_calls?.length) {

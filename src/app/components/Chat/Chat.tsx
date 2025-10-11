@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Box, Flex, FlexProps, Text } from "@chakra-ui/react";
+import { Flex, FlexProps, Text } from "@chakra-ui/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Agent } from "@/app/types/agent";
 import { ChatEntryProps, ChatState } from "@/app/types/message";
@@ -24,6 +24,7 @@ interface ChatProps extends FlexProps {
   enableGroupChat?: boolean;
   socketUrl?: string;
   chatName?: string;
+  showTabs?: boolean;
 }
 
 const Chat = ({
@@ -33,6 +34,7 @@ const Chat = ({
   enableGroupChat = true,
   socketUrl,
   chatName,
+  showTabs = true,
   ...rest
 }: ChatProps) => {
   const { wallet, account, isConnected, swapSDK } = useAgentCreation();
@@ -45,11 +47,11 @@ const Chat = ({
   const didInitialize = useRef(false);
 
   const displayedMessages = useMemo(() => {
-    if (activeTab === "media") {
+    if (showTabs && activeTab === "media") {
       return messages.filter((message) => message.type === "video");
     }
     return messages;
-  }, [activeTab, messages]);
+  }, [activeTab, messages, showTabs]);
 
   const mediaEmptyState = (
     <Text
@@ -138,6 +140,20 @@ const Chat = ({
   const msg = searchParams.get("message") ?? "";
 
   useEffect(() => {
+    if (!showTabs && activeTab !== "chat") {
+      setActiveTab("chat");
+    }
+  }, [showTabs, activeTab]);
+
+  const handleTabSelection = useCallback(
+    (tab: "chat" | "media") => {
+      if (!showTabs) return;
+      setActiveTab(tab);
+    },
+    [showTabs]
+  );
+
+  useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
@@ -178,7 +194,8 @@ const Chat = ({
           enableGroupChat={enableGroupChat}
           isGroupConnected={isGroupConnected}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabSelection}
+          showTabs={showTabs}
         />
 
         {enableGroupChat && groupError && (
@@ -191,11 +208,14 @@ const Chat = ({
           chatState={chatState}
           onTokenImageUploaded={handleTokenImageUploaded}
           onGenerateVideo={handleVideoGenerationRequest}
-          emptyState={activeTab === "media" ? mediaEmptyState : undefined}
-          showPredictionMarket={activeTab === "media"}
+          emptyState={
+            showTabs && activeTab === "media" ? mediaEmptyState : undefined
+          }
+          showPredictionMarket={showTabs && activeTab === "media"}
+          agentDisplayName={agent.agent_name ?? "Agent"}
         />
 
-        {activeTab === "chat" ? (
+        {(!showTabs || activeTab === "chat") ? (
           <>
             <ChatHelperPanel onSelect={handleHelperButtonClick} />
             <ChatInputBar inputRef={inputMessage} onSend={onMessageSend} />

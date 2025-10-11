@@ -10,6 +10,7 @@ interface ChatMessageListProps {
   onGenerateVideo: (prompt: string | undefined) => void | Promise<void>;
   emptyState?: React.ReactNode;
   showPredictionMarket?: boolean;
+  agentDisplayName: string;
 }
 
 export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
@@ -21,6 +22,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       onGenerateVideo,
       emptyState,
       showPredictionMarket = false,
+      agentDisplayName,
     },
     ref
   ) => {
@@ -78,6 +80,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                 showPredictionMarket={
                   showPredictionMarket && message.type === "video"
                 }
+                agentDisplayName={agentDisplayName}
               />
             ))}
           </>
