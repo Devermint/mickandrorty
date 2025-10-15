@@ -28,7 +28,10 @@ export const AgentSchema = z.object({
     .array(
       z
         .string()
-        .regex(/^(-?\d+)$/, "Channel IDs must be numeric values, e.g., -1001234567890")
+        .regex(
+          /^(-?\d+)$/,
+          "Channel IDs must be numeric values, e.g., -1001234567890"
+        )
     )
     .min(1, "Provide at least one channel ID or omit the field entirely.")
     .max(50, "Limit channel collection to 50 entries.")
@@ -49,7 +52,9 @@ export const SubmitAgentSchema = AgentSchema.extend({
     ),
   confirmationMessage: z
     .string()
-    .default("Please double check your token details and sign the transaction")
+    .default(
+      "Please double check your token details and sign the transaction in order to create your agent"
+    )
     .describe("Message to show user before signing"),
 });
 

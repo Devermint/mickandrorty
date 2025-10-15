@@ -38,15 +38,6 @@ type UploadArgs = {
   minHeight?: number;
 };
 
-function logTranscript(label: string, messages: any[]) {
-  console.log(
-    `[agent:create] ${label} transcript --------------------------------`
-  );
-  (messages ?? []).forEach((message: any, index: number) => {
-    if (!message) return;
-  });
-}
-
 function toMarkdown(content: unknown): string {
   if (typeof content === "string") return content.trim();
   if (content == null) return "";
@@ -59,15 +50,14 @@ function toMarkdown(content: unknown): string {
 
 export async function POST(req: NextRequest) {
   const { messages } = await req.json();
-  logTranscript("input", messages);
 
   const resp = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini",
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
     tools,
     tool_choice: "auto",
-    temperature: 0.7,
-    max_tokens: 300,
+    reasoning_effort: "low",
+    verbosity: "low",
   });
 
   const msg = resp.choices[0].message;
