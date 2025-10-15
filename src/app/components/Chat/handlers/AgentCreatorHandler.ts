@@ -5,7 +5,8 @@ import { AgentCreationData, createAgent } from "@/app/lib/utils/agentCreation";
 export class AgentCreatorHandler extends MessageHandler {
   async handleMessage(text: string): Promise<void> {
     this.addUserMessage(text);
-    this.context.setChatState(ChatState.PROCESSING);
+    const context = this.getContext();
+    context.setChatState(ChatState.PROCESSING);
 
     try {
       const response = await fetch("/api/chat/create-agent", {
@@ -13,7 +14,7 @@ export class AgentCreatorHandler extends MessageHandler {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [
-            ...this.context.messages,
+            ...context.messages,
             { role: "user", content: text, type: "text" },
           ],
         }),
@@ -25,7 +26,7 @@ export class AgentCreatorHandler extends MessageHandler {
       this.addAssistantMessage(markdown ?? notice, kind, data);
 
       if (kind === "signature-required") {
-        this.context.setMessages((prev) => [
+        context.setMessages((prev) => [
           ...prev.slice(0, -1),
           {
             ...prev[prev.length - 1],
@@ -36,14 +37,14 @@ export class AgentCreatorHandler extends MessageHandler {
     } catch (error) {
       this.addErrorMessage(error);
     } finally {
-      this.context.setChatState(ChatState.IDLE);
+      this.getContext().setChatState(ChatState.IDLE);
     }
   }
 
   private async handleAgentCreation(
     agentData: AgentCreationData
   ): Promise<void> {
-    const { wallet, account, isConnected, swapSDK } = this.context;
+    const { wallet, account, isConnected, swapSDK } = this.getContext();
 
     if (!wallet || !account?.address || !isConnected) {
       this.addAssistantMessage(

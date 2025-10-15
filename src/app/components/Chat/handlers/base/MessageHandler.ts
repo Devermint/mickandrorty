@@ -1,16 +1,19 @@
 import type { ChatEntryProps, MessageContext } from "@/app/types/message";
 
-export abstract class MessageHandler {
-  protected context: MessageContext;
+type MessageContextSupplier = () => MessageContext;
 
-  constructor(context: MessageContext) {
-    this.context = context;
+export abstract class MessageHandler {
+  protected getContext: MessageContextSupplier;
+
+  constructor(contextSupplier: MessageContextSupplier) {
+    this.getContext = contextSupplier;
   }
 
   abstract handleMessage(text: string): Promise<void>;
 
   protected addUserMessage(text: string): void {
-    this.context.setMessages((prev: ChatEntryProps[]) => [
+    const context = this.getContext();
+    context.setMessages((prev: ChatEntryProps[]) => [
       ...prev,
       { role: "user", content: text, type: "text" },
     ]);
@@ -21,7 +24,8 @@ export abstract class MessageHandler {
     type: ChatEntryProps["type"] = "text",
     data?: any
   ): void {
-    this.context.setMessages((prev: ChatEntryProps[]) => [
+    const context = this.getContext();
+    context.setMessages((prev: ChatEntryProps[]) => [
       ...prev,
       { role: "assistant", content, type, data },
     ]);
@@ -32,7 +36,8 @@ export abstract class MessageHandler {
     type: ChatEntryProps["type"] = "text",
     data?: any
   ): void {
-    this.context.setMessages((prev: ChatEntryProps[]) => [
+    const context = this.getContext();
+    context.setMessages((prev: ChatEntryProps[]) => [
       ...prev.slice(0, -1),
       { role: "assistant", content, type, data },
     ]);

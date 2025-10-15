@@ -4,7 +4,8 @@ import { MessageHandler } from "./base/MessageHandler";
 export class RegularChatHandler extends MessageHandler {
   async handleMessage(text: string): Promise<void> {
     this.addUserMessage(text);
-    this.context.setChatState(ChatState.PROCESSING);
+    const context = this.getContext();
+    context.setChatState(ChatState.PROCESSING);
 
     try {
       const response = await fetch("/api/chat", {
@@ -12,7 +13,7 @@ export class RegularChatHandler extends MessageHandler {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [
-            ...this.context.messages,
+            ...context.messages,
             { role: "user", content: text, type: "text" },
           ],
         }),
@@ -32,7 +33,7 @@ export class RegularChatHandler extends MessageHandler {
         const videoPrompt = message;
         const displayContent = `I can generate a video with the following prompt:\n\n> ${videoPrompt}\n\nClick **Generate video** to pay 0.1 APT and start the job.`;
 
-        this.context.setMessages((prev) => [
+        context.setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
@@ -42,20 +43,20 @@ export class RegularChatHandler extends MessageHandler {
           },
         ]);
 
-        this.context.sendAgentMessage?.({
+        context.sendAgentMessage?.({
           content: displayContent,
           type: "video_request",
           data: { prompt: videoPrompt },
         });
 
-        this.context.setChatState(ChatState.IDLE);
+        this.getContext().setChatState(ChatState.IDLE);
       } else {
         this.addAssistantMessage(message, "text");
-        this.context.setChatState(ChatState.IDLE);
+        this.getContext().setChatState(ChatState.IDLE);
       }
     } catch (error) {
       this.addErrorMessage(error);
-      this.context.setChatState(ChatState.IDLE);
+      this.getContext().setChatState(ChatState.IDLE);
     }
   }
 

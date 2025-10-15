@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { MessageContext, ChatEntryProps, ChatState } from "../types/message";
 import { Agent, AgentType } from "@/app/types/agent";
 import { MessageHandlerFactory } from "../components/Chat/factories/MessageHandlerFactory";
@@ -38,6 +38,23 @@ export const useMessageHandler = ({
   agentId,
   sendAgentMessage,
 }: UseMessageHandlerProps) => {
+  const contextRef = useRef<MessageContext | null>(null);
+
+  contextRef.current = {
+    messages,
+    setMessages,
+    setChatState,
+    wallet,
+    account,
+    isConnected,
+    swapSDK,
+    sendAgentMessage: sendAgentMessage
+      ? ({ content, type, data }) => {
+          sendAgentMessage(content, type, data);
+        }
+      : undefined,
+  };
+
   const onMessageSend = useCallback(async () => {
     const el = inputMessage.current;
     if (!el) return;
@@ -48,24 +65,16 @@ export const useMessageHandler = ({
     el.value = "";
     el.blur();
 
-    const context: MessageContext = {
-      messages,
-      setMessages,
-      setChatState,
-      wallet,
-      account,
-      isConnected,
-      swapSDK,
-      sendAgentMessage: sendAgentMessage
-        ? ({ content, type, data }) => {
-            sendAgentMessage(content, type, data);
-          }
-        : undefined,
+    const getContext = () => {
+      if (!contextRef.current) {
+        throw new Error("Message context is not available");
+      }
+      return contextRef.current;
     };
 
     const handler = MessageHandlerFactory.createHandler(
       agent.agent_type as AgentType,
-      context
+      getContext
     );
 
     try {
@@ -85,21 +94,7 @@ export const useMessageHandler = ({
       ]);
       setChatState(ChatState.IDLE);
     }
-  }, [
-    chatState,
-    messages,
-    agent.agent_type,
-    wallet,
-    account,
-    isConnected,
-    swapSDK,
-    inputMessage,
-    setMessages,
-    setChatState,
-    socket,
-    agentId,
-    sendAgentMessage,
-  ]);
+  }, [agent.agent_type, inputMessage, setMessages, setChatState]);
 
   return { onMessageSend };
 };

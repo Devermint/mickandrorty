@@ -20,6 +20,7 @@ export const AgentSchema = z.object({
     .regex(/^\d+:[A-Za-z0-9_-]{20,}$/, "Telegram bot token format is invalid")
     .max(128)
     .optional()
+    .nullable()
     .describe(
       "Optional Telegram bot token (format: <digits>:<alphanumeric>). Required only if the user wants to connect a Telegram bot."
     ),
@@ -32,6 +33,7 @@ export const AgentSchema = z.object({
     .min(1, "Provide at least one channel ID or omit the field entirely.")
     .max(50, "Limit channel collection to 50 entries.")
     .optional()
+    .nullable()
     .describe(
       "Numeric Telegram channel IDs captured after running the detector. Include only if the user confirms channels."
     ),

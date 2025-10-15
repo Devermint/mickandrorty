@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { AgentCreationData } from "../lib/utils/agentCreation";
 import { ClientRef } from "../lib/clientImageStore";
+import type { UploadConstraints } from "./file";
 
 export type TelegramChannelInfo = {
   chatId: number;
@@ -32,7 +33,10 @@ export type ChatEntryProps = {
     | "video_request";
   data?: any;
   onAgentCreate?: (agentData: AgentCreationData) => Promise<void>;
-  onTokenImageUploaded?: (ref: ClientRef) => void | Promise<void>;
+  onTokenImageUploaded?: (
+    ref: ClientRef,
+    constraints?: Partial<UploadConstraints>
+  ) => void | Promise<void>;
   onChannelsDetected?: (
     payload: TelegramChannelDetectionResult
   ) => void | Promise<void>;

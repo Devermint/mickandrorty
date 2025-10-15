@@ -1,4 +1,4 @@
-type UploadConstraints = {
+export type UploadConstraints = {
   accept: string[];
   maxSizeBytes: number;
   minWidth: number;

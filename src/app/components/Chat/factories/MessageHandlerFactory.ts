@@ -1,19 +1,18 @@
 import { AgentType } from "@/app/types/agent";
+import { MessageContext } from "@/app/types/message";
 import { MessageHandler } from "../handlers/base/MessageHandler";
 import { AgentCreatorHandler } from "../handlers/AgentCreatorHandler";
 import { RegularChatHandler } from "../handlers/RegularChatHandler";
-import { MessageContext } from "@/app/types/message";
-
 export class MessageHandlerFactory {
   static createHandler(
     agentType: AgentType,
-    context: MessageContext
+    contextSupplier: () => MessageContext
   ): MessageHandler {
     switch (agentType) {
       case AgentType.AgentCreator:
-        return new AgentCreatorHandler(context);
+        return new AgentCreatorHandler(contextSupplier);
       default:
-        return new RegularChatHandler(context);
+        return new RegularChatHandler(contextSupplier);
     }
   }
 }

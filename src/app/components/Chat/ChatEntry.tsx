@@ -22,6 +22,7 @@ import { FiDownload } from "react-icons/fi";
 import { X as TwitterIcon } from "../icons/x";
 import { TelegramIcon } from "../icons/telegram";
 import { ChatEntryProps } from "@/app/types/message";
+import type { UploadConstraints } from "@/app/types/file";
 import { PredictionMarket } from "../Media/PredictionMarket";
 import { TelegramChannelDetector } from "../TelegramChannelDetector/TelegramChannelDetector";
 
@@ -93,10 +94,22 @@ export const ChatEntry = ({
       shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${shareText}`;
     }
 
-    if (typeof window !== "undefined") {
-      window.open(shareUrl, "_blank", "noopener,noreferrer");
-    }
-  };
+  if (typeof window !== "undefined") {
+    window.open(shareUrl, "_blank", "noopener,noreferrer");
+  }
+};
+
+  const uploadConstraints: Partial<UploadConstraints> | undefined =
+    type === "image-upload" && data
+      ? {
+          accept: Array.isArray(data.accept) ? data.accept : undefined,
+          maxSizeBytes:
+            typeof data.maxSizeBytes === "number" ? data.maxSizeBytes : undefined,
+          minWidth: typeof data.minWidth === "number" ? data.minWidth : undefined,
+          minHeight:
+            typeof data.minHeight === "number" ? data.minHeight : undefined,
+        }
+      : undefined;
 
   return (
     <Flex
@@ -165,8 +178,9 @@ export const ChatEntry = ({
               {content}
             </MarkdownView>
             <ImageUpload
+              constraints={uploadConstraints}
               onUploaded={(ref) => {
-                void onTokenImageUploaded?.(ref);
+                void onTokenImageUploaded?.(ref, uploadConstraints);
               }}
             />
           </>

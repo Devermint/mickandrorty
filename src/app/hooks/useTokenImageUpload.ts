@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { ClientRef, getClientFile } from "@/app/lib/clientImageStore";
 import type { ChatEntryProps } from "../types/message";
+import type { UploadConstraints } from "../types/file";
 
 interface UseTokenImageUploadProps {
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
@@ -14,7 +15,10 @@ export const useTokenImageUpload = ({
   onMessageSend,
 }: UseTokenImageUploadProps) => {
   const handleTokenImageUploaded = useCallback(
-    async (ref: ClientRef) => {
+    async (
+      ref: ClientRef,
+      constraints?: Partial<UploadConstraints>
+    ) => {
       try {
         const file = getClientFile(ref.id);
         if (!file) {
@@ -29,11 +33,25 @@ export const useTokenImageUpload = ({
           return;
         }
 
-        const okTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-        const maxBytes = 5_000_000;
-        if (!okTypes.has(file.type)) throw new Error("Unsupported file type.");
+        const acceptedTypes =
+          constraints?.accept && constraints.accept.length > 0
+            ? constraints.accept
+            : ["image/png", "image/jpeg", "image/webp"];
+        const okTypes = new Set(
+          acceptedTypes.map((item: string) => item.toLowerCase())
+        );
+        const maxBytes =
+          typeof constraints?.maxSizeBytes === "number" &&
+          constraints.maxSizeBytes > 0
+            ? constraints.maxSizeBytes
+            : 2 * 1024 * 1024;
+        if (!okTypes.has(file.type.toLowerCase()))
+          throw new Error("Unsupported file type.");
         if (file.size === 0) throw new Error("Empty file.");
-        if (file.size > maxBytes) throw new Error("File too large.");
+        if (file.size > maxBytes)
+          throw new Error(
+            `Image exceeds the ${formatBytes(maxBytes)} limit.`
+          );
 
         const fd = new FormData();
         fd.append("file", file, file.name || "upload");
@@ -72,3 +90,19 @@ export const useTokenImageUpload = ({
 
   return { handleTokenImageUploaded };
 };
+
+function formatBytes(bytes: number) {
+  const thresh = 1024;
+  if (bytes < thresh) return `${bytes} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let u = -1;
+  let value = bytes;
+  do {
+    value /= thresh;
+    ++u;
+  } while (value >= thresh && u < units.length - 1);
+  const formatted = value.toFixed(value < 10 ? 1 : 0);
+  return `${formatted.endsWith(".0") ? formatted.slice(0, -2) : formatted} ${
+    units[u]
+  }`;
+}
