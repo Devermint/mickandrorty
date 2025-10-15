@@ -8,43 +8,80 @@ import {
     ResolutionString,
     ResolveCallback,
     SearchSymbolsCallback,
+    PeriodParams,
     SubscribeBarsCallback,
 } from '../../../../public/tradingview/charting_library/datafeed-api';
 import { Chain } from 'viem';
 
+const RESOLUTION_TO_SECONDS = (r: string): number => {
+    if (r === 'D') return 86400;
+    if (r === 'W') return 7 * 86400;
+    if (r === 'M') return 30 * 86400;
+    const n = parseInt(r, 10);
+    if (!isNaN(n)) return n * 60;
+    return 60;
+};
+
+type CacheEntry = {
+    bars: Bar[];
+    expiry: number;
+    promise?: Promise<Bar[]>;
+};
+
+type Subscriber = {
+    symbolInfo: LibrarySymbolInfo;
+    resolution: ResolutionString;
+    lastBarTime: number | null;
+    onRealtimeCallback: SubscribeBarsCallback;
+    timerId: number;
+};
+
+const CACHE_TTL_MS = 5000; // keep history cached for 5 seconds
+
 export default class PriceDataFeed {
-    private lastBar: Bar | undefined;
-    private subscribers: Map<string, () => void> = new Map();
+    private symbol: string;
+    private agentPackage: string;
+    private cache: Map<string, CacheEntry> = new Map();
+    private subscribers: Map<string, Subscriber> = new Map();
+    private lastBarPerSub: Map<string, Bar> = new Map();
 
-    constructor(
-        private token: Agent,
-        private queryClient: any, // optional if you're not caching
-        private onPriceUpdate?: (price: number) => void
-    ) { }
-
-    onReady(callback: OnReadyCallback): void {
-        callback({
-            supported_resolutions: ['1' as ResolutionString],
-            supports_marks: false,
-            supports_time: true,
-        });
+    constructor(symbol: string, agentPackage: string, private queryClient: any) {
+        this.symbol = symbol;
+        this.agentPackage = agentPackage;
     }
 
-    resolveSymbol(_: string, onResolve: ResolveCallback): void {
+    private makeCacheKey(symbol: string | undefined, resolution: string, from: number, to: number) {
+        return `${symbol}|${resolution}|${from}|${to}`;
+    }
+
+    onReady(callback: OnReadyCallback) {
+        setTimeout(() => {
+            callback({
+                supported_resolutions: ['1', '5', '15', '60', 'D'] as ResolutionString[],
+                supports_marks: false,
+                supports_timescale_marks: false,
+            });
+        }, 0);
+    }
+
+    resolveSymbol(symbolName: string, onResolve: ResolveCallback) {
         setTimeout(() => {
             onResolve({
-                name: this.token.agent_symbol + '/' + "Aptos",
-                description: `${this.token.agent_symbol} on Aptos`,
+                name: symbolName,
+                ticker: symbolName,
+                description: symbolName,
                 format: 'price',
-                exchange: 'Custom',
-                listed_exchange: 'Custom',
-                minmov: 0.1,
-                session: '24x7',
-                supported_resolutions: ['1' as ResolutionString],
-                timezone: 'Etc/UTC',
                 type: 'crypto',
-                pricescale: 100000,
+                session: '24x7',
+                timezone: 'Etc/UTC',
+                exchange: 'AGENTS',
+                listed_exchange: 'AGENTS',
+                minmov: 1,
+                pricescale: 1,
                 has_intraday: true,
+                supported_resolutions: ['1', '5', '15', '60', 'D'] as ResolutionString[],
+                volume_precision: 0,
+                data_status: 'streaming',
             });
         }, 0);
     }
@@ -52,145 +89,189 @@ export default class PriceDataFeed {
     async getBars(
         symbolInfo: LibrarySymbolInfo,
         resolution: ResolutionString,
-        periodParams: { from: number; to: number; firstDataRequest: boolean },
+        periodParams: PeriodParams,
         onHistoryCallback: HistoryCallback,
-        onErrorCallback: (error: string) => void
-    ): Promise<void> {
+        onErrorCallback: (reason: string) => void
+    ) {
         try {
-            const interval = parseInt(resolution) * 60 || 60; // in seconds
-            const from = new Date(periodParams.from * 1000).toISOString();
-            const to = new Date(periodParams.to * 1000).toISOString();
-            const agent = this.token.fa_id;
+            const { from, to } = periodParams; // seconds
+            const fromMs = Math.floor(from * 1000);
+            const toMs = Math.floor(to * 1000);
+            if (!symbolInfo.name) {
+                onHistoryCallback([], { noData: true });
+                return;
+            }
 
-            const url = `${process.env.NEXT_PUBLIC_API_URL}/ohlc?fa_id=${agent}&interval=${interval}&from=${from}&to=${to}`;
+            const intervalSeconds = RESOLUTION_TO_SECONDS(resolution);
+            // pad one interval to avoid edge trimming issues
+            const periodMinutes = Math.ceil((to - from) / 60) + 1;
 
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const agent = encodeURIComponent(this.agentPackage);
+            const url = `${process.env.NEXT_PUBLIC_API_URL}/ohlc?fa_id=${agent}&interval=${intervalSeconds}&period=${periodMinutes}`;
 
-            const data = await res.json();
+            const cacheKey = this.makeCacheKey(symbolInfo.name, resolution, from, to);
+            const now = Date.now();
 
-            const bars: Bar[] = data.map((item: any) => ({
-                time: item.time * 1000,
-                open: item.open,
-                high: item.high,
-                low: item.low,
-                close: item.close,
-                volume: item.volume,
-            }));
+            // serve from cache if fresh
+            const cached = this.cache.get(cacheKey);
+            if (cached && cached.expiry > now) {
+                const bars = cached.bars
+                    .filter((b) => b.time >= fromMs && b.time <= toMs)
+                    .sort((a, b) => a.time - b.time);
+                onHistoryCallback(bars, { noData: bars.length === 0 });
+                return;
+            }
 
-            if (!bars.length) {
+            // If in-flight, await it
+            if (cached?.promise) {
+                const bars = await cached.promise;
+                const filtered = bars.filter((b) => b.time >= fromMs && b.time <= toMs).sort((a, b) => a.time - b.time);
+                onHistoryCallback(filtered, { noData: filtered.length === 0 });
+                return;
+            }
+
+            // kick off fetch and store promise to coalesce
+            const fetchPromise: Promise<Bar[]> = (async () => {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`OHLC fetch failed: ${resp.status}`);
+                const data: any[] = await resp.json();
+                const bars: Bar[] = data
+                    .map((d) => ({
+                        time: new Date(d.time).getTime(),
+                        open: d.open,
+                        high: d.high,
+                        low: d.low,
+                        close: d.close,
+                        volume: d.volume ?? 0,
+                    }))
+                    .filter((b) => b.time <= toMs) // limit to <= to
+                    .sort((a, b) => a.time - b.time);
+                this.cache.set(cacheKey, {
+                    bars,
+                    expiry: Date.now() + CACHE_TTL_MS,
+                });
+                return bars;
+            })();
+
+            this.cache.set(cacheKey, {
+                bars: [],
+                expiry: now + CACHE_TTL_MS,
+                promise: fetchPromise,
+            });
+
+            const bars = await fetchPromise;
+            const filtered = bars.filter((b) => b.time >= fromMs && b.time <= toMs).sort((a, b) => a.time - b.time);
+            if (filtered.length === 0) {
                 onHistoryCallback([], { noData: true });
             } else {
-                this.lastBar = bars.at(-1);
-                onHistoryCallback(bars, { noData: false });
+                this.lastBarPerSub.set(symbolInfo.name + resolution, filtered[filtered.length - 1]);
+                onHistoryCallback(filtered, { noData: false });
             }
-        } catch (err) {
-            console.error('getBars error:', err);
-            onErrorCallback('Failed to fetch bars');
+        } catch (err: any) {
+            console.error('getBars error', err);
+            onErrorCallback(err.message || 'Error fetching bars');
         }
     }
-
-
 
     subscribeBars(
         symbolInfo: LibrarySymbolInfo,
         resolution: ResolutionString,
-        onTick: SubscribeBarsCallback,
-        listenerGuid: string
-    ): void {
-        const intervalSeconds = parseInt(resolution) * 60 || 60;
-        const agent = this.token.fa_id;
+        onRealtimeCallback: SubscribeBarsCallback,
+        listenerGuid: string,
+        onResetCacheNeededCallback: () => void
+    ) {
+        if (this.subscribers.has(listenerGuid)) return;
 
-        let lastBarTime = this.lastBar?.time;
+        let lastBarTime: number | null = null;
 
         const poll = async () => {
-            const now = new Date();
-            const from = new Date(now.getTime() - intervalSeconds * 1000);
-            const fromISO = from.toISOString();
-            const toISO = now.toISOString();
-
-            const url = `${process.env.NEXT_PUBLIC_API_URL}/ohlc?fa_id=${agent}&interval=${intervalSeconds}&from=${fromISO}&to=${toISO}`;
-
             try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const intervalSeconds = RESOLUTION_TO_SECONDS(resolution);
+                const periodMinutes = Math.ceil((intervalSeconds * 3) / 60); // small sliding window
+                const agent = encodeURIComponent(this.agentPackage);
+                const url = `${process.env.NEXT_PUBLIC_API_URL}/ohlc?fa_id=${agent}&interval=${intervalSeconds}&period=${periodMinutes}`;
+                const resp = await fetch(url);
+                if (!resp.ok) return;
+                const data: any[] = await resp.json();
+                if (!data.length) return;
 
-                const data = await res.json();
-                if (!data || data.length === 0) return;
-
-                const latest = data.at(-1); // last bar
-                if (!latest) return;
-
-                const newBar: Bar = {
-                    time: latest.time * 1000,
-                    open: latest.open,
-                    high: latest.high,
-                    low: latest.low,
-                    close: latest.close,
-                    volume: latest.volume,
+                const latestRaw = data[data.length - 1];
+                const bar: Bar = {
+                    time: new Date(latestRaw.time).getTime(),
+                    open: latestRaw.open,
+                    high: latestRaw.high,
+                    low: latestRaw.low,
+                    close: latestRaw.close,
+                    volume: latestRaw.volume ?? 0,
                 };
 
-                if (!lastBarTime || newBar.time > lastBarTime) {
-                    // New candle
-                    this.lastBar = newBar;
-                    lastBarTime = newBar.time;
-                    this.onPriceUpdate?.(newBar.close);
-                    onTick(newBar);
-                } else if (newBar.time === lastBarTime) {
-                    // Same candle, update values
-                    this.lastBar = {
-                        ...this.lastBar!,
-                        high: Math.max(this.lastBar!.high, newBar.high),
-                        low: Math.min(this.lastBar!.low, newBar.low),
-                        close: newBar.close,
-                        volume: newBar.volume,
-                    };
-                    this.onPriceUpdate?.(this.lastBar.close);
-                    onTick(this.lastBar);
+                const prev = this.lastBarPerSub.get(listenerGuid);
+                if (!prev) {
+                    this.lastBarPerSub.set(listenerGuid, bar);
+                    lastBarTime = bar.time;
+                    onRealtimeCallback(bar);
+                    return;
                 }
-            } catch (err) {
-                console.error('subscribeBars polling error:', err);
+
+                if (bar.time === prev.time) {
+                    this.lastBarPerSub.set(listenerGuid, bar);
+                    onRealtimeCallback(bar); // update existing
+                } else if (bar.time > prev.time) {
+                    this.lastBarPerSub.set(listenerGuid, bar);
+                    lastBarTime = bar.time;
+                    onRealtimeCallback(bar); // new bar
+                }
+            } catch (e) {
+                console.warn('subscribeBars poll error', e);
             }
         };
 
-        const intervalId = setInterval(poll, 5000); // 5s polling
-        this.subscribers.set(listenerGuid, () => clearInterval(intervalId));
-        poll(); // immediate fire
+        // start polling with small jitter to avoid sync storms
+        const start = () => {
+            poll();
+            const timerId = window.setInterval(poll, 5000);
+            this.subscribers.set(listenerGuid, {
+                symbolInfo,
+                resolution,
+                lastBarTime,
+                onRealtimeCallback,
+                timerId,
+            });
+        };
+        start();
     }
 
-
-    unsubscribeBars(listenerGuid: string): void {
-        const stop = this.subscribers.get(listenerGuid);
-        if (stop) {
-            stop();
+    unsubscribeBars(listenerGuid: string) {
+        const sub = this.subscribers.get(listenerGuid);
+        if (sub) {
+            clearInterval(sub.timerId);
             this.subscribers.delete(listenerGuid);
+            this.lastBarPerSub.delete(listenerGuid);
         }
     }
 
     searchSymbols(
         userInput: string,
-        exchange: string,
-        symbolType: string,
+        exchange: string | undefined,
+        symbolType: string | undefined,
         onResult: SearchSymbolsCallback
-    ): void {
-        // optional if not using symbol search
-        onResult([]);
+    ) {
+        onResult([]); // no search
     }
 
-    getQuotes(symbols: string[], onDataCallback: QuotesCallback, onErrorCallback: (msg: string) => void): void {
-        throw new Error('getQuotes not implemented');
-    }
-
-    subscribeQuotes(
+    getQuotes(
         symbols: string[],
-        fastSymbols: string[],
-        onRealtimeCallback: QuotesCallback,
-        listenerGUID: string
-    ): void {
-        throw new Error('subscribeQuotes not implemented');
+        onDataCallback: QuotesCallback,
+        onErrorCallback: (msg: string) => void
+    ) {
+        // unused
     }
 
-    unsubscribeQuotes(listenerGUID: string): void {
-        throw new Error('unsubscribeQuotes not implemented');
+    subscribeQuotes(): void {
+        // noop
+    }
+
+    unsubscribeQuotes(): void {
+        // noop
     }
 }
