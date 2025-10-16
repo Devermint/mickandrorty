@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import {
   Box,
@@ -56,6 +56,15 @@ export default function ReferralsPage() {
     ? `https://dapp.aptoslayer.ai/?referralCode=${user.referral_code}`
     : "";
   const clipboard = useClipboard({ value: referralLink });
+  const formattedBalanceInApt = useMemo(() => {
+    if (!balanceInApt) return "0.0000";
+    const numericBalance = Number(balanceInApt);
+    if (!Number.isFinite(numericBalance)) return "0.0000";
+    return numericBalance.toLocaleString("en-US", {
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 4,
+    });
+  }, [balanceInApt]);
 
   const fetchData = useCallback(async () => {
     if (!jwt) {
@@ -244,7 +253,7 @@ export default function ReferralsPage() {
             <Image src="/img/logo-mobile.png" alt="Logo" width={80} height={80}></Image>
             <Box textAlign={{ base: "center", md: "left" }}>
               <Text color="white" fontSize={25} lineHeight={1.3} fontWeight="bold">
-                {isLoadingBalance ? <Spinner /> : `${balanceInApt || "0"}`}
+                {isLoadingBalance ? <Spinner /> : formattedBalanceInApt}
               </Text>
               <Text fontSize={11} lineHeight={1} fontWeight="bold">
                 APTOS
