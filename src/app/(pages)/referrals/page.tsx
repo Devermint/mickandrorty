@@ -20,7 +20,10 @@ import { useAptosWallet } from "@/app/context/AptosWalletContext";
 import { CreatePostModal } from "@/app/components/CreatePostModal/CreatePostModal";
 import TelegramLoginWidget from "@/app/components/TelegramLoginWidget/TelegramLoginWidget";
 import WallOfFame from "@/app/components/Referrals/WallOfFame";
-import { isLeaderboardResponse, type LeaderboardResponse } from "@/app/types/leaderboard";
+import {
+  isLeaderboardResponse,
+  type LeaderboardResponse,
+} from "@/app/types/leaderboard";
 
 interface Task {
   task_id: string;
@@ -42,7 +45,9 @@ export default function ReferralsPage() {
   } = useAptosWallet();
   const [tasks, setTasks] = useState<Task[]>();
   const [loading, setLoading] = useState(true);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(
+    null
+  );
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
   const {
@@ -57,11 +62,12 @@ export default function ReferralsPage() {
     : "";
   const clipboard = useClipboard({ value: referralLink });
   const formattedBalanceInApt = useMemo(() => {
-    if (!balanceInApt) return "0.0000";
+    if (balanceInApt == null) return "0";
     const numericBalance = Number(balanceInApt);
-    if (!Number.isFinite(numericBalance)) return "0.0000";
+    if (!Number.isFinite(numericBalance)) return "0";
+    if (numericBalance === 0) return "0";
     return numericBalance.toLocaleString("en-US", {
-      minimumFractionDigits: 4,
+      minimumFractionDigits: 0,
       maximumFractionDigits: 4,
     });
   }, [balanceInApt]);
@@ -111,7 +117,10 @@ export default function ReferralsPage() {
       if (!response.ok) {
         const message =
           payload && typeof payload === "object" && "message" in payload
-            ? String((payload as { message?: unknown }).message ?? "Failed to fetch leaderboard")
+            ? String(
+                (payload as { message?: unknown }).message ??
+                  "Failed to fetch leaderboard"
+              )
             : "Failed to fetch leaderboard";
         throw new Error(message);
       }
@@ -123,7 +132,9 @@ export default function ReferralsPage() {
       setLeaderboard(payload);
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
-      setLeaderboardError(error instanceof Error ? error.message : "Unable to load leaderboard");
+      setLeaderboardError(
+        error instanceof Error ? error.message : "Unable to load leaderboard"
+      );
     } finally {
       setLeaderboardLoading(false);
     }
@@ -221,7 +232,9 @@ export default function ReferralsPage() {
   if (!isConnected) {
     return (
       <Flex justify="center" align="center" h="100%">
-        <Text color="white">Please connect your wallet to see your referrals.</Text>
+        <Text color="white">
+          Please connect your wallet to see your referrals.
+        </Text>
       </Flex>
     );
   }
@@ -229,6 +242,7 @@ export default function ReferralsPage() {
   const score = user?.points ?? 0;
   const referrals = user?.referral_count ?? 0;
   const isTgConnected = !!user?.telegram_user_id;
+
   return (
     <Box
       position="relative"
@@ -248,11 +262,29 @@ export default function ReferralsPage() {
         flexDirection="column"
         mt={{ base: 10, md: 0 }}
       >
-        <SimpleGrid templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }} rowGap={4}>
-          <Flex align="center" justify="center" direction={{ base: "column", md: "row" }} gap={4}>
-            <Image src="/img/logo-mobile.png" alt="Logo" width={80} height={80}></Image>
+        <SimpleGrid
+          templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
+          rowGap={4}
+        >
+          <Flex
+            align="center"
+            justify="center"
+            direction={{ base: "column", md: "row" }}
+            gap={4}
+          >
+            <Image
+              src="/img/logo-mobile.png"
+              alt="Logo"
+              width={80}
+              height={80}
+            ></Image>
             <Box textAlign={{ base: "center", md: "left" }}>
-              <Text color="white" fontSize={25} lineHeight={1.3} fontWeight="bold">
+              <Text
+                color="white"
+                fontSize={25}
+                lineHeight={1.3}
+                fontWeight="bold"
+              >
                 {isLoadingBalance ? <Spinner /> : formattedBalanceInApt}
               </Text>
               <Text fontSize={11} lineHeight={1} fontWeight="bold">
@@ -272,7 +304,14 @@ export default function ReferralsPage() {
               py={15}
               borderRadius={14}
             >
-              <Box position="absolute" width="100%" height="100%" top={0} left={0} zIndex={0}>
+              <Box
+                position="absolute"
+                width="100%"
+                height="100%"
+                top={0}
+                left={0}
+                zIndex={0}
+              >
                 <ChakraImage
                   src="/img/invite-link-bg.webp"
                   alt="Invite link backdrop"
@@ -336,7 +375,12 @@ export default function ReferralsPage() {
               <Text fontSize={11} lineHeight={1}>
                 Your referrals
               </Text>
-              <Text color="white" fontSize={25} lineHeight={1.3} fontWeight="bold">
+              <Text
+                color="white"
+                fontSize={25}
+                lineHeight={1.3}
+                fontWeight="bold"
+              >
                 {referrals.toLocaleString()}
               </Text>
             </Box>
@@ -351,14 +395,23 @@ export default function ReferralsPage() {
               justify="center"
               align="center"
             >
-              {isTgConnected ? (
+              {isTgConnected && user?.telegram_photo_url ? (
                 <img
                   src={user?.telegram_photo_url}
                   alt="Telegram"
-                  style={{ height: "100%", width: "100%", borderRadius: "100%" }}
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    borderRadius: "100%",
+                  }}
                 />
               ) : (
-                <TelegramIcon color={colorTokens.green.erin} h={4} w={4} />
+                <TelegramIcon
+                  color={colorTokens.green.erin}
+                  h={4}
+                  w={4}
+                  mr={0.5}
+                />
               )}
             </Flex>
             <Box>
@@ -372,7 +425,10 @@ export default function ReferralsPage() {
                 </Text>
               )}
 
-              <Text color={isTgConnected ? colorTokens.green.erin : "red"} fontSize={12}>
+              <Text
+                color={isTgConnected ? colorTokens.green.erin : "red"}
+                fontSize={12}
+              >
                 {isTgConnected ? "Connected" : "Not connected"}
               </Text>
             </Box>
@@ -384,7 +440,13 @@ export default function ReferralsPage() {
           </Flex>
         </SimpleGrid>
 
-        <Box mt={10} w="100%" position="relative" overflow="hidden" flexShrink={0}>
+        <Box
+          mt={10}
+          w="100%"
+          position="relative"
+          overflow="hidden"
+          flexShrink={0}
+        >
           <Box position="absolute" inset={0} zIndex={0}>
             <Image
               src="/img/green_clouds.webp"
@@ -415,14 +477,23 @@ export default function ReferralsPage() {
             >
               {score.toLocaleString()}
             </Text>
-            <Text fontSize={13} lineHeight={1} color={colorTokens.gray.timberwolf}>
+            <Text
+              fontSize={13}
+              lineHeight={1}
+              color={colorTokens.gray.timberwolf}
+            >
               Your score
             </Text>
           </Flex>
         </Box>
 
         <Box mt={10} position="relative" display="flex" flexDirection="column">
-          <Text fontSize={16} letterSpacing="wider" color={colorTokens.gray.timberwolf} mb={4}>
+          <Text
+            fontSize={16}
+            letterSpacing="wider"
+            color={colorTokens.gray.timberwolf}
+            mb={4}
+          >
             Tasks
           </Text>
 
@@ -430,7 +501,11 @@ export default function ReferralsPage() {
             <Flex position="relative" flexDirection="column">
               <Flex flexDirection="column" gap={3}>
                 {tasks.map((task) => (
-                  <Flex key={task.task_id} align="center" justify="space-between">
+                  <Flex
+                    key={task.task_id}
+                    align="center"
+                    justify="space-between"
+                  >
                     <Flex align="center" gap={4}>
                       <Flex
                         align="center"
@@ -449,7 +524,10 @@ export default function ReferralsPage() {
                         <Text color="white" fontSize={{ base: "sm", md: "md" }}>
                           {task.title}
                         </Text>
-                        <Text color={colorTokens.gray.platinum} fontSize={{ base: "sm", md: "sm" }}>
+                        <Text
+                          color={colorTokens.gray.platinum}
+                          fontSize={{ base: "sm", md: "sm" }}
+                        >
                           +{task.points.toLocaleString()} Points
                         </Text>
                       </Box>
@@ -460,7 +538,9 @@ export default function ReferralsPage() {
                       h={{ base: 8, md: 10 }}
                       fontSize={{ base: "xs", md: "sm" }}
                       fontWeight="semibold"
-                      cursor={task.status === "completed" ? "default" : "pointer"}
+                      cursor={
+                        task.status === "completed" ? "default" : "pointer"
+                      }
                       disabled={task.status === "completed"}
                       onClick={() => handleCompleteTask(task.task_id)}
                       color={
