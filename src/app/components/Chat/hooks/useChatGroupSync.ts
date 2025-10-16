@@ -53,6 +53,7 @@ const shouldBroadcastAssistantMessage = (message: ChatEntryProps): boolean => {
   const allowedTypes = new Set<ChatEntryProps["type"] | undefined>([
     "text",
     "video",
+    "telegram_post",
   ]);
 
   return allowedTypes.has(message.type ?? "text");

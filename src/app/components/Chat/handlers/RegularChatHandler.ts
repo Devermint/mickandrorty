@@ -27,7 +27,7 @@ export class RegularChatHandler extends MessageHandler {
         throw new Error("No response body from chat");
       }
 
-      const { message, action } = await response.json();
+      const { message, action, data } = await response.json();
 
       if (action === "GENERATE_VIDEO") {
         const videoPrompt = message;
@@ -47,6 +47,27 @@ export class RegularChatHandler extends MessageHandler {
           content: displayContent,
           type: "video_request",
           data: { prompt: videoPrompt },
+        });
+
+        this.getContext().setChatState(ChatState.IDLE);
+      } else if (action === "GENERATE_TELEGRAM_POST") {
+        const videoUrl =
+          data && typeof data.videoUrl === "string" ? data.videoUrl : undefined;
+
+        context.setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: message,
+            type: "telegram_post",
+            data: { videoUrl, post: message, isGroupMessage: false },
+          },
+        ]);
+
+        context.sendAgentMessage?.({
+          content: message,
+          type: "telegram_post",
+          data: { videoUrl, post: message },
         });
 
         this.getContext().setChatState(ChatState.IDLE);

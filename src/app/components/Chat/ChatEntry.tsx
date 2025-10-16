@@ -32,6 +32,9 @@ interface ChatEntryComponentProps extends ChatEntryProps {
   onGenerateVideo?: (prompt: string) => void;
   showPredictionMarket?: boolean;
   agentDisplayName?: string;
+  onTelegramPostConfirm?: () => void | Promise<void>;
+  isTelegramPostProcessing?: boolean;
+  isTelegramPostBroadcasted?: boolean;
 }
 
 export const ChatEntry = ({
@@ -46,6 +49,9 @@ export const ChatEntry = ({
   onGenerateVideo,
   showPredictionMarket = false,
   agentDisplayName = "Agent",
+  onTelegramPostConfirm,
+  isTelegramPostProcessing = false,
+  isTelegramPostBroadcasted = false,
 }: ChatEntryComponentProps) => {
   const isMyMessage = role === "user" && !data?.isGroupMessage;
   const isAgent = role === "assistant";
@@ -72,7 +78,7 @@ export const ChatEntry = ({
       : rawUserId;
   }, [rawUserId]);
 
-  const clipboard = useClipboard({
+  const userIdClipboard = useClipboard({
     value: rawUserId ?? "",
     timeout: 2000,
   });
@@ -165,13 +171,15 @@ export const ChatEntry = ({
           {rawUserId ? (
             <IconButton
               aria-label={
-                clipboard.copied ? "Copied user address" : "Copy user address"
+                userIdClipboard.copied
+                  ? "Copied user address"
+                  : "Copy user address"
               }
               variant="ghost"
               border="none"
               size="2xs"
               color={
-                clipboard.copied
+                userIdClipboard.copied
                   ? colorTokens.green.erin
                   : colorTokens.gray.platinum
               }
@@ -179,7 +187,7 @@ export const ChatEntry = ({
                 event.stopPropagation();
                 if (!rawUserId) return;
                 try {
-                  clipboard.copy();
+                  userIdClipboard.copy();
                 } catch (error) {
                   console.warn("Failed to copy user id:", error);
                 }
@@ -188,7 +196,7 @@ export const ChatEntry = ({
               _active={{ color: colorTokens.green.darkErin, bg: "transparent" }}
               fontSize={1}
             >
-              {clipboard.copied ? <LuCheck /> : <LuCopy />}
+              {userIdClipboard.copied ? <LuCheck /> : <LuCopy />}
             </IconButton>
           ) : null}
         </Flex>
@@ -264,6 +272,45 @@ export const ChatEntry = ({
                 void onChannelsDetected?.(result);
               }}
             />
+          </Stack>
+        )}
+        {type === "telegram_post" && (
+          <Stack gap={3} align="stretch">
+            {content && (
+              <MarkdownView
+                color={color}
+                lineHeight={1.5}
+                fontSize={14}
+                p={1}
+                isMyMessage={isMyMessage}
+              >
+                {content}
+              </MarkdownView>
+            )}
+            <Flex gap={2} justify="flex-end">
+              <Button
+                size="sm"
+                borderWidth={1}
+                borderColor={colorTokens.gray.platinum}
+                onClick={() => {
+                  if (
+                    !isTelegramPostProcessing &&
+                    !isTelegramPostBroadcasted &&
+                    onTelegramPostConfirm
+                  ) {
+                    void onTelegramPostConfirm();
+                  }
+                }}
+                disabled={
+                  !onTelegramPostConfirm ||
+                  isTelegramPostProcessing ||
+                  isTelegramPostBroadcasted
+                }
+                loading={isTelegramPostProcessing}
+              >
+                {isTelegramPostBroadcasted ? "Broadcasted" : "Pay and post"}
+              </Button>
+            </Flex>
           </Stack>
         )}
         {type === "error" && (

@@ -30,7 +30,8 @@ export type ChatEntryProps = {
     | "image-upload"
     | "channel-detect"
     | "signature-required"
-    | "video_request";
+    | "video_request"
+    | "telegram_post";
   data?: any;
   onAgentCreate?: (agentData: AgentCreationData) => Promise<void>;
   onTokenImageUploaded?: (
@@ -62,6 +63,3 @@ export enum ChatState {
   IDLE,
   PROCESSING,
 }
-
-
-

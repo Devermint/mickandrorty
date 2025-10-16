@@ -7,12 +7,13 @@ import {
   decisionSystemPrompt,
   tldrSystemPrompt,
   getAgentPrompt,
+  telegramPostSystemPrompt,
 } from "./systemPrompts";
 
 type Message = {
   role: "system" | "user" | "assistant";
   content: string;
-  type?: "text" | "video";
+  type?: "text" | "video" | "telegram_post" | "video_request";
 };
 
 const openai = new OpenAI({
@@ -40,14 +41,22 @@ export async function POST(request: NextRequest) {
         : `${request.nextUrl.protocol}//${request.nextUrl.host}`;
 
     const agentAction = await getAgentAction(messages);
-    if (agentAction.action === "") {
+    const hasPendingTelegramConfirmation =
+      hasPendingTelegramPostConfirmation(messages);
+
+    let action = agentAction.action;
+
+    if (hasPendingTelegramConfirmation) {
+      action = "GENERATE_TELEGRAM_POST";
+    }
+    if (action === "") {
       return NextResponse.json(
         { error: "Unknown action to take" },
         { status: 500 }
       );
     }
 
-    if (agentAction.action === "GENERATE_VIDEO") {
+    if (action === "GENERATE_VIDEO") {
       const tldr = await getTldr(messages);
       if (!tldr.prompt) {
         return NextResponse.json(
@@ -62,16 +71,43 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (action === "GENERATE_TELEGRAM_POST") {
+      const latestVideoUrl = getLatestVideoUrl(messages);
+
+      if (!latestVideoUrl) {
+        return NextResponse.json({
+          message:
+            "I couldn't find a generated video to reference for the Telegram post. Please generate a video first or share the link you'd like me to use.",
+          action: "TEXT",
+        });
+      }
+
+      const telegramPost = await getTelegramPost(messages, latestVideoUrl);
+
+      if (!telegramPost?.post) {
+        return NextResponse.json(
+          { error: "Failed to craft Telegram post content" },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        message: telegramPost.post,
+        action: "GENERATE_TELEGRAM_POST",
+        data: { videoUrl: latestVideoUrl, post: telegramPost.post },
+      });
+    }
+
     let agentResponse;
 
-    if (agentAction.action === "AGENT_CREATION") {
+    if (action === "AGENT_CREATION") {
       agentResponse = await getAgentResponse(
         messages,
         baseUrl,
         agentCreationSystemPrompt(baseUrl),
         0.5
       );
-    } else if (agentAction.action === "TEXT") {
+    } else if (action === "TEXT") {
       const videoCreationSystemPrompt = getAgentPrompt(baseUrl);
       agentResponse = await getAgentResponse(
         messages,
@@ -79,6 +115,10 @@ export async function POST(request: NextRequest) {
         videoCreationSystemPrompt,
         0.8
       );
+
+      if (isTelegramPostRequest(messages)) {
+        agentResponse = ensureTelegramPostQuestion(agentResponse);
+      }
     }
 
     if (!agentResponse) {
@@ -99,7 +139,12 @@ export async function POST(request: NextRequest) {
 }
 
 const AgentAction = z.object({
-  action: z.enum(["TEXT", "GENERATE_VIDEO", "AGENT_CREATION"]),
+  action: z.enum([
+    "TEXT",
+    "GENERATE_VIDEO",
+    "GENERATE_TELEGRAM_POST",
+    "AGENT_CREATION",
+  ]),
 });
 
 async function getAgentAction(messages: Message[]) {
@@ -147,4 +192,106 @@ async function getAgentResponse(
   });
 
   return completion.choices[0]?.message?.content;
+}
+
+const TelegramPostObject = z.object({
+  post: z.string().min(1),
+});
+
+function getLatestVideoUrl(messages: Message[]): string | null {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i] as Message & { type?: string };
+    if (
+      message?.role === "assistant" &&
+      message.type === "video" &&
+      typeof message.content === "string"
+    ) {
+      const trimmed = message.content.trim();
+      if (trimmed.length > 0) {
+        return trimmed;
+      }
+    }
+  }
+  return null;
+}
+
+async function getTelegramPost(
+  messages: Message[],
+  latestVideoUrl: string
+): Promise<{ post: string } | null> {
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: telegramPostSystemPrompt(latestVideoUrl),
+      },
+      ...messages,
+    ],
+    temperature: 0.4,
+    max_tokens: 400,
+    response_format: zodResponseFormat(TelegramPostObject, "telegram_post"),
+  });
+
+  const content = completion.choices[0]?.message?.content;
+  if (!content) {
+    return null;
+  }
+
+  return JSON.parse(content);
+}
+
+const TELEGRAM_POST_CONFIRMATION_PROMPT =
+  "Is this Telegram post good enough, or would you like me to refine it?";
+
+function hasPendingTelegramPostConfirmation(messages: Message[]): boolean {
+  if (messages.length < 2) {
+    return false;
+  }
+
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage.role !== "user") {
+    return false;
+  }
+
+  for (let i = messages.length - 2; i >= 0; i -= 1) {
+    const message = messages[i];
+    if (message.role === "assistant") {
+      const content = message.content ?? "";
+      return content.includes(TELEGRAM_POST_CONFIRMATION_PROMPT);
+    }
+  }
+
+  return false;
+}
+
+function isTelegramPostRequest(messages: Message[]): boolean {
+  if (messages.length === 0) {
+    return false;
+  }
+
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage.role !== "user") {
+    return false;
+  }
+
+  const text = lastMessage.content?.toLowerCase() ?? "";
+  return text.includes("telegram") && text.includes("post");
+}
+
+function ensureTelegramPostQuestion(response: string | null): string {
+  if (!response) {
+    return TELEGRAM_POST_CONFIRMATION_PROMPT;
+  }
+
+  if (response.includes(TELEGRAM_POST_CONFIRMATION_PROMPT)) {
+    return response;
+  }
+
+  const trimmed = response.trim();
+  if (trimmed.length === 0) {
+    return TELEGRAM_POST_CONFIRMATION_PROMPT;
+  }
+
+  return `${trimmed}\n\n${TELEGRAM_POST_CONFIRMATION_PROMPT}`;
 }

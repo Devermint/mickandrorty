@@ -10,7 +10,7 @@ interface GroupChatMessage {
   timestamp: string;
   user_type: "user" | "agent";
   agent_id?: string;
-  type: "text" | "video" | "video_request";
+  type: "text" | "video" | "video_request" | "telegram_post";
   data?: any;
   job_id?: string;
   message?: string;

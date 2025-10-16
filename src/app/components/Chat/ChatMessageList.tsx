@@ -15,6 +15,12 @@ interface ChatMessageListProps {
     payload: TelegramChannelDetectionResult
   ) => void | Promise<void>;
   onGenerateVideo: (prompt: string | undefined) => void | Promise<void>;
+  onTelegramPostConfirm?: (payload: {
+    post: string;
+    videoUrl?: string;
+    messageIndex: number;
+  }) => void | Promise<void>;
+  telegramPostInProgressIndex?: number | null;
   emptyState?: React.ReactNode;
   showPredictionMarket?: boolean;
   agentDisplayName: string;
@@ -28,6 +34,8 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       onTokenImageUploaded,
       onGenerateVideo,
       onChannelsDetected,
+      onTelegramPostConfirm,
+      telegramPostInProgressIndex = null,
       emptyState,
       showPredictionMarket = false,
       agentDisplayName,
@@ -63,39 +71,68 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
             {chatState === ChatState.PROCESSING && (
               <ChatEntry type="loader" role="assistant" content="" />
             )}
-            {reversedMessages.map((message, index) => (
-              <ChatEntry
-                key={messages.length - 1 - index}
-                role={message.role}
-                content={message.content}
-                type={message.type}
-                data={message.data}
-                job_id={message.data?.job_id || null}
-                onAgentCreate={message.onAgentCreate}
-                onTokenImageUploaded={
-                  message.type === "image-upload"
-                    ? onTokenImageUploaded
-                    : undefined
-                }
-                onChannelsDetected={
-                  message.type === "channel-detect"
-                    ? onChannelsDetected
-                    : undefined
-                }
-                onGenerateVideo={
-                  message.type === "video_request"
-                    ? (prompt) =>
-                        onGenerateVideo(
-                          prompt ?? message.data?.prompt ?? message.content
-                        )
-                    : undefined
-                }
-                showPredictionMarket={
-                  showPredictionMarket && message.type === "video"
-                }
-                agentDisplayName={agentDisplayName}
-              />
-            ))}
+            {reversedMessages.map((message, index) => {
+              const originalIndex = messages.length - 1 - index;
+              const isTelegramPost = message.type === "telegram_post";
+              const isBroadcasted =
+                isTelegramPost && message.data?.broadcasted === true;
+              const isProcessing =
+                isTelegramPost &&
+                telegramPostInProgressIndex !== null &&
+                telegramPostInProgressIndex === originalIndex;
+
+              return (
+                <ChatEntry
+                  key={originalIndex}
+                  role={message.role}
+                  content={message.content}
+                  type={message.type}
+                  data={message.data}
+                  job_id={message.data?.job_id || null}
+                  onAgentCreate={message.onAgentCreate}
+                  onTokenImageUploaded={
+                    message.type === "image-upload"
+                      ? onTokenImageUploaded
+                      : undefined
+                  }
+                  onChannelsDetected={
+                    message.type === "channel-detect"
+                      ? onChannelsDetected
+                      : undefined
+                  }
+                  onGenerateVideo={
+                    message.type === "video_request"
+                      ? (prompt) =>
+                          onGenerateVideo(
+                            prompt ?? message.data?.prompt ?? message.content
+                          )
+                      : undefined
+                  }
+                  onTelegramPostConfirm={
+                    isTelegramPost &&
+                    typeof message.content === "string" &&
+                    !isBroadcasted &&
+                    onTelegramPostConfirm
+                      ? () =>
+                          onTelegramPostConfirm({
+                            post: message.content,
+                            videoUrl:
+                              typeof message.data?.videoUrl === "string"
+                                ? message.data.videoUrl
+                                : undefined,
+                            messageIndex: originalIndex,
+                          })
+                      : undefined
+                  }
+                  isTelegramPostProcessing={isProcessing}
+                  isTelegramPostBroadcasted={isBroadcasted}
+                  showPredictionMarket={
+                    showPredictionMarket && message.type === "video"
+                  }
+                  agentDisplayName={agentDisplayName}
+                />
+              );
+            })}
           </>
         )}
       </Flex>

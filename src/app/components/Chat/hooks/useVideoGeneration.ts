@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { ChatEntryProps, ChatState } from "@/app/types/message";
 
-const VIDEO_FEE_OCTAS = 10_000_000n; // 0.1 APT
+export const VIDEO_FEE_OCTAS = 10_000_000n; // 0.1 APT
 const VIDEO_PAYMENT_VERIFY_ENDPOINT = "/api/video/payments/verify";
 
-type WalletClient =
+export type WalletClient =
   | {
       signAndSubmitTransaction: (
         ...args: any[]
@@ -13,7 +13,7 @@ type WalletClient =
   | null
   | undefined;
 
-type AccountShape =
+export type AccountShape =
   | {
       address?:
         | string
@@ -32,7 +32,7 @@ interface UseVideoGenerationParams {
   setChatState: React.Dispatch<React.SetStateAction<ChatState>>;
 }
 
-const getAccountAddress = (account: AccountShape): string => {
+export const getAccountAddress = (account: AccountShape): string => {
   if (!account) return "";
 
   const address = account.address;
