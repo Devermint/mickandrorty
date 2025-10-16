@@ -30,6 +30,7 @@ interface ChatProps extends FlexProps {
   messages: ChatEntryProps[];
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
   enableGroupChat?: boolean;
+  enableAi?: boolean;
   socketUrl?: string;
   chatName?: string;
   showTabs?: boolean;
@@ -43,6 +44,7 @@ const Chat = ({
   socketUrl,
   chatName,
   showTabs = true,
+  enableAi = false,
   ...rest
 }: ChatProps) => {
   const { wallet, account, isConnected, swapSDK } = useAgentCreation();
@@ -80,6 +82,8 @@ const Chat = ({
     setMessages,
     setChatState,
   });
+
+  const [askAiEnabled, setAskAiEnabled] = useState(enableAi);
 
   const userId = useMemo(() => {
     const username = user?.username?.trim();
@@ -135,20 +139,39 @@ const Chat = ({
 
   const onMessageSend = useCallback(() => {
     const messageElement = inputMessage.current;
-    if (!messageElement || !messageElement.value.trim()) return;
+    if (!messageElement) return;
 
     const messageContent = messageElement.value.trim();
+    if (!messageContent) return;
 
-    if (enableGroupChat && isGroupConnected) {
-      sendUserMessage(messageContent);
+    const sentToGroup =
+      enableGroupChat && isGroupConnected
+        ? sendUserMessage(messageContent)
+        : false;
+
+    if (askAiEnabled) {
+      originalOnMessageSend();
+    } else {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          role: "user",
+          content: messageContent,
+          type: "text",
+          data: userId && userId.length > 0 ? { user_id: userId } : undefined,
+        },
+      ]);
+      messageElement.value = "";
+      messageElement.blur();
     }
-
-    originalOnMessageSend();
   }, [
+    askAiEnabled,
     enableGroupChat,
     isGroupConnected,
-    sendUserMessage,
+    setMessages,
+    userId,
     originalOnMessageSend,
+    sendUserMessage,
   ]);
 
   const { handleTokenImageUploaded } = useTokenImageUpload({
@@ -162,8 +185,6 @@ const Chat = ({
     inputMessage,
     onMessageSend,
   });
-
-  const [askAiEnabled, setAskAiEnabled] = useState(false);
 
   const handleHelperButtonClick = useCallback(
     (chatMessage: string) => {

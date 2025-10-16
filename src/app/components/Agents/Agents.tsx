@@ -149,6 +149,7 @@ export default function Agents() {
             messages={messages}
             setMessages={setMessages}
             enableGroupChat={false}
+            enableAi
             showTabs={false}
             mt={{ base: 4, md: 10 }}
             overflow="hidden"
