@@ -50,6 +50,7 @@ export interface MessageContext {
   account?: any;
   isConnected: boolean;
   swapSDK?: any;
+  userId?: string | null;
   sendAgentMessage?: (entry: {
     content: string;
     type?: ChatEntryProps["type"];

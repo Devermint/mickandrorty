@@ -15,7 +15,15 @@ export abstract class MessageHandler {
     const context = this.getContext();
     context.setMessages((prev: ChatEntryProps[]) => [
       ...prev,
-      { role: "user", content: text, type: "text" },
+      {
+        role: "user",
+        content: text,
+        type: "text",
+        data:
+          context.userId && context.userId.length > 0
+            ? { user_id: context.userId }
+            : undefined,
+      },
     ]);
   }
 

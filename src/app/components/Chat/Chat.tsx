@@ -125,6 +125,7 @@ const Chat = ({
     setChatState,
     socket,
     agentId: agent.fa_id,
+    userId,
     sendAgentMessage,
   });
 

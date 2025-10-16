@@ -152,7 +152,7 @@ export const ChatEntry = ({
           Agent
         </Text>
       )}
-      {role === "user" && shortUserId && rawUserId && (
+      {role === "user" && (
         <Flex
           align="center"
           gap={2}
@@ -160,35 +160,37 @@ export const ChatEntry = ({
           alignSelf={align === "flex-end" ? "flex-end" : "flex-start"}
         >
           <Text fontSize="11px" color={colorTokens.gray.platinum}>
-            {shortUserId}
+            {shortUserId ?? "unknown"}
           </Text>
-          <IconButton
-            aria-label={
-              clipboard.copied ? "Copied user address" : "Copy user address"
-            }
-            variant="ghost"
-            border="none"
-            size="2xs"
-            color={
-              clipboard.copied
-                ? colorTokens.green.erin
-                : colorTokens.gray.platinum
-            }
-            onClick={(event) => {
-              event.stopPropagation();
-              if (!rawUserId) return;
-              try {
-                clipboard.copy();
-              } catch (error) {
-                console.warn("Failed to copy user id:", error);
+          {rawUserId ? (
+            <IconButton
+              aria-label={
+                clipboard.copied ? "Copied user address" : "Copy user address"
               }
-            }}
-            _hover={{ color: colorTokens.green.erin, bg: "transparent" }}
-            _active={{ color: colorTokens.green.darkErin, bg: "transparent" }}
-            fontSize={1}
-          >
-            {clipboard.copied ? <LuCheck /> : <LuCopy />}
-          </IconButton>
+              variant="ghost"
+              border="none"
+              size="2xs"
+              color={
+                clipboard.copied
+                  ? colorTokens.green.erin
+                  : colorTokens.gray.platinum
+              }
+              onClick={(event) => {
+                event.stopPropagation();
+                if (!rawUserId) return;
+                try {
+                  clipboard.copy();
+                } catch (error) {
+                  console.warn("Failed to copy user id:", error);
+                }
+              }}
+              _hover={{ color: colorTokens.green.erin, bg: "transparent" }}
+              _active={{ color: colorTokens.green.darkErin, bg: "transparent" }}
+              fontSize={1}
+            >
+              {clipboard.copied ? <LuCheck /> : <LuCopy />}
+            </IconButton>
+          ) : null}
         </Flex>
       )}
       <Box

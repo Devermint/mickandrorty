@@ -16,6 +16,7 @@ interface UseMessageHandlerProps {
   setChatState: React.Dispatch<React.SetStateAction<ChatState>>;
   socket?: any; // Socket.IO instance
   agentId?: string; // Agent ID for Socket.IO
+  userId?: string | null;
   sendAgentMessage?: (
     content: string,
     type?: ChatEntryProps["type"],
@@ -36,6 +37,7 @@ export const useMessageHandler = ({
   setChatState,
   socket,
   agentId,
+  userId,
   sendAgentMessage,
 }: UseMessageHandlerProps) => {
   const contextRef = useRef<MessageContext | null>(null);
@@ -48,6 +50,7 @@ export const useMessageHandler = ({
     account,
     isConnected,
     swapSDK,
+    userId,
     sendAgentMessage: sendAgentMessage
       ? ({ content, type, data }) => {
           sendAgentMessage(content, type, data);
