@@ -1,7 +1,6 @@
-// ChatEntry.tsx (Clean version without timestamps/usernames)
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Box,
   Flex,
@@ -12,6 +11,7 @@ import {
   IconButton,
   Icon,
   Stack,
+  useClipboard,
 } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
@@ -21,6 +21,7 @@ import { AiOutlineSignature } from "react-icons/ai";
 import { FiDownload } from "react-icons/fi";
 import { X as TwitterIcon } from "../icons/x";
 import { TelegramIcon } from "../icons/telegram";
+import { LuCopy, LuCheck } from "react-icons/lu";
 import { ChatEntryProps } from "@/app/types/message";
 import type { UploadConstraints } from "@/app/types/file";
 import { PredictionMarket } from "../Media/PredictionMarket";
@@ -50,6 +51,31 @@ export const ChatEntry = ({
   const isAgent = role === "assistant";
   const align = isAgent ? "flex-start" : "flex-end";
   const videoId = data?.job_id ?? job_id ?? undefined;
+  const rawUserId = useMemo(() => {
+    if (typeof data?.user_id === "string" && data.user_id.length > 0) {
+      return data.user_id;
+    }
+    if (
+      data &&
+      typeof (data as Record<string, unknown>).userId === "string" &&
+      ((data as Record<string, unknown>).userId as string).length > 0
+    ) {
+      return (data as Record<string, unknown>).userId as string;
+    }
+    return undefined;
+  }, [data]);
+
+  const shortUserId = useMemo(() => {
+    if (!rawUserId) return undefined;
+    return rawUserId.length > 12
+      ? `${rawUserId.slice(0, 6)}…${rawUserId.slice(-4)}`
+      : rawUserId;
+  }, [rawUserId]);
+
+  const clipboard = useClipboard({
+    value: rawUserId ?? "",
+    timeout: 2000,
+  });
 
   const handlePredictionSelection = (
     direction: "for" | "against",
@@ -94,18 +120,21 @@ export const ChatEntry = ({
       shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${shareText}`;
     }
 
-  if (typeof window !== "undefined") {
-    window.open(shareUrl, "_blank", "noopener,noreferrer");
-  }
-};
+    if (typeof window !== "undefined") {
+      window.open(shareUrl, "_blank", "noopener,noreferrer");
+    }
+  };
 
   const uploadConstraints: Partial<UploadConstraints> | undefined =
     type === "image-upload" && data
       ? {
           accept: Array.isArray(data.accept) ? data.accept : undefined,
           maxSizeBytes:
-            typeof data.maxSizeBytes === "number" ? data.maxSizeBytes : undefined,
-          minWidth: typeof data.minWidth === "number" ? data.minWidth : undefined,
+            typeof data.maxSizeBytes === "number"
+              ? data.maxSizeBytes
+              : undefined,
+          minWidth:
+            typeof data.minWidth === "number" ? data.minWidth : undefined,
           minHeight:
             typeof data.minHeight === "number" ? data.minHeight : undefined,
         }
@@ -118,10 +147,49 @@ export const ChatEntry = ({
       mb="10px"
       w={mediaWidth}
     >
-      {role && isAgent && (
+      {role === "assistant" && (
         <Text fontSize="12px" mb="2px">
           Agent
         </Text>
+      )}
+      {role === "user" && shortUserId && rawUserId && (
+        <Flex
+          align="center"
+          gap={2}
+          mb="2px"
+          alignSelf={align === "flex-end" ? "flex-end" : "flex-start"}
+        >
+          <Text fontSize="11px" color={colorTokens.gray.platinum}>
+            {shortUserId}
+          </Text>
+          <IconButton
+            aria-label={
+              clipboard.copied ? "Copied user address" : "Copy user address"
+            }
+            variant="ghost"
+            border="none"
+            size="2xs"
+            color={
+              clipboard.copied
+                ? colorTokens.green.erin
+                : colorTokens.gray.platinum
+            }
+            onClick={(event) => {
+              event.stopPropagation();
+              if (!rawUserId) return;
+              try {
+                clipboard.copy();
+              } catch (error) {
+                console.warn("Failed to copy user id:", error);
+              }
+            }}
+            _hover={{ color: colorTokens.green.erin, bg: "transparent" }}
+            _active={{ color: colorTokens.green.darkErin, bg: "transparent" }}
+            fontSize={1}
+          >
+            {clipboard.copied ? <LuCheck /> : <LuCopy />}
+          </IconButton>
+        </Flex>
       )}
       <Box
         px={3}
@@ -132,10 +200,6 @@ export const ChatEntry = ({
         w={messageWidth}
         textAlign={isAgent ? "left" : "right"}
         overflow="hidden"
-        borderLeft={isAgent ? `3px solid ${colorTokens.green.erin}` : "none"}
-        borderRight={
-          !isAgent ? `3px solid ${colorTokens.gray.timberwolf}` : "none"
-        }
       >
         {type === "text" && (
           <MarkdownView

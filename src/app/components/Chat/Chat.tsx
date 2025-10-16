@@ -17,6 +17,7 @@ import { ChatInputBar } from "./ChatInputBar";
 import { ChatErrorBanner } from "./ChatErrorBanner";
 import { useVideoGeneration } from "./hooks/useVideoGeneration";
 import { useChatGroupSync } from "./hooks/useChatGroupSync";
+import { useAptosWallet } from "../../context/AptosWalletContext";
 
 interface ChatProps extends FlexProps {
   agent: Agent;
@@ -39,6 +40,7 @@ const Chat = ({
   ...rest
 }: ChatProps) => {
   const { wallet, account, isConnected, swapSDK } = useAgentCreation();
+  const { user } = useAptosWallet();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<"chat" | "media">("chat");
@@ -73,6 +75,27 @@ const Chat = ({
     setChatState,
   });
 
+  const userId = useMemo(() => {
+    const username = user?.username?.trim();
+    if (username) return username;
+
+    const walletAddress = user?.wallet_address?.trim();
+    if (walletAddress) return walletAddress;
+
+    const accountAddressValue =
+      typeof account?.address === "string"
+        ? account.address
+        : account?.address?.toString?.();
+    const normalizedAccountAddress =
+      typeof accountAddressValue === "string"
+        ? accountAddressValue.trim()
+        : "";
+
+    return normalizedAccountAddress.length > 0
+      ? normalizedAccountAddress
+      : null;
+  }, [user?.username, user?.wallet_address, account?.address]);
+
   const {
     isGroupConnected,
     groupError,
@@ -86,6 +109,7 @@ const Chat = ({
     socketUrl,
     messages,
     setMessages,
+    userId,
   });
 
   const { onMessageSend: originalOnMessageSend } = useMessageHandler({

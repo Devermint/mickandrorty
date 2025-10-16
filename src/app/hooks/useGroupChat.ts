@@ -13,7 +13,8 @@ interface GroupChatMessage {
   type: "text" | "video" | "video_request";
   data?: any;
   job_id?: string;
-  message?: string
+  message?: string;
+  user_id?: string;
 }
 
 interface ServerError {
@@ -37,6 +38,7 @@ interface UseGroupChatOptions {
   hasExistingMessages?: boolean; // Add this to prevent loading history when messages exist
   onNewMessage?: (message: ChatEntryProps, isFromHistory?: boolean) => void;
   onMessageUpdate?: (message: ChatEntryProps) => void;
+  userId?: string | null;
 }
 
 export const useGroupChat = (options: UseGroupChatOptions = {}) => {
@@ -47,6 +49,7 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     hasExistingMessages = false,
     onNewMessage,
     onMessageUpdate,
+    userId,
   } = options;
 
   const [isConnected, setIsConnected] = useState(false);
@@ -100,10 +103,10 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   // Heartbeat for mobile connection stability
   const startHeartbeat = useCallback(() => {
     if (heartbeatInterval.current) return;
-    
+
     heartbeatInterval.current = setInterval(() => {
       if (socketRef.current?.connected) {
-        socketRef.current.emit('ping');
+        socketRef.current.emit("ping");
       }
     }, 25000); // Ping every 25 seconds
   }, []);
@@ -126,6 +129,7 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
         _id: message._id,
         job_id: message.job_id,
         message: message.message,
+        user_id: message.user_id ?? null,
       };
 
       if (message.data && typeof message.data === "object") {
@@ -183,8 +187,8 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
       if (!isReconnecting.current && reconnectAttempts.current < 10) {
         isReconnecting.current = true;
         reconnectAttempts.current += 1;
-        
-        const shouldReconnect = 
+
+        const shouldReconnect =
           reason === "io server disconnect" ||
           reason === "transport close" ||
           reason === "ping timeout" ||
@@ -193,12 +197,17 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
 
         if (shouldReconnect) {
           // Exponential backoff with jitter
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current - 1), 30000);
+          const delay = Math.min(
+            1000 * Math.pow(2, reconnectAttempts.current - 1),
+            30000
+          );
           const jitter = Math.random() * 1000;
-          
+
           setTimeout(() => {
             if (enabled && agentId) {
-              console.log(`Attempting to reconnect (${reconnectAttempts.current}/10)...`);
+              console.log(
+                `Attempting to reconnect (${reconnectAttempts.current}/10)...`
+              );
               setConnectionStatus("Connecting...");
               connect();
             }
@@ -241,10 +250,8 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
 
   const handleMessageUpdated = useCallback(
     (updatedMessage: GroupChatMessage) => {
-      
       const chatEntry = convertToChatEntry(updatedMessage);
       // Update the existing message in the local state via callback
-      console.log("updatedMessage", chatEntry)
       onMessageUpdate?.(chatEntry);
     },
     [convertToChatEntry, onMessageUpdate]
@@ -253,10 +260,14 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
   // Handle page visibility changes (critical for mobile)
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         // Page became visible - check connection and reconnect if needed
-        if (enabled && agentId && (!socketRef.current || !socketRef.current.connected)) {
-          console.log('Page visible - checking connection');
+        if (
+          enabled &&
+          agentId &&
+          (!socketRef.current || !socketRef.current.connected)
+        ) {
+          console.log("Page visible - checking connection");
           reconnectAttempts.current = 0; // Reset attempts on manual focus
           connect();
         }
@@ -268,7 +279,7 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
 
     const handleOnline = () => {
       if (enabled && agentId) {
-        console.log('Network online - reconnecting');
+        console.log("Network online - reconnecting");
         reconnectAttempts.current = 0;
         connect();
       }
@@ -278,14 +289,14 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
       stopHeartbeat();
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, [enabled, agentId, connect, stopHeartbeat]);
 
@@ -337,33 +348,29 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     (content: string) => {
       if (!enabled || !socketRef.current || !content.trim() || !agentId)
         return false;
-
       socketRef.current.emit("send_user_message", {
         content: content.trim(),
         agent_id: agentId,
         user_type: "user",
+        user_id: userId ?? null,
       });
       return true;
     },
-    [enabled, agentId]
+    [enabled, agentId, userId]
   );
 
   // Send agent response to group chat (for AI responses)
   const sendAgentMessage = useCallback(
-    (
-      content: string,
-      type: ChatEntryProps["type"] = "text",
-      data?: any
-    ) => {
+    (content: string, type: ChatEntryProps["type"] = "text", data?: any) => {
       if (!enabled || !socketRef.current || !content.trim() || !agentId)
         return false;
-
       socketRef.current.emit("send_agent_message", {
         content: content.trim(),
         agent_id: agentId,
         user_type: "agent",
         type,
         data,
+        user_id: null,
       });
       return true;
     },
@@ -386,4 +393,3 @@ export const useGroupChat = (options: UseGroupChatOptions = {}) => {
     clearError: useCallback(() => setError(""), []),
   };
 };
-

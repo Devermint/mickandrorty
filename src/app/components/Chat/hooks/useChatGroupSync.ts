@@ -8,6 +8,7 @@ interface UseChatGroupSyncParams {
   socketUrl?: string;
   messages: ChatEntryProps[];
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
+  userId?: string | null;
 }
 
 interface UseChatGroupSyncResult {
@@ -63,6 +64,7 @@ export const useChatGroupSync = ({
   socketUrl,
   messages,
   setMessages,
+  userId,
 }: UseChatGroupSyncParams): UseChatGroupSyncResult => {
   const handleGroupMessage = useCallback(
     (groupMessage: ChatEntryProps) => {
@@ -117,6 +119,7 @@ export const useChatGroupSync = ({
     hasExistingMessages: messages.length > 0,
     onNewMessage: handleGroupMessage,
     onMessageUpdate: handleMessageUpdate,
+    userId,
   });
 
   const { sendAgentMessage, sendUserMessage, socket } = groupChat;
@@ -164,6 +167,7 @@ export const useChatGroupSync = ({
           user_type: "agent",
           type: "video",
           job_id: messageData.job_id,
+          user_id: null,
         });
       }
     } else if (newestMessage.content.trim().length > 0) {
