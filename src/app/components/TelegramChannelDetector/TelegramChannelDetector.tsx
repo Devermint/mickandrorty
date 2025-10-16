@@ -67,7 +67,9 @@ export const TelegramChannelDetector = ({
         ? payload?.channels
         : [];
       setChannels(detected);
-      setUpdateCount(typeof payload?.updateCount === "number" ? payload.updateCount : 0);
+      setUpdateCount(
+        typeof payload?.updateCount === "number" ? payload.updateCount : 0
+      );
       setHasDetected(true);
     } catch (err) {
       const message =
@@ -87,7 +89,7 @@ export const TelegramChannelDetector = ({
   }, [botToken, channels, onComplete]);
 
   return (
-    <Stack spacing={4}>
+    <Stack gap={4}>
       <Text color={colorTokens.gray.timberwolf} fontSize="sm">
         Add this bot as an administrator to the channels you plan to use, then
         click the button below to detect them. Press <strong>Done</strong> to
@@ -98,13 +100,13 @@ export const TelegramChannelDetector = ({
         <Button
           size="sm"
           onClick={handleDetect}
-          isLoading={isLoading}
+          loading={isLoading}
           loadingText="Detecting..."
           borderWidth={1}
           borderColor={colorTokens.gray.platinum}
           bg={colorTokens.blackCustom.a3}
           color={colorTokens.gray.timberwolf}
-          isDisabled={!tokenReady || isLoading}
+          disabled={!tokenReady || isLoading}
           _hover={{
             bg: colorTokens.blackCustom.a2,
             color: colorTokens.green.erin,
@@ -129,7 +131,7 @@ export const TelegramChannelDetector = ({
           borderWidth={1}
           borderColor={colorTokens.gray.platinum}
           onClick={handleComplete}
-          isDisabled={!tokenReady || !hasDetected}
+          disabled={!tokenReady || !hasDetected}
           color={colorTokens.gray.timberwolf}
           _hover={{
             borderColor: colorTokens.green.erin,
@@ -158,8 +160,8 @@ export const TelegramChannelDetector = ({
 
       {!tokenReady && (
         <Text color="rgba(255,255,255,0.55)" fontSize="xs">
-          Waiting for a Telegram bot token. Provide it in chat first, then run the
-          detector.
+          Waiting for a Telegram bot token. Provide it in chat first, then run
+          the detector.
         </Text>
       )}
 
@@ -178,7 +180,7 @@ export const TelegramChannelDetector = ({
       )}
 
       {hasDetected && !error && (
-        <Stack spacing={3}>
+        <Stack gap={3}>
           <Flex align="center" justify="space-between">
             <Text color={colorTokens.gray.platinum} fontSize="sm">
               {channels.length > 0
@@ -203,7 +205,7 @@ export const TelegramChannelDetector = ({
           />
 
           {channels.length > 0 ? (
-            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={3}>
+            <SimpleGrid columns={{ base: 1, sm: 2 }} gap={3}>
               {channels.map((channel) => (
                 <Box
                   key={channel.chatId}
@@ -213,7 +215,7 @@ export const TelegramChannelDetector = ({
                   bg="rgba(14,16,18,0.6)"
                   p={3}
                 >
-                  <Stack spacing={1}>
+                  <Stack gap={1}>
                     <Text
                       fontWeight="semibold"
                       color={colorTokens.gray.platinum}
