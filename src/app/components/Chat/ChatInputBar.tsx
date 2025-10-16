@@ -3,9 +3,18 @@ import { AgentInput } from "../Agents/AgentInput";
 interface ChatInputBarProps {
   inputRef: React.RefObject<HTMLTextAreaElement>;
   onSend: () => void;
+  showAiToggle?: boolean;
+  aiToggleChecked?: boolean;
+  onAiToggleChange?: (value: boolean) => void;
 }
 
-export const ChatInputBar = ({ inputRef, onSend }: ChatInputBarProps) => (
+export const ChatInputBar = ({
+  inputRef,
+  onSend,
+  showAiToggle = false,
+  aiToggleChecked,
+  onAiToggleChange,
+}: ChatInputBarProps) => (
   <AgentInput
     h="17%"
     flexShrink={0}
@@ -14,5 +23,8 @@ export const ChatInputBar = ({ inputRef, onSend }: ChatInputBarProps) => (
     p={0}
     inputRef={inputRef}
     onButtonClick={onSend}
+    showAiToggle={showAiToggle}
+    aiToggleChecked={aiToggleChecked}
+    onAiToggleChange={onAiToggleChange}
   />
 );

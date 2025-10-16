@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Flex, FlexProps, Text } from "@chakra-ui/react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Agent } from "@/app/types/agent";
+import { Agent, AgentType } from "@/app/types/agent";
 import { ChatEntryProps, ChatState } from "@/app/types/message";
 import { useAgentCreation } from "@/app/lib/utils/agentCreation";
 import { useMessageHandler } from "@/app/hooks/useMessageHandler";
@@ -87,9 +93,7 @@ const Chat = ({
         ? account.address
         : account?.address?.toString?.();
     const normalizedAccountAddress =
-      typeof accountAddressValue === "string"
-        ? accountAddressValue.trim()
-        : "";
+      typeof accountAddressValue === "string" ? accountAddressValue.trim() : "";
 
     return normalizedAccountAddress.length > 0
       ? normalizedAccountAddress
@@ -158,6 +162,8 @@ const Chat = ({
     inputMessage,
     onMessageSend,
   });
+
+  const [askAiEnabled, setAskAiEnabled] = useState(false);
 
   const handleHelperButtonClick = useCallback(
     (chatMessage: string) => {
@@ -236,11 +242,11 @@ const Chat = ({
 
         <ChatMessageList
           ref={containerRef}
-        messages={displayedMessages}
-        chatState={chatState}
-        onTokenImageUploaded={handleTokenImageUploaded}
-        onChannelsDetected={handleChannelsDetected}
-        onGenerateVideo={handleVideoGenerationRequest}
+          messages={displayedMessages}
+          chatState={chatState}
+          onTokenImageUploaded={handleTokenImageUploaded}
+          onChannelsDetected={handleChannelsDetected}
+          onGenerateVideo={handleVideoGenerationRequest}
           emptyState={
             showTabs && activeTab === "media" ? mediaEmptyState : undefined
           }
@@ -248,10 +254,18 @@ const Chat = ({
           agentDisplayName={agent.agent_name ?? "Agent"}
         />
 
-        {(!showTabs || activeTab === "chat") ? (
+        {!showTabs || activeTab === "chat" ? (
           <>
             <ChatHelperPanel onSelect={handleHelperButtonClick} />
-            <ChatInputBar inputRef={inputMessage} onSend={onMessageSend} />
+            <ChatInputBar
+              inputRef={inputMessage}
+              onSend={onMessageSend}
+              showAiToggle={
+                agent.agent_type !== AgentType.AgentCreator && enableGroupChat
+              }
+              aiToggleChecked={askAiEnabled}
+              onAiToggleChange={setAskAiEnabled}
+            />
           </>
         ) : (
           <Flex h={6} />

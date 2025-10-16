@@ -1,5 +1,12 @@
 "use client";
-import { Button, Flex, FlexProps, Textarea } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  FlexProps,
+  Switch,
+  Text,
+  Textarea,
+} from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
 import { ArrowUp } from "../icons/arrowUp";
@@ -9,12 +16,18 @@ interface Props extends FlexProps {
   inputRef: React.RefObject<HTMLTextAreaElement>;
   onButtonClick: () => void;
   disabled?: boolean;
+  showAiToggle?: boolean;
+  aiToggleChecked?: boolean;
+  onAiToggleChange?: (value: boolean) => void;
 }
 
 export const AgentInput = ({
   inputRef,
   onButtonClick,
   disabled,
+  showAiToggle = false,
+  aiToggleChecked = false,
+  onAiToggleChange,
   ...rest
 }: Props) => {
   const [inputValue, setInputValue] = useState("");
@@ -28,6 +41,7 @@ export const AgentInput = ({
     e.preventDefault();
     onButtonClick();
   };
+
   return (
     <AnimatedBorderBox
       animationColor="rgba(0, 255, 109, 1)"
@@ -45,37 +59,79 @@ export const AgentInput = ({
         w="100%"
         maxH="100%"
       >
-        <Textarea
-          h="100%"
-          fontFamily="Jetbrains mono"
-          placeholder="Start generating..."
-          color={colorTokens.gray.platinum}
-          transition="box-shadow 0.3s ease"
-          border="none"
-          borderRadius={13}
-          _focus={{
-            outline: "none",
-            boxShadow: "none",
-          }}
-          resize="none"
-          p={1}
-          ref={inputRef}
-          onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-            setInputValue(e.target.value)
-          }
-        />
+        <Flex direction="column" h="100%" w="100%" align="flex-end" mr={3}>
+          <Textarea
+            h="100%"
+            fontFamily="Jetbrains mono"
+            placeholder="Start generating..."
+            color={colorTokens.gray.platinum}
+            transition="box-shadow 0.3s ease"
+            border="none"
+            borderRadius={13}
+            _focus={{
+              outline: "none",
+              boxShadow: "none",
+            }}
+            resize="none"
+            p={1}
+            ref={inputRef}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+              setInputValue(e.target.value)
+            }
+          />
+          {showAiToggle && (
+            <Flex align="center" gap={2}>
+              <Text
+                fontSize="xs"
+                color={colorTokens.gray.platinum}
+                letterSpacing="0.08em"
+              >
+                Ask AI
+              </Text>
+              <Switch.Root
+                checked={!!aiToggleChecked}
+                onCheckedChange={({ checked }) => onAiToggleChange?.(checked)}
+                aria-label={
+                  aiToggleChecked ? "Disable Ask AI" : "Enable Ask AI"
+                }
+                size="sm"
+              >
+                <Switch.HiddenInput />
+                <Switch.Control
+                  display="flex"
+                  alignItems="center"
+                  bg={colorTokens.blackCustom.a2}
+                  _checked={{
+                    bg: colorTokens.green.erin,
+                  }}
+                >
+                  <Switch.Thumb
+                    borderRadius="full"
+                    bg={
+                      aiToggleChecked
+                        ? colorTokens.blackCustom.a2
+                        : colorTokens.gray.timberwolf
+                    }
+                  />
+                </Switch.Control>
+              </Switch.Root>
+            </Flex>
+          )}
+        </Flex>
 
-        <Button
-          borderRadius={22}
-          maxH={35}
-          maxW={35}
-          p={0}
-          border="none"
-          onClick={onButtonClick}
-          disabled={inputValue.length === 0 || disabled}
-        >
-          <ArrowUp h="full" w="full" />
-        </Button>
+        <Flex align="center" justify="flex-end" gap={3}>
+          <Button
+            borderRadius={22}
+            maxH={35}
+            maxW={35}
+            p={0}
+            border="none"
+            onClick={onButtonClick}
+            disabled={inputValue.length === 0 || disabled}
+          >
+            <ArrowUp h="full" w="full" />
+          </Button>
+        </Flex>
       </Flex>
     </AnimatedBorderBox>
   );
