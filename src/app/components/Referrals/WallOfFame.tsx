@@ -1,8 +1,18 @@
 "use client";
-import { Box, Button, Flex, FlexProps, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  FlexProps,
+  IconButton,
+  Text,
+  useClipboard,
+} from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import type { MouseEvent } from "react";
+import { LuCopy, LuCheck } from "react-icons/lu";
 import type {
   LeaderboardEntry as LeaderboardDataEntry,
   LeaderboardResponse,
@@ -135,6 +145,74 @@ const formatOrdinal = (rank: number) => {
   return "3rd";
 };
 
+type EntryDetailsProps = {
+  entry: LeaderboardEntry;
+  styles: HighlightStyle;
+  highlight: HighlightVariant;
+  avatarLabel: string;
+};
+
+const EntryDetails = ({ entry, styles, highlight, avatarLabel }: EntryDetailsProps) => {
+  const showCopyButton = entry.name.startsWith("0x");
+  const copyValue = showCopyButton ? entry.id ?? entry.name : entry.name;
+  const clipboard = useClipboard({ value: copyValue, timeout: 2000 });
+
+  const handleCopy = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    try {
+      clipboard.copy();
+    } catch (error) {
+      console.warn("Copy to clipboard failed:", error);
+    }
+  };
+
+  return (
+    <Flex align="center" gap={3}>
+      <Flex
+        align="center"
+        justify="center"
+        w={12}
+        h={12}
+        borderRadius="full"
+        bg={styles.avatarBg}
+        color={styles.avatarColor}
+        fontWeight="semibold"
+        fontSize="md"
+      >
+        {avatarLabel}
+      </Flex>
+      <Box>
+        <Flex align="center" gap={2}>
+          <Text
+            color={styles.titleColor}
+            fontWeight={highlight === "default" ? "medium" : "semibold"}
+            fontSize="md"
+          >
+            {entry.isSelf ? "(You) " : ""}
+            {entry.name}
+          </Text>
+          {showCopyButton ? (
+            <IconButton
+              aria-label={clipboard.copied ? "Copied" : "Copy wallet address"}
+              size="xs"
+              variant="ghost"
+              color={clipboard.copied ? styles.titleColor : styles.pointsColor}
+              onClick={handleCopy}
+              _hover={{ color: styles.titleColor, bg: "transparent" }}
+              _active={{ color: styles.titleColor, bg: "transparent" }}
+            >
+              {clipboard.copied ? <LuCheck size={12} /> : <LuCopy size={12} />}
+            </IconButton>
+          ) : null}
+        </Flex>
+        <Text color={styles.pointsColor} fontSize="sm">
+          {formatPoints(entry.points)}
+        </Text>
+      </Box>
+    </Flex>
+  );
+};
+
 const createRowBaseProps = (styles: HighlightStyle): FlexProps => ({
   align: "center",
   justify: "space-between",
@@ -207,34 +285,12 @@ const renderRowBody = (
 
   return (
     <>
-      <Flex align="center" gap={3}>
-        <Flex
-          align="center"
-          justify="center"
-          w={12}
-          h={12}
-          borderRadius="full"
-          bg={styles.avatarBg}
-          color={styles.avatarColor}
-          fontWeight="semibold"
-          fontSize="md"
-        >
-          {avatarLabel}
-        </Flex>
-        <Box>
-          <Text
-            color={styles.titleColor}
-            fontWeight={highlight === "default" ? "medium" : "semibold"}
-            fontSize="md"
-          >
-            {entry.isSelf ? "(You) " : ""}
-            {entry.name}
-          </Text>
-          <Text color={styles.pointsColor} fontSize="sm">
-            {formatPoints(entry.points)}
-          </Text>
-        </Box>
-      </Flex>
+      <EntryDetails
+        entry={entry}
+        styles={styles}
+        highlight={highlight}
+        avatarLabel={avatarLabel}
+      />
       {rightElement}
     </>
   );
