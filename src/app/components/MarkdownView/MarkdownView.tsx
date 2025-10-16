@@ -22,7 +22,6 @@ export const MarkdownView = ({
   isMyMessage = false,
   ...rest
 }: Props) => {
-
   return (
     <Box {...rest}>
       <ReactMarkdown
@@ -33,17 +32,16 @@ export const MarkdownView = ({
           ol: (props) => (
             <chakra.ol pt={2} listStyleType="decimal" {...props} />
           ),
-          li: (props) => <chakra.li {...props} />
-          ,
+          li: (props) => <chakra.li {...props} />,
           a: ({ href, ...props }) => (
-            <ChakraLink 
-              href={href} 
+            <ChakraLink
+              href={href}
               target="_blank"
               rel="noopener noreferrer"
               color={colorTokens.green.erin}
-              border="1px solid"
               borderColor={colorTokens.green.erin}
               borderRadius="md"
+              wordBreak="break-all"
               px={2}
               py={1}
               display="inline-block"
@@ -51,9 +49,9 @@ export const MarkdownView = ({
               _hover={{
                 color: colorTokens.green.darkErin,
                 borderColor: colorTokens.green.darkErin,
-                textDecoration: "none"
+                textDecoration: "none",
               }}
-              {...props} 
+              {...props}
             />
           ),
           code: ({ inline, ...props }: any) => (

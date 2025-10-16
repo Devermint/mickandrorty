@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
   try {
     const { messages } = await request.json();
 
-    const filteredMessages = messages.filter(
-      (msg: { type: string }) => msg.type !== "video"
-    );
+    // const filteredMessages = messages.filter(
+    //   (msg: { type: string }) => msg.type !== "video"
+    // );
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         ? `https://${process.env.VERCEL_URL}`
         : `${request.nextUrl.protocol}//${request.nextUrl.host}`;
 
-    const agentAction = await getAgentAction(filteredMessages);
+    const agentAction = await getAgentAction(messages);
     if (agentAction.action === "") {
       return NextResponse.json(
         { error: "Unknown action to take" },
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (agentAction.action === "GENERATE_VIDEO") {
-      const tldr = await getTldr(filteredMessages);
+      const tldr = await getTldr(messages);
       if (!tldr.prompt) {
         return NextResponse.json(
           { error: "No tldr prompt to generate video" },
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     if (agentAction.action === "AGENT_CREATION") {
       agentResponse = await getAgentResponse(
-        filteredMessages,
+        messages,
         baseUrl,
         agentCreationSystemPrompt(baseUrl),
         0.5
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     } else if (agentAction.action === "TEXT") {
       const videoCreationSystemPrompt = getAgentPrompt(baseUrl);
       agentResponse = await getAgentResponse(
-        filteredMessages,
+        messages,
         baseUrl,
         videoCreationSystemPrompt,
         0.8
