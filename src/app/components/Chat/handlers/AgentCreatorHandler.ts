@@ -118,7 +118,7 @@ export class AgentCreatorHandler extends MessageHandler {
     address: string
   ): Promise<void> {
     try {
-      await fetch("/api/agent/finalize", {
+      const finalizeResponse = await fetch("/api/agent/finalize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -128,8 +128,117 @@ export class AgentCreatorHandler extends MessageHandler {
           agentMeta: result.agentMeta,
         }),
       });
+
+      let finalizePayload: unknown = null;
+      try {
+        const finalizeText = await finalizeResponse.text();
+        finalizePayload = finalizeText ? JSON.parse(finalizeText) : null;
+      } catch {
+        finalizePayload = null;
+      }
+
+      if (!finalizeResponse.ok) {
+        console.warn(
+          "Finalizing agent failed:",
+          finalizeResponse.status,
+          finalizePayload
+        );
+      }
+
+      if (
+        agentData.telegramBotToken !== undefined ||
+        agentData.telegramChannelIds !== undefined
+      ) {
+        const agentId = this.extractAgentIdentifier(
+          finalizePayload,
+          result.agentMeta
+        );
+
+        if (!agentId) {
+          console.warn(
+            "Unable to determine agent id for telegram update",
+            finalizePayload
+          );
+          return;
+        }
+
+        const updatePayload: Record<string, unknown> = {};
+
+        if (agentData.telegramBotToken !== undefined) {
+          updatePayload.telegram_bot_token =
+            (agentData.telegramBotToken ?? "").trim();
+        }
+
+        if (agentData.telegramChannelIds !== undefined) {
+          updatePayload.telegram_channel_ids =
+            agentData.telegramChannelIds ?? [];
+        }
+
+        try {
+          const updateResponse = await fetch(`/api/agents/${agentId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatePayload),
+          });
+
+          if (!updateResponse.ok) {
+            const errorText = await updateResponse.text().catch(() => "");
+            console.warn(
+              "Failed to update agent telegram settings:",
+              updateResponse.status,
+              errorText
+            );
+          }
+        } catch (error) {
+          console.warn("Telegram update request failed:", error);
+        }
+      }
     } catch (error) {
       console.warn("Failed to finalize on backend:", error);
     }
+  }
+
+  private extractAgentIdentifier(
+    payload: unknown,
+    fallback?: unknown
+  ): string | null {
+    const candidates = [payload, fallback];
+    const keys = ["agent_id", "agentId", "id", "fa_id", "faId"];
+
+    for (const candidate of candidates) {
+      if (!candidate || typeof candidate !== "object") continue;
+      for (const key of keys) {
+        const value = (candidate as Record<string, unknown>)[key];
+        if (typeof value === "string" && value.trim().length > 0) {
+          return value.trim();
+        }
+      }
+
+      if ("agent" in (candidate as Record<string, unknown>)) {
+        const agent = (candidate as Record<string, unknown>).agent;
+        if (agent && typeof agent === "object") {
+          for (const key of keys) {
+            const value = (agent as Record<string, unknown>)[key];
+            if (typeof value === "string" && value.trim().length > 0) {
+              return value.trim();
+            }
+          }
+        }
+      }
+
+      if ("data" in (candidate as Record<string, unknown>)) {
+        const dataNode = (candidate as Record<string, unknown>).data;
+        if (dataNode && typeof dataNode === "object") {
+          for (const key of keys) {
+            const value = (dataNode as Record<string, unknown>)[key];
+            if (typeof value === "string" && value.trim().length > 0) {
+              return value.trim();
+            }
+          }
+        }
+      }
+    }
+
+    return null;
   }
 }
