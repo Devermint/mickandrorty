@@ -30,7 +30,7 @@ interface ChatProps extends FlexProps {
   messages: ChatEntryProps[];
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
   enableGroupChat?: boolean;
-  enableAi?: boolean;
+  forceEnableAi?: boolean;
   socketUrl?: string;
   chatName?: string;
   showTabs?: boolean;
@@ -44,7 +44,7 @@ const Chat = ({
   socketUrl,
   chatName,
   showTabs = true,
-  enableAi = false,
+  forceEnableAi = false,
   ...rest
 }: ChatProps) => {
   const { wallet, account, isConnected, swapSDK } = useAgentCreation();
@@ -83,7 +83,18 @@ const Chat = ({
     setChatState,
   });
 
-  const [askAiEnabled, setAskAiEnabled] = useState(enableAi);
+  const [askAiEnabled, setAskAiEnabled] = useState(forceEnableAi);
+  const isWalletConnected = Boolean(isConnected && account?.address);
+  const aiToggleDisabled = !isWalletConnected;
+  const aiToggleTooltip = aiToggleDisabled
+    ? "Connect your wallet to use Ask AI"
+    : undefined;
+
+  useEffect(() => {
+    if (aiToggleDisabled && askAiEnabled) {
+      setAskAiEnabled(false);
+    }
+  }, [aiToggleDisabled, askAiEnabled]);
 
   const userId = useMemo(() => {
     const username = user?.username?.trim();
@@ -137,6 +148,14 @@ const Chat = ({
     sendAgentMessage,
   });
 
+  const handleAiToggleChange = useCallback(
+    (checked: boolean) => {
+      if (aiToggleDisabled) return;
+      setAskAiEnabled(checked);
+    },
+    [aiToggleDisabled, setAskAiEnabled]
+  );
+
   const onMessageSend = useCallback(() => {
     const messageElement = inputMessage.current;
     if (!messageElement) return;
@@ -144,12 +163,11 @@ const Chat = ({
     const messageContent = messageElement.value.trim();
     if (!messageContent) return;
 
-    const sentToGroup =
-      enableGroupChat && isGroupConnected
-        ? sendUserMessage(messageContent)
-        : false;
+    if (enableGroupChat && isGroupConnected) {
+      sendUserMessage(messageContent);
+    }
 
-    if (askAiEnabled) {
+    if (askAiEnabled || forceEnableAi) {
       originalOnMessageSend();
     } else {
       setMessages((prevMessages) => [
@@ -285,7 +303,9 @@ const Chat = ({
                 agent.agent_type !== AgentType.AgentCreator && enableGroupChat
               }
               aiToggleChecked={askAiEnabled}
-              onAiToggleChange={setAskAiEnabled}
+              onAiToggleChange={handleAiToggleChange}
+              aiToggleDisabled={aiToggleDisabled}
+              aiToggleTooltip={aiToggleTooltip}
             />
           </>
         ) : (

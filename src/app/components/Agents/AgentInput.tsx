@@ -1,13 +1,16 @@
 "use client";
 import {
+  Box,
   Button,
   Flex,
   FlexProps,
   Switch,
   Text,
   Textarea,
+  Tooltip,
 } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
+import { sora } from "../theme/fonts";
 import AnimatedBorderBox from "../AnimatedBorderBox/AnimatedBorderBox";
 import { ArrowUp } from "../icons/arrowUp";
 import { ChangeEvent, useState } from "react";
@@ -19,6 +22,8 @@ interface Props extends FlexProps {
   showAiToggle?: boolean;
   aiToggleChecked?: boolean;
   onAiToggleChange?: (value: boolean) => void;
+  aiToggleDisabled?: boolean;
+  aiToggleTooltip?: string;
 }
 
 export const AgentInput = ({
@@ -28,6 +33,8 @@ export const AgentInput = ({
   showAiToggle = false,
   aiToggleChecked = false,
   onAiToggleChange,
+  aiToggleDisabled = false,
+  aiToggleTooltip,
   ...rest
 }: Props) => {
   const [inputValue, setInputValue] = useState("");
@@ -41,6 +48,80 @@ export const AgentInput = ({
     e.preventDefault();
     onButtonClick();
   };
+
+  const switchRoot = (
+    <Switch.Root
+      checked={!!aiToggleChecked}
+      onCheckedChange={({ checked }) => {
+        if (aiToggleDisabled) return;
+        onAiToggleChange?.(checked);
+      }}
+      aria-label={aiToggleChecked ? "Disable Ask AI" : "Enable Ask AI"}
+      size="sm"
+      aria-disabled={aiToggleDisabled || undefined}
+    >
+      <Switch.HiddenInput disabled={aiToggleDisabled} />
+      <Switch.Control
+        display="flex"
+        alignItems="center"
+        bg={colorTokens.blackCustom.a2}
+        cursor={aiToggleDisabled ? "not-allowed" : "pointer"}
+        opacity={aiToggleDisabled ? 0.5 : 1}
+        _checked={{
+          bg: colorTokens.green.erin,
+        }}
+        _focusVisible={{
+          outline: "2px solid",
+          outlineColor: colorTokens.green.erin,
+          outlineOffset: "2px",
+        }}
+      >
+        <Switch.Thumb
+          borderRadius="full"
+          bg={
+            aiToggleChecked
+              ? colorTokens.blackCustom.a2
+              : colorTokens.gray.timberwolf
+          }
+        />
+      </Switch.Control>
+    </Switch.Root>
+  );
+
+  const switchWrapper = (
+    <Box
+      as="span"
+      display="inline-flex"
+      pointerEvents="auto"
+      cursor={aiToggleDisabled ? "not-allowed" : "pointer"}
+    >
+      {switchRoot}
+    </Box>
+  );
+
+  const renderedSwitch =
+    aiToggleDisabled && aiToggleTooltip ? (
+      <Tooltip.Root openDelay={200} closeDelay={100}>
+        <Tooltip.Trigger asChild>{switchWrapper}</Tooltip.Trigger>
+        <Tooltip.Positioner>
+          <Tooltip.Content
+            bg={colorTokens.blackCustom.a2}
+            color={colorTokens.gray.timberwolf}
+            px={3}
+            py={2}
+            borderRadius="md"
+            fontSize="xs"
+            boxShadow="lg"
+            fontFamily={sora.style.fontFamily}
+            letterSpacing="0.08em"
+          >
+            {aiToggleTooltip}
+          </Tooltip.Content>
+        </Tooltip.Positioner>
+      </Tooltip.Root>
+    ) : (
+      switchWrapper
+    );
 
   return (
     <AnimatedBorderBox
@@ -85,36 +166,11 @@ export const AgentInput = ({
                 fontSize="xs"
                 color={colorTokens.gray.platinum}
                 letterSpacing="0.08em"
+                fontFamily={sora.style.fontFamily}
               >
                 Ask AI
               </Text>
-              <Switch.Root
-                checked={!!aiToggleChecked}
-                onCheckedChange={({ checked }) => onAiToggleChange?.(checked)}
-                aria-label={
-                  aiToggleChecked ? "Disable Ask AI" : "Enable Ask AI"
-                }
-                size="sm"
-              >
-                <Switch.HiddenInput />
-                <Switch.Control
-                  display="flex"
-                  alignItems="center"
-                  bg={colorTokens.blackCustom.a2}
-                  _checked={{
-                    bg: colorTokens.green.erin,
-                  }}
-                >
-                  <Switch.Thumb
-                    borderRadius="full"
-                    bg={
-                      aiToggleChecked
-                        ? colorTokens.blackCustom.a2
-                        : colorTokens.gray.timberwolf
-                    }
-                  />
-                </Switch.Control>
-              </Switch.Root>
+              {renderedSwitch}
             </Flex>
           )}
         </Flex>

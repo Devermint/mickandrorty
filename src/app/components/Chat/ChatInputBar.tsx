@@ -6,6 +6,8 @@ interface ChatInputBarProps {
   showAiToggle?: boolean;
   aiToggleChecked?: boolean;
   onAiToggleChange?: (value: boolean) => void;
+  aiToggleDisabled?: boolean;
+  aiToggleTooltip?: string;
 }
 
 export const ChatInputBar = ({
@@ -14,6 +16,8 @@ export const ChatInputBar = ({
   showAiToggle = false,
   aiToggleChecked,
   onAiToggleChange,
+  aiToggleDisabled,
+  aiToggleTooltip,
 }: ChatInputBarProps) => (
   <AgentInput
     h="17%"
@@ -26,5 +30,7 @@ export const ChatInputBar = ({
     showAiToggle={showAiToggle}
     aiToggleChecked={aiToggleChecked}
     onAiToggleChange={onAiToggleChange}
+    aiToggleDisabled={aiToggleDisabled}
+    aiToggleTooltip={aiToggleTooltip}
   />
 );
