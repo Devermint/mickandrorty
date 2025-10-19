@@ -94,12 +94,14 @@ export class AgentCreatorHandler extends MessageHandler {
         ? agentData.telegramChannelIds.join(", ")
         : "None linked"
     }`;
+    const context=this.getContext();
+    const twitterLine = `**X API connected:** ${context?.xApiData?.isConnectAPISuccess ? "Yes" : "No"}`;
 
     return `Agent created successfully!\n\n**Token Name:** ${
       agentData.tokenName
     }\n**Symbol:** ${agentData.tokenTicker}\n**Transaction Hash:** \`${
       result.agentHash
-    }\`\n${telegramBotLine}\n${telegramChannelsLine}\n\n${
+    }\`\n${telegramBotLine}\n${telegramChannelsLine}\n${twitterLine}\n\n${
       result.poolHash ? `**Pool Created:** \`${result.poolHash}\`\n` : ""
     }${
       result.liquidityHash
@@ -145,23 +147,38 @@ export class AgentCreatorHandler extends MessageHandler {
         );
       }
 
+      const agentId = this.extractAgentIdentifier(
+          finalizePayload,
+          result.agentMeta
+      );
+      if (!agentId) {
+        console.warn(
+            "Unable to determine agent id for telegram/twitter update",
+            finalizePayload
+        );
+        return;
+      }
+      const context = this.getContext();
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/agents/${agentId}/twitter/keys/unprotected`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            api_key: context?.xApiData?.consumerKey ?? "",
+            api_secret: context?.xApiData?.consumerSecret ?? "",
+            access_token: context?.xApiData?.accessToken ?? "",
+            access_token_secret: context?.xApiData?.accessSecret ?? "",
+          }),
+        });
+      } catch (err) {
+        console.warn("unprotected X key push failed:", err);
+      }
+
+
       if (
         agentData.telegramBotToken !== undefined ||
         agentData.telegramChannelIds !== undefined
       ) {
-        const agentId = this.extractAgentIdentifier(
-          finalizePayload,
-          result.agentMeta
-        );
-
-        if (!agentId) {
-          console.warn(
-            "Unable to determine agent id for telegram update",
-            finalizePayload
-          );
-          return;
-        }
-
         const updatePayload: Record<string, unknown> = {};
 
         if (agentData.telegramBotToken !== undefined) {

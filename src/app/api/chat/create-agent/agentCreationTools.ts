@@ -16,6 +16,14 @@ export const tools = [
   {
     type: "function",
     function: {
+      name: "x_api_prompt",
+      description: "Trigger the stateless inline X (Twitter) API connector UI.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "request_token_image",
       description:
         "Ask the UI to prompt the user to upload the token image. Use when tokenName, tokenTicker, tokenDescription are known but tokenImage is missing. The uploaded image will be returned as a URL that can be displayed inline in markdown.",

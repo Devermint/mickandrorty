@@ -11,7 +11,7 @@ import { Flex, FlexProps, Text } from "@chakra-ui/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Agent, AgentType } from "@/app/types/agent";
 import { ChatEntryProps, ChatState } from "@/app/types/message";
-import { useAgentCreation } from "@/app/lib/utils/agentCreation";
+import {TwitterKeys, useAgentCreation} from "@/app/lib/utils/agentCreation";
 import { useMessageHandler } from "@/app/hooks/useMessageHandler";
 import { useTokenImageUpload } from "@/app/hooks/useTokenImageUpload";
 import { useTelegramChannelDetection } from "@/app/hooks/useTelegramChannelDetection";
@@ -57,6 +57,27 @@ const Chat = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [chatState, setChatState] = useState(ChatState.IDLE);
   const didInitialize = useRef(false);
+  const [xApiData, setXApiData] = useState<TwitterKeys>({});
+
+  const handleXApiSaved = useCallback((data?: TwitterKeys) => {
+    if(data) setXApiData(data);
+    setMessages(prev => [
+      ...prev,
+      {
+        role: "assistant",
+        type: "text",
+        content: data?.isConnectAPISuccess
+            ? "X API connected successfully."
+            : "X API linking skipped.",
+      },
+    ]);
+    if (inputMessage.current) {
+      inputMessage.current.value = data?.isConnectAPISuccess
+          ? "x_api_done"
+          : "x_api_skip";
+      onMessageSend(); // this calls your MessageHandler → /api/chat/create-agent again
+    }
+  }, [setMessages]);
 
   const displayedMessages = useMemo(() => {
     if (showTabs && activeTab === "media") {
@@ -147,6 +168,7 @@ const Chat = ({
     agentId: agent.fa_id,
     userId,
     sendAgentMessage,
+    xApiData
   });
 
   const handleAiToggleChange = useCallback(
@@ -304,6 +326,7 @@ const Chat = ({
           }
           showPredictionMarket={showTabs && activeTab === "media"}
           agentDisplayName={agent.agent_name ?? "Agent"}
+          onSaveXAPI={handleXApiSaved}
         />
 
         {!showTabs || activeTab === "chat" ? (

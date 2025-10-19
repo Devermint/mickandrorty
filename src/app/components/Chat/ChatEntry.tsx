@@ -26,6 +26,8 @@ import { ChatEntryProps } from "@/app/types/message";
 import type { UploadConstraints } from "@/app/types/file";
 import { PredictionMarket } from "../Media/PredictionMarket";
 import { TelegramChannelDetector } from "../TelegramChannelDetector/TelegramChannelDetector";
+import {ConnectXApiInline} from "@/app/components/Chat/ConnectXApi";
+import {TwitterKeys} from "@/app/lib/utils/agentCreation";
 
 interface ChatEntryComponentProps extends ChatEntryProps {
   job_id?: string;
@@ -35,6 +37,7 @@ interface ChatEntryComponentProps extends ChatEntryProps {
   onTelegramPostConfirm?: () => void | Promise<void>;
   isTelegramPostProcessing?: boolean;
   isTelegramPostBroadcasted?: boolean;
+  onSaveXAPI: (data?: TwitterKeys) => void;
 }
 
 export const ChatEntry = ({
@@ -47,6 +50,7 @@ export const ChatEntry = ({
   onTokenImageUploaded,
   onChannelsDetected,
   onGenerateVideo,
+  onSaveXAPI,
   showPredictionMarket = false,
   agentDisplayName = "Agent",
   onTelegramPostConfirm,
@@ -449,6 +453,18 @@ export const ChatEntry = ({
             />
           </Box>
         )}
+        {type === "x_api_prompt" && (
+            <Stack gap={3} align="stretch">
+              {content && (
+                  <MarkdownView color={color} lineHeight={1.5} fontSize={14} p={1}>
+                    {content}
+                  </MarkdownView>
+              )}
+              <ConnectXApiInline
+                  onSaved={onSaveXAPI}
+              />
+            </Stack>
+        )}
         {type === "signature-required" && (
           <>
             <MarkdownView
@@ -487,6 +503,7 @@ export const DemoVideoEntry = () => (
     role="assistant"
     content="https://www.w3schools.com/html/mov_bbb.mp4"
     type="video"
+    onSaveXAPI={()=>{}}
   />
 );
 
@@ -495,5 +512,6 @@ export const DefaultChatEntry = () => (
     role="assistant"
     content="Chat with this AI agent and other users. Your messages and the agent's responses will be visible to everyone in this agent's chat room."
     type="text"
+    onSaveXAPI={()=>{}}
   />
 );

@@ -16,6 +16,7 @@ import { TelegramIcon } from "../icons/telegram";
 import { X } from "../icons/x";
 import { useRouter } from "next/navigation";
 import { AgentMarketInfo } from "./AgentMarketInfo";
+import {AgentOwnerTwitterActions} from "@/app/components/Agents/AgentOwnerTwitterActions";
 export function formatThousands(num: string | number, sep = ","): string {
   const s = String(num);
   const isNeg = s.startsWith("-");
@@ -160,7 +161,10 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
           </Flex>
         </Flex>
         <AgentMarketInfo mt={5} agent={agent} />
+        <AgentOwnerTwitterActions agent={agent} />
+
       </Flex>
+
       <Spacer />
       <TokenSwapForm agent={agent} />
     </Flex>

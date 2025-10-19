@@ -11,6 +11,15 @@ export interface AgentCreationData {
   tokenImage: string;
   telegramBotToken?: string;
   telegramChannelIds?: string[];
+  twitter?: TwitterKeys;
+}
+export interface TwitterKeys {
+  consumerKey?: string;
+  consumerSecret?: string;
+  accessToken?: string;
+  accessSecret?: string;
+  /** Whether the connection / validation succeeded */
+  isConnectAPISuccess?: boolean;
 }
 
 export interface AgentCreationResult {

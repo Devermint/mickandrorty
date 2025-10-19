@@ -3,7 +3,14 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useMemo, useCallback, useState, useEffect } from "react";
 import type { PetraWallet } from "petra-plugin-wallet-adapter"; // type-only, keeps your exposed shape
-import { AptosWalletAdapterProvider, useWallet } from "@aptos-labs/wallet-adapter-react";
+import {
+  AptosWalletAdapterProvider,
+  // @ts-ignore
+  SignMessagePayload,
+  // @ts-ignore
+  SignMessageResponse,
+  useWallet
+} from "@aptos-labs/wallet-adapter-react";
 import { HexInput, Network, Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 import api from "@/lib/api";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
@@ -42,6 +49,7 @@ interface AptosWalletContextType {
   refreshBalance: () => Promise<void>;
   login: () => Promise<void>;
   isWalletConnected: boolean;
+  signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>;
 }
 
 const AptosWalletContext = createContext<AptosWalletContextType | undefined>(undefined);
@@ -224,6 +232,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
       isLoadingBalance,
       refreshBalance: fetchBalance,
       login,
+      signMessage
     }),
     [
       accountOut,
@@ -239,6 +248,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
       isLoadingBalance,
       fetchBalance,
       login,
+      signMessage
     ]
   );
 

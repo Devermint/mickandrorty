@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import { MessageContext, ChatEntryProps, ChatState } from "../types/message";
 import { Agent, AgentType } from "@/app/types/agent";
 import { MessageHandlerFactory } from "../components/Chat/factories/MessageHandlerFactory";
+import {TwitterKeys} from "@/app/lib/utils/agentCreation";
 
 interface UseMessageHandlerProps {
   chatState: ChatState;
@@ -11,6 +12,7 @@ interface UseMessageHandlerProps {
   account: any;
   isConnected: boolean;
   swapSDK: any;
+  xApiData: TwitterKeys;
   inputMessage: React.RefObject<HTMLTextAreaElement>;
   setMessages: React.Dispatch<React.SetStateAction<ChatEntryProps[]>>;
   setChatState: React.Dispatch<React.SetStateAction<ChatState>>;
@@ -38,6 +40,7 @@ export const useMessageHandler = ({
   socket,
   agentId,
   userId,
+  xApiData,
   sendAgentMessage,
 }: UseMessageHandlerProps) => {
   const contextRef = useRef<MessageContext | null>(null);
@@ -51,6 +54,7 @@ export const useMessageHandler = ({
     isConnected,
     swapSDK,
     userId,
+    xApiData,
     sendAgentMessage: sendAgentMessage
       ? ({ content, type, data }) => {
           sendAgentMessage(content, type, data);

@@ -151,8 +151,8 @@ async function getAgentAction(messages: Message[]) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [{ role: "system", content: decisionSystemPrompt }, ...messages],
+    max_completion_tokens: 300,
     temperature: 0.1,
-    max_tokens: 300,
     response_format: zodResponseFormat(AgentAction, "agent_action"),
   });
   const content = completion.choices[0]?.message?.content;
@@ -169,8 +169,8 @@ async function getTldr(messages: Message[]) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [{ role: "system", content: tldrSystemPrompt }, ...messages],
+    max_completion_tokens: 300,
     temperature: 0.7,
-    max_tokens: 300,
     response_format: zodResponseFormat(TldrObject, "tldr_object"),
   });
 
@@ -187,8 +187,8 @@ async function getAgentResponse(
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [{ role: "system", content: systemPrompt }, ...messages],
+    max_completion_tokens: 350,
     temperature: temperature ?? 0.5,
-    max_tokens: 350,
   });
 
   return completion.choices[0]?.message?.content;
@@ -220,7 +220,7 @@ async function getTelegramPost(
   latestVideoUrl: string
 ): Promise<{ post: string } | null> {
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5",
     messages: [
       {
         role: "system",
@@ -228,8 +228,7 @@ async function getTelegramPost(
       },
       ...messages,
     ],
-    temperature: 0.4,
-    max_tokens: 400,
+    max_completion_tokens: 400,
     response_format: zodResponseFormat(TelegramPostObject, "telegram_post"),
   });
 

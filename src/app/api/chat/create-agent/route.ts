@@ -20,6 +20,7 @@ type Envelope<T = unknown> = {
     | "error"
     | "image-upload"
     | "channel-detect"
+    | "x_api_prompt"
     | "signature-required";
   title?: string;
   action?: "TEXT" | "GENERATE_VIDEO";
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
   const { messages } = await req.json();
 
   const resp = await openai.chat.completions.create({
-    model: "gpt-5-mini",
+    model: "gpt-5",
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
     tools,
     tool_choice: "auto",
@@ -96,12 +97,21 @@ async function handleToolCall(
       return await detectTelegramChannelsToolCall(tc, msg, messages);
     case "request_token_image":
       return await uploadImageToolCall(tc, msg, messages);
+    case "x_api_prompt":
+      return await xApiPromptToolCall();
     case "submit_agent":
       return await submitAgentToolCall(tc, msg, messages);
     default:
       return;
   }
 }
+const xApiPromptToolCall = async () => {
+  return NextResponse.json({
+    kind: "x_api_prompt",
+    notice: "",   // no text; UI widget handles UX
+    data: {}      // stateless -> nothing needed here
+  });
+};
 
 const detectTelegramChannelsToolCall = async (
   call: OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall,

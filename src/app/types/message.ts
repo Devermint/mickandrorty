@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import { AgentCreationData } from "../lib/utils/agentCreation";
+import {AgentCreationData, TwitterKeys} from "../lib/utils/agentCreation";
 import { ClientRef } from "../lib/clientImageStore";
 import type { UploadConstraints } from "./file";
 
@@ -31,7 +31,8 @@ export type ChatEntryProps = {
     | "channel-detect"
     | "signature-required"
     | "video_request"
-    | "telegram_post";
+    | "telegram_post"
+    | "x_api_prompt";
   data?: any;
   onAgentCreate?: (agentData: AgentCreationData) => Promise<void>;
   onTokenImageUploaded?: (
@@ -52,6 +53,7 @@ export interface MessageContext {
   isConnected: boolean;
   swapSDK?: any;
   userId?: string | null;
+  xApiData: TwitterKeys;
   sendAgentMessage?: (entry: {
     content: string;
     type?: ChatEntryProps["type"];
