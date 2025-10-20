@@ -69,3 +69,23 @@ export const formatThousands = (num: string | number, sep = ","): string => {
     (fracPart !== undefined ? "." + fracPart : "")
   );
 };
+
+export const getEllipsisAddress = (
+  address: string,
+  prefixLength = 4,
+  suffixLength = 4
+) => {
+  if (!address) return "";
+
+  const normalized = normalizeHex(address);
+  const cleanAddress = normalized.slice(2);
+
+  if (cleanAddress.length <= prefixLength + suffixLength) {
+    return normalized;
+  }
+
+  const prefix = cleanAddress.slice(0, prefixLength);
+  const suffix = cleanAddress.slice(-suffixLength);
+
+  return `0x${prefix}...${suffix}`;
+};

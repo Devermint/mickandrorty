@@ -10,7 +10,9 @@ import { Task } from "../leaderboard/page";
 export default function TmaTasksPage() {
   const [tasks, setTasks] = useState<Task[]>();
   const [loading, setLoading] = useState(true);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(
+    null
+  );
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
 
@@ -56,7 +58,8 @@ export default function TmaTasksPage() {
         align="center"
         py={12}
         style={{
-          backgroundImage: "radial-gradient(ellipse at bottom, #2d5016, transparent 70%)",
+          backgroundImage:
+            "radial-gradient(ellipse at bottom, #2d5016, transparent 70%)",
         }}
         position="relative"
       >

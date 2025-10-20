@@ -1,7 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { createContext, useContext, useMemo, useCallback, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+} from "react";
 import type { PetraWallet } from "petra-plugin-wallet-adapter"; // type-only, keeps your exposed shape
 import {
   AptosWalletAdapterProvider,
@@ -9,31 +16,18 @@ import {
   SignMessagePayload,
   // @ts-ignore
   SignMessageResponse,
-  useWallet
+  useWallet,
 } from "@aptos-labs/wallet-adapter-react";
 import { HexInput, Network, Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 import api from "@/lib/api";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
+import { User } from "../types/user";
 
 interface PetraAccountInfo {
   address: HexInput;
   publicKey: HexInput;
 }
-export type User = {
-  wallet_address?: string;
-  username?: string;
-  points?: number;
-  referral_code?: string;
-  referral_count?: number;
-  completed_tasks?: number[];
-  task_history?: any[];
-  telegram_user_id?: string;
-  telegram_username?: string;
-  telegram_photo_url?: string;
-  x_user_id?: string;
-  x_username?: string;
-  x_oauth_token?: string;
-};
+
 interface AptosWalletContextType {
   account: PetraAccountInfo | null;
   isConnected: boolean;
@@ -52,7 +46,9 @@ interface AptosWalletContextType {
   signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>;
 }
 
-const AptosWalletContext = createContext<AptosWalletContextType | undefined>(undefined);
+const AptosWalletContext = createContext<AptosWalletContextType | undefined>(
+  undefined
+);
 
 // Create Aptos client instance
 const aptosConfig = new AptosConfig({ network: Network.MAINNET });
@@ -190,7 +186,8 @@ function WalletBridge({ children }: { children: ReactNode }) {
     : null;
 
   const connect = useCallback(async () => {
-    const target = wallets.find((w) => w.name.toLowerCase().includes("petra")) ?? wallets[0];
+    const target =
+      wallets.find((w) => w.name.toLowerCase().includes("petra")) ?? wallets[0];
     if (!target) throw new Error("No wallets detected");
     await adapterConnect(target.name);
   }, [wallets, adapterConnect]);
@@ -232,7 +229,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
       isLoadingBalance,
       refreshBalance: fetchBalance,
       login,
-      signMessage
+      signMessage,
     }),
     [
       accountOut,
@@ -248,11 +245,15 @@ function WalletBridge({ children }: { children: ReactNode }) {
       isLoadingBalance,
       fetchBalance,
       login,
-      signMessage
+      signMessage,
     ]
   );
 
-  return <AptosWalletContext.Provider value={value}>{children}</AptosWalletContext.Provider>;
+  return (
+    <AptosWalletContext.Provider value={value}>
+      {children}
+    </AptosWalletContext.Provider>
+  );
 }
 
 /** Public provider (signature unchanged) */
@@ -264,7 +265,10 @@ export function AptosWalletProvider({
   sessionDuration: number;
 }) {
   return (
-    <AptosWalletAdapterProvider autoConnect dappConfig={{ network: Network.MAINNET }}>
+    <AptosWalletAdapterProvider
+      autoConnect
+      dappConfig={{ network: Network.MAINNET }}
+    >
       <WalletBridge>{children}</WalletBridge>
     </AptosWalletAdapterProvider>
   );
@@ -272,6 +276,9 @@ export function AptosWalletProvider({
 
 export function useAptosWallet() {
   const ctx = useContext(AptosWalletContext);
-  if (!ctx) throw new Error("useAptosWallet must be used within an AptosWalletProvider");
+  if (!ctx)
+    throw new Error(
+      "useAptosWallet must be used within an AptosWalletProvider"
+    );
   return ctx;
 }
