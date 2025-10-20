@@ -1,26 +1,21 @@
 "use client";
 import { Button } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
-import {ReactNode} from "react";
+import { ReactNode } from "react";
 
 interface ChatHelperButtonProps {
   label: string | ReactNode;
-  onButtonClick?: (value?: string) => void;
-  chatEntry?: string;
+  onButtonClick?: () => void;
   disabled?: boolean;
 }
 export const ChatHelperButton = ({
   label,
   onButtonClick,
-  chatEntry,
-    disabled
+  disabled,
 }: ChatHelperButtonProps) => {
   const handleClick = () => {
-    if(onButtonClick && chatEntry) {
-      onButtonClick(chatEntry);
-    }
-    else if(onButtonClick){
-      onButtonClick()
+    if (onButtonClick) {
+      onButtonClick();
     }
   };
 

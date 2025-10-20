@@ -31,13 +31,12 @@ export const ChatHelperPanel = ({ onSelect }: ChatHelperPanelProps) => (
     justify="center"
     flexShrink={0}
   >
-    {helperOptions.map((option) => (
-      <ChatHelperButton
-        key={option.label}
-        label={option.label}
-        chatEntry={option.message}
-        onButtonClick={onSelect}
-      />
-    ))}
-  </Flex>
-);
+      {helperOptions.map((option) => (
+        <ChatHelperButton
+          key={option.label}
+          label={option.label}
+          onButtonClick={() => onSelect(option.message)}
+        />
+      ))}
+    </Flex>
+  );
