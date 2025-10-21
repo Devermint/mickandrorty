@@ -7,13 +7,13 @@ import {
   decisionSystemPrompt,
   tldrSystemPrompt,
   getAgentPrompt,
-  telegramPostSystemPrompt,
+  telegramPostSystemPrompt, twitterPostSystemPrompt,
 } from "./systemPrompts";
 
 type Message = {
   role: "system" | "user" | "assistant";
   content: string;
-  type?: "text" | "video" | "telegram_post" | "video_request";
+  type?: "text" | "video" | "telegram_post" | "video_request" | "twitter_post";
 };
 
 const openai = new OpenAI({
@@ -43,11 +43,15 @@ export async function POST(request: NextRequest) {
     const agentAction = await getAgentAction(messages);
     const hasPendingTelegramConfirmation =
       hasPendingTelegramPostConfirmation(messages);
-
+    const hasPendingTwitterConfirmation =
+        hasPendingTwitterPostConfirmation(messages);
     let action = agentAction.action;
 
     if (hasPendingTelegramConfirmation) {
       action = "GENERATE_TELEGRAM_POST";
+    }
+    if (hasPendingTwitterConfirmation) {
+      action = "GENERATE_X_POST";
     }
     if (action === "") {
       return NextResponse.json(
@@ -97,6 +101,32 @@ export async function POST(request: NextRequest) {
         data: { videoUrl: latestVideoUrl, post: telegramPost.post },
       });
     }
+    if (action === "GENERATE_X_POST") {
+      const latestVideoUrl = getLatestVideoUrl(messages);
+
+      if (!latestVideoUrl) {
+        return NextResponse.json({
+          message:
+              "I couldn't find a generated video to reference for the X post. Please generate a video first or share the link you'd like me to use.",
+          action: "TEXT",
+        });
+      }
+
+      const twitterPost = await getTwitterPost(messages);
+      console.log(twitterPost);
+      if (!twitterPost?.post) {
+        return NextResponse.json(
+            { error: "Failed to craft X post content" },
+            { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        message: twitterPost.post,
+        action: "GENERATE_X_POST",
+        data: { videoUrl: latestVideoUrl, post: twitterPost.post },
+      });
+    }
 
     let agentResponse;
 
@@ -118,6 +148,9 @@ export async function POST(request: NextRequest) {
 
       if (isTelegramPostRequest(messages)) {
         agentResponse = ensureTelegramPostQuestion(agentResponse);
+      }
+      if (isXPostRequest(messages)) {
+        agentResponse = ensureXPostQuestion(agentResponse);
       }
     }
 
@@ -143,6 +176,7 @@ const AgentAction = z.object({
     "TEXT",
     "GENERATE_VIDEO",
     "GENERATE_TELEGRAM_POST",
+    "GENERATE_X_POST",
     "AGENT_CREATION",
   ]),
 });
@@ -194,7 +228,7 @@ async function getAgentResponse(
   return completion.choices[0]?.message?.content;
 }
 
-const TelegramPostObject = z.object({
+const TelegramTwitterPostObject = z.object({
   post: z.string().min(1),
 });
 
@@ -229,8 +263,32 @@ async function getTelegramPost(
       ...messages,
     ],
     max_completion_tokens: 400,
-    response_format: zodResponseFormat(TelegramPostObject, "telegram_post"),
+    response_format: zodResponseFormat(TelegramTwitterPostObject, "telegram_post"),
   });
+
+  const content = completion.choices[0]?.message?.content;
+  if (!content) {
+    return null;
+  }
+
+  return JSON.parse(content);
+}
+async function getTwitterPost(
+    messages: Message[],
+): Promise<{ post: string } | null> {
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      {
+        role: "system",
+        content: twitterPostSystemPrompt(),
+      },
+      ...messages,
+    ],
+    max_completion_tokens: 1000,
+    response_format: zodResponseFormat(TelegramTwitterPostObject, "twitter_post"),
+  });
+  console.log(completion);
 
   const content = completion.choices[0]?.message?.content;
   if (!content) {
@@ -242,6 +300,8 @@ async function getTelegramPost(
 
 const TELEGRAM_POST_CONFIRMATION_PROMPT =
   "Is this Telegram post good enough, or would you like me to refine it?";
+const X_POST_CONFIRMATION_PROMPT =
+    "Is this X post good enough, or would you like me to refine it?";
 
 function hasPendingTelegramPostConfirmation(messages: Message[]): boolean {
   if (messages.length < 2) {
@@ -263,8 +323,28 @@ function hasPendingTelegramPostConfirmation(messages: Message[]): boolean {
 
   return false;
 }
+function hasPendingTwitterPostConfirmation(messages: Message[]): boolean {
+  if (messages.length < 2) {
+    return false;
+  }
 
-function isTelegramPostRequest(messages: Message[]): boolean {
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage.role !== "user") {
+    return false;
+  }
+
+  for (let i = messages.length - 2; i >= 0; i -= 1) {
+    const message = messages[i];
+    if (message.role === "assistant") {
+      const content = message.content ?? "";
+      return content.includes(X_POST_CONFIRMATION_PROMPT);
+    }
+  }
+
+  return false;
+}
+
+function isXPostRequest(messages: Message[]): boolean {
   if (messages.length === 0) {
     return false;
   }
@@ -275,7 +355,7 @@ function isTelegramPostRequest(messages: Message[]): boolean {
   }
 
   const text = lastMessage.content?.toLowerCase() ?? "";
-  return text.includes("telegram") && text.includes("post");
+  return (text.includes("twitter") && text.includes("post")) || (text.includes("x") && text.includes("post"));
 }
 
 function ensureTelegramPostQuestion(response: string | null): string {
@@ -293,4 +373,35 @@ function ensureTelegramPostQuestion(response: string | null): string {
   }
 
   return `${trimmed}\n\n${TELEGRAM_POST_CONFIRMATION_PROMPT}`;
+}
+
+function isTelegramPostRequest(messages: Message[]): boolean {
+  if (messages.length === 0) {
+    return false;
+  }
+
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage.role !== "user") {
+    return false;
+  }
+
+  const text = lastMessage.content?.toLowerCase() ?? "";
+  return text.includes("telegram") && text.includes("post");
+}
+
+function ensureXPostQuestion(response: string | null): string {
+  if (!response) {
+    return X_POST_CONFIRMATION_PROMPT;
+  }
+
+  if (response.includes(X_POST_CONFIRMATION_PROMPT)) {
+    return response;
+  }
+
+  const trimmed = response.trim();
+  if (trimmed.length === 0) {
+    return X_POST_CONFIRMATION_PROMPT;
+  }
+
+  return `${trimmed}\n\n${X_POST_CONFIRMATION_PROMPT}`;
 }

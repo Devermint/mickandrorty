@@ -21,11 +21,19 @@ interface ChatMessageListProps {
     videoUrl?: string;
     messageIndex: number;
   }) => void | Promise<void>;
+  onTwitterPostConfirm?: (payload: {
+      post: string;
+      videoUrl?: string;
+      messageIndex: number;
+  }) => void | Promise<void>;
   telegramPostInProgressIndex?: number | null;
+  twitterPostInProgressIndex?: number | null;
   emptyState?: React.ReactNode;
   showPredictionMarket?: boolean;
+  agentOwnerAddress?: string;
   agentDisplayName: string;
   onSaveXAPI: (data?: TwitterKeys) => void;
+  agentId?: string;
 }
 
 export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
@@ -36,11 +44,15 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       onTokenImageUploaded,
       onGenerateVideo,
       onChannelsDetected,
+      onTwitterPostConfirm,
       onTelegramPostConfirm,
       telegramPostInProgressIndex = null,
+      twitterPostInProgressIndex = null,
       emptyState,
       showPredictionMarket = false,
       agentDisplayName,
+      agentOwnerAddress,
+      agentId,
       onSaveXAPI
     },
     ref
@@ -77,6 +89,13 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
             {reversedMessages.map((message, index) => {
               const originalIndex = messages.length - 1 - index;
               const isTelegramPost = message.type === "telegram_post";
+              const isTwitterPost = message.type === "twitter_post";
+              // todo
+              const isTwitterPosted = isTwitterPost && message.data?.posted === true;
+              const isTwitterProcessing = isTwitterPost && message.data?.posted === true &&
+                  twitterPostInProgressIndex !== null &&
+                  twitterPostInProgressIndex === originalIndex;
+
               const isBroadcasted =
                 isTelegramPost && message.data?.broadcasted === true;
               const isProcessing =
@@ -130,10 +149,31 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                   }
                   isTelegramPostProcessing={isProcessing}
                   isTelegramPostBroadcasted={isBroadcasted}
+                  isTwitterPostProcessing={isTwitterProcessing}
+                  isTwitterPostPosted={isTwitterPosted}
+                  agentOwnerAddress={agentOwnerAddress}
+                  onTwitterPostConfirm={
+                      isTwitterPost &&
+                      typeof message.content === "string" &&
+                      !isTwitterPosted &&
+                      onTwitterPostConfirm
+                          ? () => {
+                              onTwitterPostConfirm({
+                                  post: message.content,
+                                  videoUrl:
+                                      typeof message.data?.videoUrl === "string"
+                                          ? message.data.videoUrl
+                                          : undefined,
+                                  messageIndex: originalIndex,
+                              });
+                          }
+                          : undefined
+                  }
                   showPredictionMarket={
                     showPredictionMarket && message.type === "video"
                   }
                   agentDisplayName={agentDisplayName}
+                  agentId={agentId}
                 />
               );
             })}

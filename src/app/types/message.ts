@@ -32,7 +32,8 @@ export type ChatEntryProps = {
     | "signature-required"
     | "video_request"
     | "telegram_post"
-    | "x_api_prompt";
+    | "x_api_prompt"
+    | "twitter_post";
   data?: any;
   onAgentCreate?: (agentData: AgentCreationData) => Promise<void>;
   onTokenImageUploaded?: (
