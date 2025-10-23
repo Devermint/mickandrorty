@@ -92,7 +92,7 @@ export const useVideoGeneration = ({
             function: "0x1::coin::transfer",
             typeArguments: ["0x1::aptos_coin::AptosCoin"],
             functionArguments: [
-              process.env.NEXT_PUBLIC_TRANSACTIONS_WALLET,
+              process.env.NEXT_PUBLIC_TRANSACTIONS_WALLET!,
               VIDEO_FEE_OCTAS.toString(),
             ],
           },
