@@ -18,7 +18,7 @@ import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
 import { MarkdownView } from "../MarkdownView/MarkdownView";
 import { ImageUpload } from "../ImageUpload/ImageUpload";
 import { AiOutlineSignature } from "react-icons/ai";
-import { FiDownload } from "react-icons/fi";
+import { FiDownload, FiArrowRight } from "react-icons/fi";
 import { X as TwitterIcon } from "../icons/x";
 import { TelegramIcon } from "../icons/telegram";
 import { LuCopy, LuCheck } from "react-icons/lu";
@@ -26,8 +26,8 @@ import { ChatEntryProps } from "@/app/types/message";
 import type { UploadConstraints } from "@/app/types/file";
 import { PredictionMarket } from "../Media/PredictionMarket";
 import { TelegramChannelDetector } from "../TelegramChannelDetector/TelegramChannelDetector";
-import {ConnectXApiInline} from "@/app/components/Chat/ConnectXApi";
-import {TwitterKeys} from "@/app/lib/utils/agentCreation";
+import { ConnectXApiInline } from "@/app/components/Chat/ConnectXApi";
+import { TwitterKeys } from "@/app/lib/utils/agentCreation";
 
 interface ChatEntryComponentProps extends ChatEntryProps {
   job_id?: string;
@@ -100,11 +100,7 @@ export const ChatEntry = ({
   };
 
   // Background colors
-  const bg = isMyMessage
-    ? colorTokens.blackCustom.a3
-    : isAgent
-    ? "transparent"
-    : colorTokens.blackCustom.a1; // Different bg for other users' messages
+  const bg = isMyMessage ? "#212121" : isAgent ? "transparent" : "#212121"; // Different bg for other users' messages
 
   // Text colors
   const color = isMyMessage
@@ -209,10 +205,10 @@ export const ChatEntry = ({
         px={3}
         py={1}
         bgColor={bg}
-        borderRadius={{ base: 16, md: 28 }}
+        borderRadius={{ base: 10, md: 22 }}
         maxW={messageMaxWidth}
         w={messageWidth}
-        textAlign={isAgent ? "left" : "right"}
+        // textAlign={isAgent ? "left" : "right"}
         overflow="hidden"
       >
         {type === "text" && (
@@ -291,29 +287,83 @@ export const ChatEntry = ({
                 {content}
               </MarkdownView>
             )}
-            <Flex gap={2} justify="flex-end">
-              <Button
-                size="sm"
-                borderWidth={1}
-                borderColor={colorTokens.gray.platinum}
-                onClick={() => {
-                  if (
-                    !isTelegramPostProcessing &&
-                    !isTelegramPostBroadcasted &&
-                    onTelegramPostConfirm
-                  ) {
-                    void onTelegramPostConfirm();
-                  }
-                }}
-                disabled={
+            <Flex gap={2}>
+              {(() => {
+                const isActionDisabled =
                   !onTelegramPostConfirm ||
                   isTelegramPostProcessing ||
-                  isTelegramPostBroadcasted
-                }
-                loading={isTelegramPostProcessing}
-              >
-                {isTelegramPostBroadcasted ? "Broadcasted" : "Pay and post"}
-              </Button>
+                  isTelegramPostBroadcasted;
+                const borderColor = isActionDisabled
+                  ? "rgba(255,255,255,0.1)"
+                  : colorTokens.green.dark;
+                const accentColor = isActionDisabled
+                  ? colorTokens.gray.timberwolf
+                  : colorTokens.green.salad;
+                const pillHover = isActionDisabled
+                  ? {}
+                  : {
+                      borderColor: colorTokens.green.salad,
+                      boxShadow: "0 0 12px rgba(81, 254, 83, 0.25)",
+                    };
+
+                return (
+                  <Button
+                    size="md"
+                    borderRadius={25}
+                    borderWidth="1px"
+                    borderColor={borderColor}
+                    bg="transparent"
+                    h="auto"
+                    px="6px"
+                    py="6px"
+                    pr={3}
+                    display="flex"
+                    gap={2}
+                    fontFamily="sora"
+                    fontWeight={400}
+                    color={accentColor}
+                    disabled={isActionDisabled}
+                    loading={isTelegramPostProcessing}
+                    loadingText="Processing"
+                    spinnerPlacement="end"
+                    _focusVisible={{ boxShadow: "none" }}
+                    onClick={() => {
+                      if (!isActionDisabled && onTelegramPostConfirm) {
+                        void onTelegramPostConfirm();
+                      }
+                    }}
+                  >
+                    <Flex
+                      align="center"
+                      justify="center"
+                      w="25px"
+                      h="25px"
+                      borderRadius="full"
+                      bg={
+                        isActionDisabled
+                          ? colorTokens.gray.disabled
+                          : colorTokens.green.salad
+                      }
+                      transition="background 0.2s ease"
+                    >
+                      <Icon
+                        as={FiArrowRight}
+                        color={
+                          isActionDisabled
+                            ? colorTokens.gray.timberwolf
+                            : colorTokens.blackCustom.a0
+                        }
+                        boxSize={5}
+                      />
+                    </Flex>
+                    <Text fontSize="sm">
+                      {isTelegramPostBroadcasted
+                        ? "Broadcasted"
+                        : "Pay and post"}
+                    </Text>
+                  </Button>
+                );
+              })()}
             </Flex>
           </Stack>
         )}
@@ -454,16 +504,14 @@ export const ChatEntry = ({
           </Box>
         )}
         {type === "x_api_prompt" && (
-            <Stack gap={3} align="stretch">
-              {content && (
-                  <MarkdownView color={color} lineHeight={1.5} fontSize={14} p={1}>
-                    {content}
-                  </MarkdownView>
-              )}
-              <ConnectXApiInline
-                  onSaved={onSaveXAPI}
-              />
-            </Stack>
+          <Stack gap={3} align="stretch">
+            {content && (
+              <MarkdownView color={color} lineHeight={1.5} fontSize={14} p={1}>
+                {content}
+              </MarkdownView>
+            )}
+            <ConnectXApiInline onSaved={onSaveXAPI} />
+          </Stack>
         )}
         {type === "signature-required" && (
           <>
@@ -503,7 +551,7 @@ export const DemoVideoEntry = () => (
     role="assistant"
     content="https://www.w3schools.com/html/mov_bbb.mp4"
     type="video"
-    onSaveXAPI={()=>{}}
+    onSaveXAPI={() => {}}
   />
 );
 
@@ -512,6 +560,6 @@ export const DefaultChatEntry = () => (
     role="assistant"
     content="Chat with this AI agent and other users. Your messages and the agent's responses will be visible to everyone in this agent's chat room."
     type="text"
-    onSaveXAPI={()=>{}}
+    onSaveXAPI={() => {}}
   />
 );

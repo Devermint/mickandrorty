@@ -16,7 +16,7 @@ import { TelegramIcon } from "../icons/telegram";
 import { X } from "../icons/x";
 import { useRouter } from "next/navigation";
 import { AgentMarketInfo } from "./AgentMarketInfo";
-import {AgentOwnerTwitterActions} from "@/app/components/Agents/AgentOwnerTwitterActions";
+import { AgentOwnerTwitterActions } from "@/app/components/Agents/AgentOwnerTwitterActions";
 export function formatThousands(num: string | number, sep = ","): string {
   const s = String(num);
   const isNeg = s.startsWith("-");
@@ -76,17 +76,19 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
     <Flex
       flexDir="column"
       p={{ base: 4, md: 0 }}
-      bg={{ base: colorTokens.blackCustom.a1, md: colorTokens.blackCustom.a2 }}
+      bg="#101010"
       h="100%"
       overflow="auto"
       borderRadius={{ base: "none", md: 11 }}
+      border="1px solid"
+      borderColor="#2A2A2A"
     >
       <Flex
         direction="column"
         align="flex-start"
         flex={1}
         borderRadius={13}
-        bg="linear-gradient(rgba(81, 254, 83, 0.09), rgba(81, 254, 83, 0))"
+        bg="#101010"
         p={3}
         maxH="100%"
       >
@@ -101,8 +103,8 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
         <Flex w="100%" justify="center">
           <Box
             position="relative"
-            w={71}
-            h={71}
+            w={101}
+            h={101}
             borderRadius={6}
             overflow="hidden"
           >
@@ -137,8 +139,7 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
               h={10}
               w={10}
               borderWidth={1}
-              borderColor={colorTokens.gray.platinum}
-              bgColor="#090A0B"
+              bgColor="#212121"
             >
               <X h={13} w={13} color={colorTokens.gray.timberwolf} />
             </Button>
@@ -148,8 +149,7 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
               h={10}
               w={10}
               borderWidth={1}
-              borderColor={colorTokens.gray.platinum}
-              bgColor="#090A0B"
+              bgColor="#212121"
             >
               <TelegramIcon
                 h={13}
@@ -162,7 +162,6 @@ export const AgentInfoView = ({ agent }: { agent: Agent }) => {
         </Flex>
         <AgentMarketInfo mt={5} agent={agent} />
         <AgentOwnerTwitterActions agent={agent} />
-
       </Flex>
 
       <Spacer />

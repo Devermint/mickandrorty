@@ -124,73 +124,71 @@ export const AgentInput = ({
     );
 
   return (
-    // <AnimatedBorderBox
-    //   animationColor="rgba(0, 255, 109, 1)"
-    //   borderColor="rgba(42, 189, 105, 0.6)"
-    //   borderWidth={1}
-    //   borderRadius={13}
-    //   bgColor={colorTokens.blackCustom.a1}
-    //   onKeyDown={(e) => onInputKeyDown(e)}
-    //   {...rest}
-    // >
-    <Flex
-      h="100%"
-      p={{ base: 2, md: 3 }}
-      align="flex-end"
-      w="100%"
-      maxH="100%"
+    <AnimatedBorderBox
+      animationColor="rgba(42, 42, 42, 1)"
+      borderColor="rgba(42, 42, 42, 0.4)"
+      borderWidth={1}
+      borderRadius={13}
+      bgColor="#212121"
       onKeyDown={(e) => onInputKeyDown(e)}
       {...rest}
     >
-      <Flex direction="column" h="100%" w="100%" align="flex-end" mr={3}>
-        <Textarea
-          h="100%"
-          fontFamily="Jetbrains mono"
-          placeholder="Start generating..."
-          color={colorTokens.gray.platinum}
-          transition="box-shadow 0.3s ease"
-          border="none"
-          borderRadius={13}
-          _focus={{
-            outline: "none",
-            boxShadow: "none",
-          }}
-          resize="none"
-          p={1}
-          ref={inputRef}
-          onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-            setInputValue(e.target.value)
-          }
-        />
-        {showAiToggle && (
-          <Flex align="center" gap={2}>
-            <Text
-              fontSize="xs"
-              color={colorTokens.gray.platinum}
-              letterSpacing="0.08em"
-              fontFamily={sora.style.fontFamily}
-            >
-              Ask AI
-            </Text>
-            {renderedSwitch}
-          </Flex>
-        )}
-      </Flex>
+      <Flex
+        h="100%"
+        p={{ base: 2, md: 3 }}
+        align="flex-end"
+        w="100%"
+        maxH="100%"
+      >
+        <Flex direction="column" h="100%" w="100%" align="flex-end" mr={3}>
+          <Textarea
+            h="100%"
+            fontFamily="Jetbrains mono"
+            placeholder="Start generating..."
+            color={colorTokens.gray.platinum}
+            transition="box-shadow 0.3s ease"
+            border="none"
+            borderRadius={13}
+            _focus={{
+              outline: "none",
+              boxShadow: "none",
+            }}
+            resize="none"
+            p={1}
+            ref={inputRef}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+              setInputValue(e.target.value)
+            }
+          />
+          {showAiToggle && (
+            <Flex align="center" gap={2}>
+              <Text
+                fontSize="xs"
+                color={colorTokens.gray.platinum}
+                letterSpacing="0.08em"
+                fontFamily={sora.style.fontFamily}
+              >
+                Ask AI
+              </Text>
+              {renderedSwitch}
+            </Flex>
+          )}
+        </Flex>
 
-      <Flex align="center" justify="flex-end" gap={3}>
-        <Button
-          borderRadius={22}
-          maxH={35}
-          maxW={35}
-          p={0}
-          border="none"
-          onClick={onButtonClick}
-          disabled={inputValue.length === 0 || disabled}
-        >
-          <ArrowUp h="full" w="full" color={colorTokens.gray.disabled} />
-        </Button>
+        <Flex align="center" justify="flex-end" gap={3}>
+          <Button
+            maxH={6}
+            maxW={6}
+            p={0}
+            border="none"
+            onClick={onButtonClick}
+            disabled={inputValue.length === 0 || disabled}
+            minW={0}
+          >
+            <ArrowUp h="full" w="full" color={colorTokens.gray.disabled} />
+          </Button>
+        </Flex>
       </Flex>
-    </Flex>
-    // </AnimatedBorderBox>
+    </AnimatedBorderBox>
   );
 };

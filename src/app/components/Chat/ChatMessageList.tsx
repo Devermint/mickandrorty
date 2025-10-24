@@ -63,7 +63,11 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         maxH="100%"
         css={{
           "&::-webkit-scrollbar": { width: "4px" },
-          "&::-webkit-scrollbar-track": { width: "6px" },
+          "&::-webkit-scrollbar-track": {
+            width: "6px",
+            marginTop: "4px",
+            marginBottom: "4px",
+          },
           "&::-webkit-scrollbar-thumb": { borderRadius: "24px" },
         }}
       >

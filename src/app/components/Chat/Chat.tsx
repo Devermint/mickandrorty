@@ -338,7 +338,7 @@ const Chat = ({
 
         {!showTabs || activeTab === "chat" ? (
           <>
-            <ChatHelperPanel onSelect={handleHelperButtonClick} />
+            {/* <ChatHelperPanel onSelect={handleHelperButtonClick} /> */}
             <ChatInputBar
               inputRef={inputMessage}
               onSend={onMessageSend}
