@@ -177,7 +177,12 @@ export function AgentOwnerTwitterActions({
             />
           </>
         ) : (
-          <></>
+            <>
+              <ChatHelperButton
+                  label={"Change X API keys"}
+                  onButtonClick={() => setKeysOpen(true)}
+              />
+            </>
         )}
       </HStack>
       )}
