@@ -291,7 +291,7 @@ const Chat = ({
 
   return (
     <Flex
-      bg={colorTokens.blackCustom.a1}
+      bg={colorTokens.gray.tertiaryDark}
       borderRadius={{ base: 0, md: 13 }}
       maxW={800}
       w={{ base: "100%", lg: 800 }}

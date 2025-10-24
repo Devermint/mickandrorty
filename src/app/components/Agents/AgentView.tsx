@@ -15,8 +15,7 @@ export type TabKey = "info" | "chart" | "chat";
 interface Props {
   agent: Agent;
 }
-//todo will need to have data for OHLC pricing integrated from backend
-// also will need to wire
+
 export const AgentView = ({ agent }: Props) => {
   const [messages, setMessages] = useState<ChatEntryProps[]>([]);
   return (
@@ -27,6 +26,7 @@ export const AgentView = ({ agent }: Props) => {
       gap={4}
       pb={4}
       minH={0}
+      maxW={1620}
     >
       <GridItem colSpan={1} h="full" minH={0} overflow="hidden">
         <Chat
@@ -36,7 +36,7 @@ export const AgentView = ({ agent }: Props) => {
           maxW={800}
           w="100%"
           minH="0"
-          bg={colorTokens.blackCustom.a2}
+          bg="#101010"
           enableGroupChat={!(agent.agent_type === AgentType.AgentCreator)}
         />
       </GridItem>

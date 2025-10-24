@@ -187,11 +187,26 @@ export default function AgentExplorerPage() {
         maxW={1620}
         mx="auto"
       >
-        <Banner
-          text="Create Agent, generate videos, Kick start predictions!"
-          buttonText="Try it now"
-          image="/img/new/agentBanner.webp"
-        />
+        <Flex gap={15} direction={{ base: "column", md: "row" }}>
+          <Banner
+            text="Build your persona"
+            buttonText="Create your AI agent in seconds"
+            image="/img/new/banner1.webp"
+            href="/"
+          />
+          <Banner
+            text="Invite & Earn"
+            buttonText="Share your link, complete tasks, and earn rewards with friends."
+            image="/img/new/banner2.webp"
+            href="/referrals"
+          />
+          <Banner
+            text="Climb the ranks."
+            buttonText="Track your referrals and see who’s leading the community."
+            image="/img/new/banner3.webp"
+            href="/referrals"
+          />
+        </Flex>
         <Text color="white" fontFamily="inter" fontSize={16}>
           Community Agents
         </Text>

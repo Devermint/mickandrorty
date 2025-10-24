@@ -68,8 +68,8 @@ export default function WalletMenu({
         <Button
           size={{ base: "sm", md: "xl" }}
           className="wallet-button"
-          borderRadius="10px"
-          borderColor={colorTokens.green.dark}
+          borderRadius={32}
+          background={colorTokens.gray.tertiaryDark}
         >
           <Flex alignItems="center">
             <Text
@@ -79,7 +79,8 @@ export default function WalletMenu({
               whiteSpace="nowrap"
               ml={2}
               color={colorTokens.gray.timberwolf}
-              fontSize={{ base: "2xs", md: "lg" }}
+              fontSize={{ base: "2xs", md: "md" }}
+              fontFamily="inter"
             >
               {truncateAddress(account?.address?.toString() || "") || "Unknown"}
             </Text>

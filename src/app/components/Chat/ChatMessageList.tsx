@@ -6,7 +6,7 @@ import {
   ChatState,
   TelegramChannelDetectionResult,
 } from "@/app/types/message";
-import {TwitterKeys} from "@/app/lib/utils/agentCreation";
+import { TwitterKeys } from "@/app/lib/utils/agentCreation";
 
 interface ChatMessageListProps {
   messages: ChatEntryProps[];
@@ -41,7 +41,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       emptyState,
       showPredictionMarket = false,
       agentDisplayName,
-      onSaveXAPI
+      onSaveXAPI,
     },
     ref
   ) => {
@@ -72,7 +72,12 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         ) : (
           <>
             {chatState === ChatState.PROCESSING && (
-              <ChatEntry onSaveXAPI={onSaveXAPI} type="loader" role="assistant" content="" />
+              <ChatEntry
+                onSaveXAPI={onSaveXAPI}
+                type="loader"
+                role="assistant"
+                content=""
+              />
             )}
             {reversedMessages.map((message, index) => {
               const originalIndex = messages.length - 1 - index;
@@ -86,7 +91,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
 
               return (
                 <ChatEntry
-                    onSaveXAPI={onSaveXAPI}
+                  onSaveXAPI={onSaveXAPI}
                   key={originalIndex}
                   role={message.role}
                   content={message.content}
