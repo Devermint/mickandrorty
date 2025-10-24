@@ -10,13 +10,18 @@ export default function Footer() {
     <Flex
       display={{ base: "none", md: "flex" }}
       w="100%"
-      mt={{ md: 5, lg: "auto" }}
+      bg="#101010"
+      justify="center"
+      px={{ base: 3, md: 5, lg: 10 }}
+      borderTop="1px solid"
+      borderColor={colorTokens.gray[300]}
+      py={1}
     >
       <Flex
         wrap={{ base: "nowrap", md: "wrap", lg: "nowrap" }}
-        mx="1rem"
-        background="transparent"
+        maxW={{ base: "unset", lg: 1620 }}
         w="100%"
+        background="transparent"
         position="relative"
       >
         <Flex
@@ -27,16 +32,26 @@ export default function Footer() {
           maxH="100%"
           position={{ md: "relative", lg: "absolute" }}
           left={0}
+          align="center"
         >
           <Button
-            fontSize={13}
-            color={colorTokens.green.darkErin}
+            fontSize={14}
+            color={colorTokens.gray.tertiary}
             borderRadius={33}
-            borderColor={colorTokens.green.dark}
             bg="transparent"
             gap={5}
+            fontFamily="inter"
+            px={20}
+            border="1px solid"
+            borderColor={colorTokens.gray.disabled}
           >
-            <GlobeIcon h="1.5rem" w="auto" /> Visit AptosLayerAI
+            <GlobeIcon
+              h={5}
+              w="auto"
+              color={colorTokens.gray.tertiary}
+              lineHeight={1.5}
+            />
+            Visit AptosLayerAI
           </Button>
         </Flex>
 
@@ -55,6 +70,7 @@ export default function Footer() {
             lineHeight={1.5}
             textAlign="center"
             color={colorTokens.gray.platinum}
+            fontFamily="inter"
           >
             <span>By messaging Aptos Layer, you agree to our </span>
             <Link href="">
@@ -81,14 +97,16 @@ export default function Footer() {
           maxH="100%"
           position={{ md: "relative", lg: "absolute" }}
           right={0}
+          align="center"
         >
           <Box
             fontSize={{ base: 13, lg: 13 }}
             lineHeight={1.5}
             textAlign={{ base: "left", md: "right", lg: "right" }}
             color={colorTokens.gray.platinum}
+            fontFamily="inter"
           >
-            © Copyrights reserved by Aptos AI Layer <br /> 2025
+            Copyrights reserved by Aptos AI Layer <br /> 2025
           </Box>
         </Flex>
       </Flex>

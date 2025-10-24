@@ -23,7 +23,16 @@ export type Agent = {
     apt_decimals?: number;
     apt_raw?: number;
   };
+  twitter: TwitterObj | null;
   agent_type?: AgentType;
+};
+
+export type TwitterObj = {
+  meta: TwitterMeta;
+};
+
+export type TwitterMeta = {
+  username: string;
 };
 
 export enum AgentType {
@@ -53,6 +62,7 @@ export const testAgents: Agent[] = [
       apt_decimals: undefined,
       apt_raw: undefined,
     },
+    twitter: null,
   },
   {
     fa_id: "0f268864-9777-4a0b-bc66-66a386d14778",
@@ -75,6 +85,7 @@ export const testAgents: Agent[] = [
       apt_decimals: undefined,
       apt_raw: undefined,
     },
+    twitter: null,
   },
   {
     fa_id: "662ea2ee-1e4f-4a00-9130-a771f4b84cc2",
@@ -97,5 +108,6 @@ export const testAgents: Agent[] = [
       apt_decimals: undefined,
       apt_raw: undefined,
     },
+    twitter: null,
   },
 ];

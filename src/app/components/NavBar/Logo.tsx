@@ -10,8 +10,7 @@ type Props = {
 export const Logo = ({ height = "100%" }: Props) => (
   <Link href="https://aptoslayer.ai/">
     <Image
-      py={3}
-      src="/logo.png"
+      src="/img/new/logo2.webp"
       alt="logo"
       style={{
         objectFit: "contain",

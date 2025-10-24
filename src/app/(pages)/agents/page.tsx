@@ -24,6 +24,7 @@ import {
   verifyPaymentTransaction,
   PaymentVerificationError,
 } from "@/app/lib/utils/verifyPaymentTransaction";
+import { Banner } from "@/app/components/Banner/Banner";
 
 function useDebounced<T>(value: T, ms = 350) {
   const [v, setV] = useState(value);
@@ -160,32 +161,46 @@ export default function AgentExplorerPage() {
 
   const openAgent = (faId: string) => router.push(`/agent/${faId}`);
   return (
-    <Box position="relative" overflowX="hidden" overflowY="scroll">
-      <Box
+    <Flex
+      flexDir="column"
+      position="relative"
+      overflowX="hidden"
+      overflowY="scroll"
+      px={{ base: 3, md: 6 }}
+      h="full"
+    >
+      {/* <Box
         position="absolute"
         inset={0}
         pointerEvents="none"
         bgSize="100% 100%, 24px 24px, 24px 24px"
         opacity={0.5}
       />
-      <Box position="absolute" inset={0} pointerEvents="none" />
+      <Box position="absolute" inset={0} pointerEvents="none" /> */}
 
       <Flex
         direction="column"
-        px={{ base: 3, md: 6 }}
         py={{ base: 4, md: 8 }}
         gap={5}
         position="relative"
-        w="100%"
-        align="center"
+        w="full"
+        maxW={1620}
+        mx="auto"
       >
+        <Banner
+          text="Create Agent, generate videos, Kick start predictions!"
+          buttonText="Try it now"
+          image="/img/new/agentBanner.webp"
+        />
+        <Text color="white" fontFamily="inter" fontSize={16}>
+          Community Agents
+        </Text>
         {txHash && (
           <Flex
             w={{ base: "100%", md: "70%" }}
             bg="rgba(62, 255, 150, 0.08)"
             border={`1px solid ${neonSoft}`}
             borderRadius="lg"
-            px={4}
             py={3}
             align="center"
             gap={3}
@@ -204,8 +219,7 @@ export default function AgentExplorerPage() {
             </Text>
           </Flex>
         )}
-
-        {isLoading && !data && (
+        {/* {isLoading && !data && (
           <SimpleGrid
             columns={{ base: 2, sm: 2, md: 3, lg: 4, xl: 5 }}
             gap="2rem 2rem"
@@ -223,19 +237,17 @@ export default function AgentExplorerPage() {
               />
             ))}
           </SimpleGrid>
-        )}
-
+        )} */}
         {isError && (
           <Text color="red.400">Failed to load agents. Please try again.</Text>
         )}
         <SimpleGrid
-          w={{ base: "90%", md: "70%" }}
-          minChildWidth="220px"
+          w="full"
+          minChildWidth="350px"
           justifyItems="center"
           alignItems="start"
           flex={1}
-          maxW={{ base: "90%", md: "70%" }}
-          columns={{ base: 2, sm: 2, md: 3, lg: 4, xl: 5 }}
+          columns={{ base: 2, sm: 2, md: 4, lg: 4, xl: 5 }}
           gap="2rem 2rem"
         >
           {agents.map((agent) => (
@@ -244,21 +256,17 @@ export default function AgentExplorerPage() {
               role="button"
               onClick={() => agent.fa_id && openAgent(agent.fa_id)}
               cursor="pointer"
-              bg={cardBg}
-              border={`1px solid ${border}`}
-              borderRadius={20}
               _hover={{
                 transform: "translateY(-2px)",
-                boxShadow: `0 0 0 1px ${neonSoft}, 0 0 24px ${neonSoft}`,
               }}
               transition="all 160ms ease"
+              w="100%"
             >
               <AgentListCard agent={agent} />
             </Box>
           ))}
         </SimpleGrid>
-
-        <Flex justify="center" py={6}>
+        <Flex justify="center">
           {isFetchingNextPage ? (
             <Spinner color={neon} />
           ) : hasNextPage ? (
@@ -271,13 +279,10 @@ export default function AgentExplorerPage() {
             >
               Load more
             </Button>
-          ) : agents.length > 0 ? (
-            <Text color={colorTokens.green.darkErin}>No more agents</Text>
           ) : null}
         </Flex>
-
         <Box ref={sentinelRef} h="1px" />
       </Flex>
-    </Box>
+    </Flex>
   );
 }

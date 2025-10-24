@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
           action: "TEXT",
         });
       }
-
       const telegramPost = await getTelegramPost(messages, latestVideoUrl);
 
       if (!telegramPost?.post) {
@@ -220,7 +219,7 @@ async function getTelegramPost(
   latestVideoUrl: string
 ): Promise<{ post: string } | null> {
   const completion = await openai.chat.completions.create({
-    model: "gpt-5",
+    model: "gpt-5-mini",
     messages: [
       {
         role: "system",
@@ -228,7 +227,7 @@ async function getTelegramPost(
       },
       ...messages,
     ],
-    max_completion_tokens: 400,
+    max_completion_tokens: 1500,
     response_format: zodResponseFormat(TelegramPostObject, "telegram_post"),
   });
 

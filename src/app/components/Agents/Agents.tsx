@@ -1,8 +1,7 @@
 "use client";
-import { AgentCarousel } from "@/app/components/Agents/AgentCarousel";
-import { Box, Flex, Spacer, Spinner, Text } from "@chakra-ui/react";
-import { useRef, useState, useEffect, SetStateAction } from "react";
-import { AgentInput } from "@/app/components/Agents/AgentInput";
+
+import { Box, Flex, Spacer, Spinner, Text, Image } from "@chakra-ui/react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAgents } from "@/app/hooks/useAgents";
 import { colorTokens } from "../theme/theme";
@@ -98,12 +97,20 @@ export default function Agents() {
           </>
         )} */}
       {!isLoading && (
-        <Flex direction="column" h="100%">
+        <Flex direction="column" h="100%" align="center">
+          <Image
+            src="/img/home-page.webp"
+            alt="Group photo"
+            width="100%"
+            height="100%"
+            maxW={410}
+          />
           <Text
             textAlign="center"
             fontFamily="Sora"
-            fontSize={{ base: "3rem", md: "5rem" }}
+            fontSize={{ base: "3rem", md: "4rem" }}
             lineHeight={1}
+            fontWeight={500}
             css={{
               background:
                 "linear-gradient(to bottom, #FFFFFF 0%, #646363ff 100%)",
@@ -118,33 +125,7 @@ export default function Agents() {
             Chat with Agent to proceed creation of your own Ai agent
           </Text>
           <Chat
-            agent={{
-              wallet: undefined,
-              fa_id: undefined,
-              agent_symbol: undefined,
-              agent_name: undefined,
-              agent_icon_url: undefined,
-              decimals: undefined,
-              tx_hash: undefined,
-              status: undefined,
-              created: undefined,
-              updated: undefined,
-              id: undefined,
-              type: undefined,
-              tag: undefined,
-              liquidity_usd: undefined,
-              mcap_usd: undefined,
-              pair_address: undefined,
-              price_apt: undefined,
-              price_usd: undefined,
-              reserves: {
-                agent_decimals: undefined,
-                agent_raw: undefined,
-                apt_decimals: undefined,
-                apt_raw: undefined,
-              },
-              agent_type: AgentType.AgentCreator,
-            }}
+            agent={agentDummy}
             chatName="Aptos Agent"
             messages={messages}
             setMessages={setMessages}
@@ -154,9 +135,38 @@ export default function Agents() {
             mt={{ base: 4, md: 10 }}
             overflow="hidden"
             pt={{ base: 5, md: 0 }}
+            showHeader={false}
           />
         </Flex>
       )}
     </Flex>
   );
 }
+
+const agentDummy = {
+  wallet: undefined,
+  fa_id: undefined,
+  agent_symbol: undefined,
+  agent_name: undefined,
+  agent_icon_url: undefined,
+  decimals: undefined,
+  tx_hash: undefined,
+  status: undefined,
+  created: undefined,
+  updated: undefined,
+  id: undefined,
+  type: undefined,
+  tag: undefined,
+  liquidity_usd: undefined,
+  mcap_usd: undefined,
+  pair_address: undefined,
+  price_apt: undefined,
+  price_usd: undefined,
+  reserves: {
+    agent_decimals: undefined,
+    agent_raw: undefined,
+    apt_decimals: undefined,
+    apt_raw: undefined,
+  },
+  agent_type: AgentType.AgentCreator,
+};

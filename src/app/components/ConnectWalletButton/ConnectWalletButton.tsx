@@ -1,9 +1,16 @@
 "use client";
-import { Button, Flex, Text, Dialog, Portal, CloseButton, useDisclosure } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  Text,
+  Dialog,
+  Portal,
+  CloseButton,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
-import { WalletIcon } from "../icons/wallet";
 import { useAptosWallet } from "@/app/context/AptosWalletContext";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
 
@@ -49,20 +56,28 @@ export default function ConnectWalletButton() {
           borderWidth={1}
           onClick={handleConnect}
           borderColor={{ base: "gray.700", md: colorTokens.green.dark }}
-          borderRadius={6}
+          borderRadius={34}
           alignItems="center"
           justifyContent="center"
           px={6}
           py={{ base: 2, md: 3 }}
-          bgColor={{ base: "transparent", md: colorTokens.blackCustom.a2 }}
+          bgColor={{ base: "transparent", md: "#E5E5E5" }}
           h="unset"
         >
-          <Text display={{ base: "none", md: "block" }}>Connect wallet</Text>
-          <WalletIcon w={5} color={colorTokens.green.erin} />
+          <Text
+            display={{ base: "none", md: "block" }}
+            color="black"
+            fontWeight={500}
+          >
+            Connect wallet
+          </Text>
         </Button>
       )}
 
-      <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
+      <Dialog.Root
+        open={isOpen}
+        onOpenChange={(details) => !details.open && onClose()}
+      >
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
@@ -75,8 +90,9 @@ export default function ConnectWalletButton() {
               </Dialog.CloseTrigger>
               <Dialog.Body>
                 <Text>
-                  To complete your login, you need to sign a message to verify that you own this
-                  wallet. This is a secure step and does not cost any gas fees.
+                  To complete your login, you need to sign a message to verify
+                  that you own this wallet. This is a secure step and does not
+                  cost any gas fees.
                 </Text>
               </Dialog.Body>
               <Dialog.Footer>
