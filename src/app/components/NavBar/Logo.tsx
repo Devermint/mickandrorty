@@ -5,12 +5,13 @@ import Link from "next/link";
 
 type Props = {
   height?: string;
+  src?: string;
 };
 
-export const Logo = ({ height = "100%" }: Props) => (
+export const Logo = ({ height = "100%", src }: Props) => (
   <Link href="https://aptoslayer.ai/">
     <Image
-      src="/img/new/logo2.webp"
+      src={src ?? "/img/new/logo2.webp"}
       alt="logo"
       style={{
         objectFit: "contain",

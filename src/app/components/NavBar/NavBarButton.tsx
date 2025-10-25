@@ -35,7 +35,7 @@ export default function NavBarButton({
         fontWeight="300"
         fontSize={{ base: "14px", xl: 16 }}
         color={textColor}
-        fontFamily="poppins"
+        fontFamily="inter"
       >
         {text}
       </Text>

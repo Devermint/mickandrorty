@@ -1,7 +1,7 @@
 "use client";
 
 import { Flex, IconButton, Icon, Box, Button, Portal } from "@chakra-ui/react";
-import { IoClose } from "react-icons/io5";
+import { IoMdClose } from "react-icons/io";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { Logo } from "./Logo";
 import ConnectWalletButton from "../ConnectWalletButton/ConnectWalletButton";
@@ -12,6 +12,7 @@ import Link from "next/link";
 import { NavButton } from "@/app/types/navBar";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { HamburgerIcon } from "../icons/hamburger";
 
 type Props = {
   navButtons: NavButton[];
@@ -41,7 +42,9 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
         py={0}
         zIndex={50}
         display={{ base: "flex", md: "none" }}
-        bg={{ base: colorTokens.blackCustom.a2, md: "transparent" }}
+        bg={{ base: colorTokens.blackCustom.a1, md: "transparent" }}
+        borderBottom="1px solid"
+        borderBottomColor="#333333"
       >
         <IconButton
           bg="none"
@@ -53,15 +56,14 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
           aria-label="Toggle menu"
         >
           {open ? (
-            <Icon size="2xl" ml={-1}>
-              <IoClose />
+            <Icon size="2xl" ml={-1} color={colorTokens.gray.platinum}>
+              <IoMdClose />
             </Icon>
           ) : (
-            <RxHamburgerMenu />
+            <HamburgerIcon color={colorTokens.gray.platinum} />
           )}
         </IconButton>
-        <Logo height="44px" />
-        <ConnectWalletButton />
+        <Logo height="31px" src="/img/new/logo-mobile.webp" />
       </Flex>
 
       {open && (
@@ -75,10 +77,12 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
             zIndex={25}
             bg="black"
             flexDir="column"
-            gap={3}
-            pt={3}
+            gap={2}
+            pt={2}
             overflowY="auto"
             maxH="calc(100dvh - 64px)"
+            borderTop="1px solid"
+            borderTopColor="#333333"
           >
             {navButtons.map((button, index) => (
               <Box key={index} w="100%">
@@ -86,7 +90,9 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
                   text={button.text}
                   onClick={handleButtonClick}
                   textColor={
-                    button.active ? colorTokens.green.erin : "gray.700"
+                    button.active
+                      ? colorTokens.green.salad
+                      : colorTokens.gray.timberwolf
                   }
                   alignItems="start"
                   ml={5}
@@ -94,13 +100,13 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
                 <Box
                   borderBottom="1px solid"
                   borderColor={colorTokens.green.dark}
-                  mt={3}
+                  mt={2}
                 />
               </Box>
             ))}
 
             <Flex maxH="100%" flexGrow={1} justify="center" alignItems="end">
-              <Box
+              {/* <Box
                 lineHeight={1.5}
                 color={colorTokens.gray.platinum}
                 textAlign="center"
@@ -136,7 +142,8 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
                   Visit AptosLayerAI
                 </Button>
                 <span>© Copyrights reserved by Aptos AI Layer 2025</span>
-              </Box>
+              </Box> */}
+              <ConnectWalletButton mb={6} />
             </Flex>
           </Flex>
         </Portal>

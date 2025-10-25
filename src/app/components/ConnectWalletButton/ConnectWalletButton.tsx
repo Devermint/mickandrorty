@@ -7,6 +7,7 @@ import {
   Portal,
   CloseButton,
   useDisclosure,
+  FlexProps,
 } from "@chakra-ui/react";
 import { colorTokens } from "../theme/theme";
 import { useAptosWallet } from "@/app/context/AptosWalletContext";
@@ -18,7 +19,7 @@ const WalletMenu = dynamic(() => import("../../hooks/WalletMenu"), {
   ssr: false,
 });
 
-export default function ConnectWalletButton() {
+export default function ConnectWalletButton({ ...rest }: FlexProps) {
   const { isConnected, isWalletConnected, connect, login } = useAptosWallet();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const isMobile = useIsMobile();
@@ -48,9 +49,11 @@ export default function ConnectWalletButton() {
   }
 
   return (
-    <Flex>
+    <Flex {...rest} px={5} w={{ base: "100%", md: "auto" }}>
       {isConnected ? (
-        <WalletMenu />
+        <Flex w={{ base: "100%", md: "auto" }}>
+          <WalletMenu />
+        </Flex>
       ) : (
         <Button
           borderWidth={1}
@@ -59,13 +62,14 @@ export default function ConnectWalletButton() {
           borderRadius={34}
           alignItems="center"
           justifyContent="center"
-          px={6}
-          py={{ base: 2, md: 3 }}
-          bgColor={{ base: "transparent", md: "#E5E5E5" }}
+          px={{ base: 6, md: 6 }}
+          py={{ base: 3, md: 3 }}
+          bgColor={{ base: colorTokens.green.salad, md: "#E5E5E5" }}
           h="unset"
+          w={{ base: "100%", md: "auto" }}
         >
           <Text
-            display={{ base: "none", md: "block" }}
+            display={{ base: "block", md: "block" }}
             color="black"
             fontWeight={500}
           >
