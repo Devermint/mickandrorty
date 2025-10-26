@@ -25,6 +25,7 @@ import { useVideoGeneration } from "./hooks/useVideoGeneration";
 import { useTelegramPostBroadcast } from "./hooks/useTelegramPostBroadcast";
 import { useChatGroupSync } from "./hooks/useChatGroupSync";
 import { useAptosWallet } from "../../context/AptosWalletContext";
+import { useTwitterPostPoster } from "@/app/components/Chat/hooks/useTwitterPostBroadcast";
 
 interface ChatProps extends FlexProps {
   agent: Agent;
@@ -236,6 +237,16 @@ const Chat = ({
       agentId: agent.fa_id,
     });
 
+  const { handleTwitterPostConfirm, twitterPostInProgressIndex } =
+    useTwitterPostPoster({
+      wallet,
+      account,
+      isConnected,
+      setMessages,
+      setChatState,
+      agentId: agent.fa_id,
+    });
+
   const { handleChannelsDetected } = useTelegramChannelDetection({
     setMessages,
     inputMessage,
@@ -327,18 +338,22 @@ const Chat = ({
           onChannelsDetected={handleChannelsDetected}
           onGenerateVideo={handleVideoGenerationRequest}
           onTelegramPostConfirm={handleTelegramPostConfirm}
+          onTwitterPostConfirm={handleTwitterPostConfirm}
           telegramPostInProgressIndex={telegramPostInProgressIndex}
+          twitterPostInProgressIndex={twitterPostInProgressIndex}
           emptyState={
             showTabs && activeTab === "media" ? mediaEmptyState : undefined
           }
           showPredictionMarket={showTabs && activeTab === "media"}
           agentDisplayName={agent.agent_name ?? "Agent"}
+          agentOwnerAddress={agent.wallet}
+          agentId={agent.id}
           onSaveXAPI={handleXApiSaved}
         />
 
         {!showTabs || activeTab === "chat" ? (
           <>
-            {/* <ChatHelperPanel onSelect={handleHelperButtonClick} /> */}
+            <ChatHelperPanel onSelect={handleHelperButtonClick} agent={agent} />
             <ChatInputBar
               inputRef={inputMessage}
               onSend={onMessageSend}

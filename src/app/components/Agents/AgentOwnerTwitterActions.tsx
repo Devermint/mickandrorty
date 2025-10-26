@@ -158,7 +158,6 @@ export function AgentOwnerTwitterActions({
     }
   }
 
-  if (!isOwner) return null;
 
   const keysOk = keys?.configured && keys?.ok;
   const quotaDepleted = usage ? usage.remaining <= 0 : false;
@@ -166,6 +165,7 @@ export function AgentOwnerTwitterActions({
   return (
     <HStack w="full" justify="left" mt="3">
       {/*  Keys */}
+      {isOwner && (
       <HStack>
         {keysLoading ? (
           <Spinner size="sm" />
@@ -177,16 +177,22 @@ export function AgentOwnerTwitterActions({
             />
           </>
         ) : (
-          <></>
+            <>
+              <ChatHelperButton
+                  label={"Change X API keys"}
+                  onButtonClick={() => setKeysOpen(true)}
+              />
+            </>
         )}
       </HStack>
+      )}
       {/*  quota info + create post */}
       <HStack>
-        <ChatHelperButton
-          label={creatingDraft ? <Spinner size="sm" /> : "Post on X"}
-          onButtonClick={handleCreatePost}
-          disabled={!keysOk || quotaDepleted || creatingDraft}
-        />
+        {/*<ChatHelperButton*/}
+        {/*  label={creatingDraft ? <Spinner size="sm" /> : "Post on X"}*/}
+        {/*  onButtonClick={handleCreatePost}*/}
+        {/*  disabled={!keysOk || quotaDepleted || creatingDraft}*/}
+        {/*/>*/}
         <ChakraTooltip.Root positioning={{ placement: "top" }} openDelay={200}>
           <ChakraTooltip.Trigger asChild>
             <IconButton

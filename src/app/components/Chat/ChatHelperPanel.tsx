@@ -1,5 +1,6 @@
 import { Flex } from "@chakra-ui/react";
 import { ChatHelperButton } from "./ChatHelperButton";
+import {Agent} from "@/app/types/agent";
 
 interface HelperOption {
   label: string;
@@ -17,11 +18,27 @@ const helperOptions: HelperOption[] = [
   },
 ];
 
+
+const helperOptionsAgentPage: HelperOption[] = [
+  {
+    label: "Generate video",
+    message: "Could you please generate me a video?",
+  },
+  {
+    label: "Post on X",
+    message: "Could you create a post on X?",
+  },
+  {
+    label: "Post on Telegram",
+    message: "Could you create a post on Telegram? ",
+  },
+];
 interface ChatHelperPanelProps {
   onSelect: (message: string) => void;
+  agent: Agent;
 }
 
-export const ChatHelperPanel = ({ onSelect }: ChatHelperPanelProps) => (
+export const ChatHelperPanel = ({ onSelect, agent }: ChatHelperPanelProps) => (
   <Flex
     w="100%"
     gap={2}
@@ -31,7 +48,7 @@ export const ChatHelperPanel = ({ onSelect }: ChatHelperPanelProps) => (
     justify="center"
     flexShrink={0}
   >
-      {helperOptions.map((option) => (
+      {(agent.fa_id ? helperOptionsAgentPage : helperOptions).map((option) => (
         <ChatHelperButton
           key={option.label}
           label={option.label}

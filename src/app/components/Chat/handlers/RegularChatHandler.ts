@@ -71,6 +71,27 @@ export class RegularChatHandler extends MessageHandler {
         });
 
         this.getContext().setChatState(ChatState.IDLE);
+      } else if (action === "GENERATE_X_POST") {
+        const videoUrl =
+            data && typeof data.videoUrl === "string" ? data.videoUrl : undefined;
+
+        context.setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: message,
+            type: "twitter_post",
+            data: { videoUrl, post: message, isGroupMessage: false },
+          },
+        ]);
+
+        context.sendAgentMessage?.({
+          content: message,
+          type: "twitter_post",
+          data: { videoUrl, post: message },
+        });
+
+        this.getContext().setChatState(ChatState.IDLE);
       } else {
         this.addAssistantMessage(message, "text");
         this.getContext().setChatState(ChatState.IDLE);
