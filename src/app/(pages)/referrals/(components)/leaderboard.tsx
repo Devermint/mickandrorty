@@ -38,18 +38,20 @@ export default function Leaderboard({ leaderboard }: LeaderboardProps) {
   // };
 
   const getLeaderboardEntry = (entry: LeaderboardEntry, idx: number) => {
-    return (
+    const card = (
       <Flex
         justify="space-between"
         align="center"
         mb={2}
         bg={
           idx === -1
-            ? "#555555"
+            ? colorTokens.gray.tertiaryDark
             : idx % 2 == 0
-            ? colorTokens.gray[500]
-            : colorTokens.blackCustom.a2
+            ? colorTokens.gray.tertiaryDark
+            : "#121213"
         }
+        border={idx === -1 ? "1px solid" : "none"}
+        borderColor={colorTokens.gray[300]}
         borderRadius={15}
         py="7px"
         px={3}
@@ -78,6 +80,18 @@ export default function Leaderboard({ leaderboard }: LeaderboardProps) {
         </Flex>
       </Flex>
     );
+
+    if (idx === -1) {
+      return (
+        <Box key={`${entry.name}-wrapper`} borderRadius={15} p="1px" mb={2}>
+          <Box borderRadius={14} bg={colorTokens.gray.tertiaryDark}>
+            {card}
+          </Box>
+        </Box>
+      );
+    }
+
+    return card;
   };
 
   const self = leaderboard?.all_time.entries.find((e) => e.isSelf);

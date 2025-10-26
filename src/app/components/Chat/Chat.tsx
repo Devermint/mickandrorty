@@ -292,14 +292,13 @@ const Chat = ({
   return (
     <Flex
       bg={colorTokens.gray.tertiaryDark}
-      borderRadius={{ base: 0, md: 13 }}
+      borderRadius={{ base: 0, md: 21 }}
       maxW={800}
-      w={{ base: "100%", lg: 800 }}
+      w={{ base: "100%", lg: 725 }}
       flexDirection="column"
-      justify="space-between"
       overflow="hidden"
       maxH="100%"
-      h="100%"
+      h={agent.agent_name ? "100%" : "50%"}
       {...rest}
     >
       <Flex flexDir="column" flex={1} overflowY="hidden">
@@ -352,7 +351,7 @@ const Chat = ({
             />
           </>
         ) : (
-          <Flex h={6} />
+          <></>
         )}
       </Flex>
     </Flex>

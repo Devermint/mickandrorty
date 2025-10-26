@@ -24,7 +24,8 @@ import {
   isLeaderboardResponse,
   type LeaderboardResponse,
 } from "@/app/types/leaderboard";
-import MobileReferralsView from "./(components)/mobile";
+import MobileReferralsView from "./(components)/mobileReferralsView";
+import DesktopReferralsView from "./(components)/desktopReferralsView";
 
 export interface Task {
   task_id: string;
@@ -246,10 +247,17 @@ export default function ReferralsPage() {
   const isTgConnected = !!user?.telegram_user_id;
 
   return (
-    <>
+    <Flex
+      w="full"
+      h="full"
+      maxH="100%"
+      minH={0}
+      justify="center"
+      display={{ base: "flex", md: "flex" }}
+    >
       <Box
         position="relative"
-        display={{ base: "none", md: "flex" }}
+        display={{ base: "none", md: "none" }}
         flexDirection="column"
         flex={1}
         minH={0}
@@ -617,6 +625,22 @@ export default function ReferralsPage() {
           leaderboard={leaderboard}
         />
       </Flex>
-    </>
+      <Flex
+        flex={1}
+        minH={0}
+        display={{ base: "none", md: "flex" }}
+        flexDirection="column"
+        overflow="hidden"
+        maxW={1620}
+      >
+        <DesktopReferralsView
+          tasks={tasks}
+          score={score}
+          referalLink={referralLink}
+          referrals={user?.referrals ?? []}
+          leaderboard={leaderboard}
+        />
+      </Flex>
+    </Flex>
   );
 }

@@ -98,13 +98,15 @@ export default function Agents() {
         )} */}
       {!isLoading && (
         <Flex direction="column" h="100%" align="center">
-          <Image
-            src="/img/home-page.webp"
-            alt="Group photo"
-            width="100%"
-            height="100%"
-            maxW={410}
-          />
+          {messages.length === 0 && (
+            <Image
+              src="/img/home-page.webp"
+              alt="Group photo"
+              width="100%"
+              height="100%"
+              maxW={{ base: "100%", md: 410 }}
+            />
+          )}
           <Text
             textAlign="center"
             fontFamily="Sora"
@@ -169,4 +171,5 @@ const agentDummy = {
     apt_raw: undefined,
   },
   agent_type: AgentType.AgentCreator,
+  twitter: null,
 };

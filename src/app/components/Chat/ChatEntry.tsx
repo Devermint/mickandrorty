@@ -58,7 +58,7 @@ export const ChatEntry = ({
   isTelegramPostBroadcasted = false,
 }: ChatEntryComponentProps) => {
   const isMyMessage = role === "user" && !data?.isGroupMessage;
-  const isAgent = role === "assistant";
+  const isAgent = role === "assistant" || role == "info";
   const align = isAgent ? "flex-start" : "flex-end";
   const videoId = data?.job_id ?? job_id ?? undefined;
   const rawUserId = useMemo(() => {
@@ -214,7 +214,6 @@ export const ChatEntry = ({
         {type === "text" && (
           <MarkdownView
             color={color}
-            lineHeight={1.5}
             fontSize={14}
             p={1}
             isMyMessage={!isAgent}
@@ -374,7 +373,7 @@ export const ChatEntry = ({
         )}
         {type === "video" && content && (
           <>
-            <Box position="relative">
+            <Box position="relative" mb={4}>
               <video
                 src={content}
                 controls
@@ -557,8 +556,8 @@ export const DemoVideoEntry = () => (
 
 export const DefaultChatEntry = () => (
   <ChatEntry
-    role="assistant"
-    content="Chat with this AI agent and other users. Your messages and the agent's responses will be visible to everyone in this agent's chat room."
+    role="info"
+    content="Chat with this AI agent and other users."
     type="text"
     onSaveXAPI={() => {}}
   />

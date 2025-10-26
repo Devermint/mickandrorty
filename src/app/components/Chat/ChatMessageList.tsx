@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/react";
+import { Flex, FlexProps } from "@chakra-ui/react";
 import React, { forwardRef } from "react";
 import { DefaultChatEntry, ChatEntry } from "./ChatEntry";
 import {
@@ -8,7 +8,7 @@ import {
 } from "@/app/types/message";
 import { TwitterKeys } from "@/app/lib/utils/agentCreation";
 
-interface ChatMessageListProps {
+interface ChatMessageListProps extends FlexProps {
   messages: ChatEntryProps[];
   chatState: ChatState;
   onTokenImageUploaded?: ChatEntryProps["onTokenImageUploaded"];
@@ -42,6 +42,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       showPredictionMarket = false,
       agentDisplayName,
       onSaveXAPI,
+      ...rest
     },
     ref
   ) => {
@@ -50,7 +51,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
 
     return (
       <Flex
-        direction="column-reverse"
+        direction={hasMessages ? "column-reverse" : "column"}
         overflowY="auto"
         flex={1}
         px={4}
@@ -70,6 +71,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
           },
           "&::-webkit-scrollbar-thumb": { borderRadius: "24px" },
         }}
+        {...rest}
       >
         {!hasMessages ? (
           emptyState ?? <DefaultChatEntry />

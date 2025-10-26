@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import {AgentCreationData, TwitterKeys} from "../lib/utils/agentCreation";
+import { AgentCreationData, TwitterKeys } from "../lib/utils/agentCreation";
 import { ClientRef } from "../lib/clientImageStore";
 import type { UploadConstraints } from "./file";
 
@@ -19,7 +19,7 @@ export type TelegramChannelDetectionResult = {
 };
 
 export type ChatEntryProps = {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "info";
   content: string;
   type?:
     | "text"
