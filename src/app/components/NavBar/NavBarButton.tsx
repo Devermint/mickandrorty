@@ -33,7 +33,7 @@ export default function NavBarButton({
       <Text
         userSelect="none"
         fontWeight="300"
-        fontSize={{ base: "14px", xl: 16 }}
+        fontSize={{ base: "14px", md: 15, xl: 16 }}
         color={textColor}
         fontFamily="inter"
       >

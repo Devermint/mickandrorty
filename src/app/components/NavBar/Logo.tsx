@@ -9,7 +9,7 @@ type Props = {
 };
 
 export const Logo = ({ height = "100%", src }: Props) => (
-  <Link href="https://aptoslayer.ai/">
+  <Link href="https://dapp.aptoslayer.ai/">
     <Image
       src={src ?? "/img/new/logo2.webp"}
       alt="logo"

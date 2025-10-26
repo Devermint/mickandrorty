@@ -23,7 +23,12 @@ export const DesktopNavBar = ({ navButtons, handleButtonClick }: Props) => (
     display={{ base: "none", md: "flex" }}
     w="full"
   >
-    <Flex align="center" w="full" maxW="1620px" gap={{ base: 6, xl: 12 }}>
+    <Flex
+      align="center"
+      w="full"
+      maxW="1620px"
+      gap={{ base: 6, md: 6, lg: 10, xl: 12 }}
+    >
       <Flex align="center" flex="1" minW="0">
         <Logo height="40px" />
       </Flex>
@@ -34,7 +39,7 @@ export const DesktopNavBar = ({ navButtons, handleButtonClick }: Props) => (
           gap={{ base: "2.5rem", xl: "6rem" }}
           bg={colorTokens.gray.tertiaryDark}
           borderRadius={22}
-          px={{ base: 10, xl: 24 }}
+          px={{ base: 10, md: 12, lg: 16, xl: 24 }}
         >
           {navButtons.map((button, index) => (
             <NavBarButton
