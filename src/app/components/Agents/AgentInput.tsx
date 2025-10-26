@@ -144,8 +144,9 @@ export const AgentInput = ({
           <Textarea
             h="100%"
             fontFamily="Jetbrains mono"
-            placeholder="Start generating..."
-            color={colorTokens.gray.platinum}
+            placeholder="Ask anything..."
+            color={colorTokens.gray.tertiary}
+            _placeholder={{ color: colorTokens.gray.tertiary }}
             transition="box-shadow 0.3s ease"
             border="none"
             borderRadius={13}

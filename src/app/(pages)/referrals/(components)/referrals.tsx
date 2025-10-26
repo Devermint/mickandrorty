@@ -166,7 +166,7 @@ export default function Referrals({ referalLink, referrals }: ReferalsProps) {
           mt={{ base: 3, md: 4 }}
           display={{ base: "none", md: "inline-block" }}
         >
-          <InfoBanner message="Earn Aptos by inviting friends" />
+          <InfoBanner message="Earn points by inviting friends" />
         </Box>
       </Box>
     </>

@@ -41,12 +41,14 @@ export default function Agents() {
     );
   };
 
+  const hasMessages = messages.length > 0;
   return (
     <Flex
       flexDirection="column"
       alignItems="center"
-      mt={{ base: 5, md: 5 }}
-      pb={{ base: 2, md: 10 }}
+      mt={{ base: 0, md: 5 }}
+      pb={{ base: 0, md: 10 }}
+      px={{ base: 0, md: 4 }}
       zIndex={1}
       overflow={{ base: "hidden", md: "visible" }}
       flex={1}
@@ -97,14 +99,22 @@ export default function Agents() {
           </>
         )} */}
       {!isLoading && (
-        <Flex direction="column" h="100%" align="center">
-          {messages.length === 0 && (
+        <Flex
+          direction="column"
+          h="100%"
+          align="center"
+          w={hasMessages ? "full" : "auto"}
+          maxW={1620}
+          mx={3}
+          mb={hasMessages ? 0 : 3}
+        >
+          {!hasMessages && (
             <Image
               src="/img/home-page.webp"
               alt="Group photo"
               width="100%"
-              height="100%"
               maxW={{ base: "100%", md: 410 }}
+              objectFit="contain"
             />
           )}
           <Text
@@ -120,12 +130,19 @@ export default function Agents() {
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}
+            display={hasMessages ? "none" : "block"}
           >
             CREATE AI AGENT
           </Text>
-          <Text textAlign="center" fontSize={{ base: "0.6rem", md: "1rem" }}>
+          <Text
+            textAlign="center"
+            fontSize={{ base: "0.6rem", md: "1rem" }}
+            display={hasMessages ? "none" : "block"}
+          >
             Chat with Agent to proceed creation of your own Ai agent
           </Text>
+          <Spacer display={{ base: " flex", md: "none" }} />
+
           <Chat
             agent={agentDummy}
             chatName="Aptos Agent"
@@ -134,10 +151,14 @@ export default function Agents() {
             enableGroupChat={false}
             forceEnableAi
             showTabs={false}
-            mt={{ base: 4, md: 10 }}
+            mt={hasMessages ? { base: 0, md: 0 } : { base: 4, md: 10 }}
             overflow="hidden"
             pt={{ base: 5, md: 0 }}
             showHeader={false}
+            showMessages={hasMessages}
+            w={hasMessages ? "full" : "auto"}
+            minW={hasMessages ? "full" : "auto"}
+            h={hasMessages ? "full" : "auto"}
           />
         </Flex>
       )}

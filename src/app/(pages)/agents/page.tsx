@@ -181,7 +181,7 @@ export default function AgentExplorerPage() {
       <Flex
         direction="column"
         py={{ base: 4, md: 8 }}
-        gap={5}
+        gap={{ base: 2, md: 5 }}
         position="relative"
         w="full"
         maxW={1620}
@@ -218,7 +218,7 @@ export default function AgentExplorerPage() {
             borderRadius="lg"
             py={3}
             align="center"
-            gap={3}
+            gap={{ base: 1, md: 3 }}
           >
             {verificationStatus === "checking" && (
               <Spinner size="sm" color={neon} />
@@ -263,7 +263,7 @@ export default function AgentExplorerPage() {
           alignItems="start"
           flex={1}
           columns={{ base: 2, sm: 2, md: 4, lg: 4, xl: 5 }}
-          gap="2rem 2rem"
+          gap={{ base: 3, md: "2rem 2rem" }}
         >
           {agents.map((agent) => (
             <Box

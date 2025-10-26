@@ -36,6 +36,7 @@ interface ChatProps extends FlexProps {
   chatName?: string;
   showTabs?: boolean;
   showHeader?: boolean;
+  showMessages?: boolean;
 }
 
 const Chat = ({
@@ -48,6 +49,7 @@ const Chat = ({
   showTabs = true,
   forceEnableAi = false,
   showHeader = true,
+  showMessages = true,
   ...rest
 }: ChatProps) => {
   const { wallet, account, isConnected, swapSDK } = useAgentCreation();
@@ -290,71 +292,94 @@ const Chat = ({
   }, [msg, onMessageSend, router]);
 
   return (
-    <Flex
-      bg={colorTokens.gray.tertiaryDark}
-      borderRadius={{ base: 0, md: 21 }}
-      maxW={800}
-      w={{ base: "100%", lg: 725 }}
-      flexDirection="column"
-      overflow="hidden"
-      maxH="100%"
-      h={agent.agent_name ? "100%" : "50%"}
-      {...rest}
-    >
-      <Flex flexDir="column" flex={1} overflowY="hidden">
-        {showHeader && (
-          <ChatHeader
-            chatName={chatName}
-            agentDisplayName={agent.agent_name ?? "Agent"}
-            enableGroupChat={enableGroupChat}
-            isGroupConnected={isGroupConnected}
-            activeTab={activeTab}
-            onTabChange={handleTabSelection}
-            showTabs={showTabs}
-          />
-        )}
+    <>
+      {showMessages ? (
+        <Flex
+          bg={colorTokens.gray.tertiaryDark}
+          borderRadius={{ base: 0, md: 21 }}
+          maxW={800}
+          w={{ base: "100%", lg: 725 }}
+          flexDirection="column"
+          overflow="hidden"
+          maxH="100%"
+          h={agent.agent_name ? "100%" : "50%"}
+          {...rest}
+        >
+          <Flex flexDir="column" flex={1} overflowY="hidden">
+            {showHeader && (
+              <ChatHeader
+                chatName={chatName}
+                agentDisplayName={agent.agent_name ?? "Agent"}
+                enableGroupChat={enableGroupChat}
+                isGroupConnected={isGroupConnected}
+                activeTab={activeTab}
+                onTabChange={handleTabSelection}
+                showTabs={showTabs}
+              />
+            )}
 
-        {enableGroupChat && groupError && (
-          <ChatErrorBanner message={groupError} onDismiss={clearGroupError} />
-        )}
+            {enableGroupChat && groupError && (
+              <ChatErrorBanner
+                message={groupError}
+                onDismiss={clearGroupError}
+              />
+            )}
 
-        <ChatMessageList
-          ref={containerRef}
-          messages={displayedMessages}
-          chatState={chatState}
-          onTokenImageUploaded={handleTokenImageUploaded}
-          onChannelsDetected={handleChannelsDetected}
-          onGenerateVideo={handleVideoGenerationRequest}
-          onTelegramPostConfirm={handleTelegramPostConfirm}
-          telegramPostInProgressIndex={telegramPostInProgressIndex}
-          emptyState={
-            showTabs && activeTab === "media" ? mediaEmptyState : undefined
-          }
-          showPredictionMarket={showTabs && activeTab === "media"}
-          agentDisplayName={agent.agent_name ?? "Agent"}
-          onSaveXAPI={handleXApiSaved}
-        />
-
-        {!showTabs || activeTab === "chat" ? (
-          <>
-            {/* <ChatHelperPanel onSelect={handleHelperButtonClick} /> */}
-            <ChatInputBar
-              inputRef={inputMessage}
-              onSend={onMessageSend}
-              showAiToggle={
-                agent.agent_type !== AgentType.AgentCreator && enableGroupChat
+            <ChatMessageList
+              ref={containerRef}
+              messages={displayedMessages}
+              chatState={chatState}
+              onTokenImageUploaded={handleTokenImageUploaded}
+              onChannelsDetected={handleChannelsDetected}
+              onGenerateVideo={handleVideoGenerationRequest}
+              onTelegramPostConfirm={handleTelegramPostConfirm}
+              telegramPostInProgressIndex={telegramPostInProgressIndex}
+              emptyState={
+                showTabs && activeTab === "media" ? mediaEmptyState : undefined
               }
-              aiToggleChecked={askAiEnabled}
-              onAiToggleChange={handleAiToggleChange}
-              aiToggleDisabled={aiToggleDisabled}
-              aiToggleTooltip={aiToggleTooltip}
+              showPredictionMarket={showTabs && activeTab === "media"}
+              agentDisplayName={agent.agent_name ?? "Agent"}
+              onSaveXAPI={handleXApiSaved}
             />
-          </>
-        ) : (
-          <></>
-        )}
-      </Flex>
-    </Flex>
+
+            {!showTabs || activeTab === "chat" ? (
+              <>
+                {/* <ChatHelperPanel onSelect={handleHelperButtonClick} /> */}
+                <ChatInputBar
+                  inputRef={inputMessage}
+                  onSend={onMessageSend}
+                  showAiToggle={
+                    agent.agent_type !== AgentType.AgentCreator &&
+                    enableGroupChat
+                  }
+                  aiToggleChecked={askAiEnabled}
+                  onAiToggleChange={handleAiToggleChange}
+                  aiToggleDisabled={aiToggleDisabled}
+                  aiToggleTooltip={aiToggleTooltip}
+                />
+              </>
+            ) : (
+              <></>
+            )}
+          </Flex>
+        </Flex>
+      ) : (
+        <ChatInputBar
+          inputRef={inputMessage}
+          onSend={onMessageSend}
+          showAiToggle={
+            agent.agent_type !== AgentType.AgentCreator && enableGroupChat
+          }
+          aiToggleChecked={askAiEnabled}
+          onAiToggleChange={handleAiToggleChange}
+          aiToggleDisabled={aiToggleDisabled}
+          aiToggleTooltip={aiToggleTooltip}
+          w="100%"
+          maxH={100}
+          borderRadius={21}
+        />
+      )}
+    </>
   );
 };
 

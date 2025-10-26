@@ -34,7 +34,7 @@ export default function PredictionsPage() {
         <Box mt={6} pb={6}>
           <SimpleGrid
             columns={{ base: 1, md: 2, xl: 3, "2xl": 4 }}
-            gap={{ base: 0, lg: 4 }}
+            gap={{ base: 2, lg: 4 }}
           >
             {SAMPLE_PREDICTIONS.map((prediction) => {
               const yesProb = clampProbability(prediction.yesPercent);

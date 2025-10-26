@@ -70,7 +70,7 @@ export default function DesktopReferralsView({
             <Tasks tasks={tasks ?? []} />
           </Box>
           <Box mt={4}>
-            <InfoBanner message="Earn Aptos by completing daily tasks" />
+            <InfoBanner message="Earn points by completing daily tasks" />
           </Box>
         </Flex>
 

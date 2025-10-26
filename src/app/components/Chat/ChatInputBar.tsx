@@ -22,7 +22,7 @@ export const ChatInputBar = ({
   ...props
 }: ChatInputBarProps) => (
   <AgentInput
-    h="17%"
+    h="20%"
     minH="60px"
     flexShrink={0}
     m={{ base: 1, md: 2, lg: 3 }}

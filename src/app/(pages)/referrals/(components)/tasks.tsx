@@ -76,7 +76,7 @@ export default function Tasks({ tasks }: TasksProps) {
             </Flex>
             <Button
               borderRadius={19}
-              px={{ base: 4, md: 6 }}
+              px={isConnectTask ? { base: 3, md: 5 } : { base: 4, md: 6 }}
               h={{ base: 35, md: 10 }}
               fontSize={{ base: 13, md: "sm" }}
               fontWeight="semibold"
