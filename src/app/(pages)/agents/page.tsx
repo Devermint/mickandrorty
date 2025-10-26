@@ -10,6 +10,8 @@ import {
   Text,
   Skeleton,
 } from "@chakra-ui/react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination } from "swiper/modules";
 import { useTransitionRouter } from "next-view-transitions";
 import { useSearchParams } from "next/navigation";
 import { Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
@@ -25,6 +27,8 @@ import {
   PaymentVerificationError,
 } from "@/app/lib/utils/verifyPaymentTransaction";
 import { Banner } from "@/app/components/Banner/Banner";
+import "swiper/css";
+import "swiper/css/pagination";
 
 function useDebounced<T>(value: T, ms = 350) {
   const [v, setV] = useState(value);
@@ -41,6 +45,28 @@ const TREASURY_ADDRESS =
   "0x24cc3a079fcecd1ec7d71bfc71639765a60cab04514b950728fb83285c271596";
 const DEFAULT_APTOS_NODE_URL =
   "https://ultra-withered-patina.aptos-mainnet.quiknode.pro/804be4e05ef290503e6020df7efd44fb2ad52b8c/v1";
+
+const BANNER_ITEMS = [
+  {
+    text: "Build your persona",
+    buttonText: "Create your AI agent in seconds",
+    image: "/img/new/banner1.webp",
+    href: "/",
+  },
+  {
+    text: "Invite & Earn",
+    buttonText:
+      "Share your link, complete tasks, and earn rewards with friends.",
+    image: "/img/new/banner2.webp",
+    href: "/referrals",
+  },
+  {
+    text: "Climb the ranks.",
+    buttonText: "Track your referrals and see who's leading the community.",
+    image: "/img/new/banner3.webp",
+    href: "/referrals",
+  },
+];
 
 const shortenHash = (hash: string) =>
   hash.length > 18 ? `${hash.slice(0, 10)}�${hash.slice(-6)}` : hash;
@@ -187,25 +213,61 @@ export default function AgentExplorerPage() {
         maxW={1620}
         mx="auto"
       >
-        <Flex gap={15} direction={{ base: "column", md: "row" }}>
-          <Banner
-            text="Build your persona"
-            buttonText="Create your AI agent in seconds"
-            image="/img/new/banner1.webp"
-            href="/"
-          />
-          <Banner
-            text="Invite & Earn"
-            buttonText="Share your link, complete tasks, and earn rewards with friends."
-            image="/img/new/banner2.webp"
-            href="/referrals"
-          />
-          <Banner
-            text="Climb the ranks."
-            buttonText="Track your referrals and see who’s leading the community."
-            image="/img/new/banner3.webp"
-            href="/referrals"
-          />
+        <Box
+          display={{ base: "block", md: "none" }}
+          css={{
+            "@keyframes dotPulse": {
+              "0%": {
+                boxShadow: "0 0 0 0 rgba(86, 240, 159, 0.35)",
+              },
+              "70%": {
+                boxShadow: "0 0 0 6px rgba(86, 240, 159, 0)",
+              },
+              "100%": {
+                boxShadow: "0 0 0 0 rgba(86, 240, 159, 0)",
+              },
+            },
+            "& .swiper-pagination": {
+              position: "static",
+              mt: 3,
+              display: "flex",
+              justifyContent: "center",
+              gap: "8px",
+            },
+            "& .swiper-pagination-bullet": {
+              background: "rgba(255, 255, 255, 0.28)",
+              opacity: 1,
+              width: "9px",
+              height: "9px",
+              borderRadius: "999px",
+              transition:
+                "width 220ms ease, background-color 220ms ease, transform 220ms ease",
+            },
+            "& .swiper-pagination-bullet-active": {
+              background: colorTokens.green.salad,
+              width: "26px",
+              borderRadius: "999px",
+              animation: "dotPulse 1.6s ease-out infinite",
+            },
+          }}
+        >
+          <Swiper
+            modules={[Pagination]}
+            pagination={{ clickable: true }}
+            spaceBetween={16}
+          >
+            {BANNER_ITEMS.map((banner) => (
+              <SwiperSlide key={banner.text}>
+                <Banner {...banner} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </Box>
+
+        <Flex gap={15} direction="row" display={{ base: "none", md: "flex" }}>
+          {BANNER_ITEMS.map((banner) => (
+            <Banner key={banner.text} {...banner} />
+          ))}
         </Flex>
         <Text color="white" fontFamily="inter" fontSize={16}>
           Community Agents

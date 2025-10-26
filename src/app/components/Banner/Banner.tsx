@@ -38,16 +38,18 @@ export const Banner = ({ text, buttonText, image, href = "/agent" }: Props) => {
           zIndex={1}
         >
           <Text
-            fontSize={{ base: "14", md: 14 }}
+            fontSize={{ base: 14, md: 14 }}
             fontFamily="inter"
             color="white"
+            maxW={{ base: 150, md: "unset" }}
           >
             {text}
           </Text>
           <Text
-            fontSize={{ base: "14", md: 14 }}
+            fontSize={{ base: 13, md: 14 }}
             fontFamily="inter"
             color={colorTokens.gray.tertiary}
+            maxW={{ base: 180, md: "unset" }}
           >
             {buttonText}
           </Text>
