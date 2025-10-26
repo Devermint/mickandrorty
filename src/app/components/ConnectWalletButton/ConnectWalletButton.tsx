@@ -49,7 +49,12 @@ export default function ConnectWalletButton({ ...rest }: FlexProps) {
   }
 
   return (
-    <Flex {...rest} pl={5} w={{ base: "100%", md: "auto" }}>
+    <Flex
+      {...rest}
+      pl={5}
+      pr={{ base: 5, md: 0 }}
+      w={{ base: "100%", md: "auto" }}
+    >
       {isConnected ? (
         <Flex w={{ base: "100%", md: "auto" }}>
           <WalletMenu />

@@ -93,7 +93,7 @@ function TabTrigger({
       bg="transparent"
       color="gray.300"
       pb={1}
-      _selected={{ color: colorTokens.green.erin }}
+      _selected={{ color: colorTokens.green.salad }}
     >
       <Icon as={icon} boxSize={4} />
       <Box fontSize="xs">{label}</Box>

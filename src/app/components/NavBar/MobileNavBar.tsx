@@ -41,6 +41,7 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
         px={6}
         py={0}
         zIndex={50}
+        position="relative"
         display={{ base: "flex", md: "none" }}
         bg={{ base: colorTokens.blackCustom.a1, md: "transparent" }}
         borderBottom="1px solid"
@@ -74,13 +75,13 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
             left={0}
             right={0}
             bottom={0}
-            zIndex={25}
+            zIndex={40}
             bg="black"
             flexDir="column"
             gap={2}
             pt={2}
+            pb={2}
             overflowY="auto"
-            maxH="calc(100dvh - 64px)"
             borderTop="1px solid"
             borderTopColor="#333333"
           >
@@ -106,43 +107,6 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
             ))}
 
             <Flex maxH="100%" flexGrow={1} justify="center" alignItems="end">
-              {/* <Box
-                lineHeight={1.5}
-                color={colorTokens.gray.platinum}
-                textAlign="center"
-                fontSize={13}
-                w="85%"
-                mb={2}
-              >
-                <span>By messaging Aptos Layer, you agree to our </span>
-                <Link href="">
-                  <Box as="span" color={colorTokens.gray.timberwolf}>
-                    Terms
-                  </Box>
-                </Link>
-                <Box as="span"> and have read our </Box>
-                <Link href="" target="_blank">
-                  <Box as="span" color={colorTokens.gray.timberwolf}>
-                    Privacy Policy
-                  </Box>
-                </Link>
-                <br />
-                <Box as="span"> See cookie preferences.</Box>
-                <Button
-                  fontSize={13}
-                  borderRadius={33}
-                  borderColor={colorTokens.green.dark}
-                  bg="transparent"
-                  w="100%"
-                  mt={5}
-                  mb={5}
-                  gap={3}
-                >
-                  <GlobeIcon h="1.5rem" w="1.5rem" />
-                  Visit AptosLayerAI
-                </Button>
-                <span>© Copyrights reserved by Aptos AI Layer 2025</span>
-              </Box> */}
               <ConnectWalletButton mb={6} />
             </Flex>
           </Flex>

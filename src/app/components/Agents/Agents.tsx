@@ -113,7 +113,7 @@ export default function Agents() {
               src="/img/home-page.webp"
               alt="Group photo"
               width="100%"
-              maxW={{ base: "100%", md: 410 }}
+              maxW={{ base: 300, sm: 300, md: 350, lg: 410 }}
               objectFit="contain"
             />
           )}

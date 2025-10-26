@@ -50,11 +50,21 @@ export const ChatHeader = ({
             position="relative"
             overflow="hidden"
             bg={colorTokens.gray.tertiaryDark}
-            borderTopRadius={16}
-            borderTop="1px solid"
-            borderColor={colorTokens.gray[300]}
-            borderBottom="none"
             w="full"
+            borderBottom="none"
+            borderTopRadius={{ base: 0, md: 16 }}
+            borderLeft={{
+              base: "none",
+              md: `1px solid ${colorTokens.gray.tertiaryAlpha12}`,
+            }}
+            borderRight={{
+              base: "none",
+              md: `1px solid ${colorTokens.gray.tertiaryAlpha12}`,
+            }}
+            borderTop={{
+              base: "none",
+              md: `1px solid ${colorTokens.gray.tertiaryAlpha12}`,
+            }}
           >
             <TabTrigger value="chat" label="Chat" isFirst />
             <TabTrigger value="media" label="Predictions" />
@@ -63,7 +73,7 @@ export const ChatHeader = ({
               bottom={0}
               height="4px"
               bg={colorTokens.green.salad}
-              transition="all 1s ease"
+              transition="left 0.25s ease, width 0.25s ease, transform 0.25s ease"
             />
           </Tabs.List>
         </Tabs.Root>
@@ -99,7 +109,7 @@ const TabTrigger = ({
     }}
     transition="color 0.2s ease"
     borderRight={isFirst ? "1px solid" : "none"}
-    borderRightColor={colorTokens.gray[300]}
+    borderRightColor={colorTokens.gray.tertiaryAlpha12}
   >
     <Flex w="full" justify="center">
       {label}
