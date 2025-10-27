@@ -25,6 +25,7 @@ import { useVideoGeneration } from "./hooks/useVideoGeneration";
 import { useTelegramPostBroadcast } from "./hooks/useTelegramPostBroadcast";
 import { useChatGroupSync } from "./hooks/useChatGroupSync";
 import { useAptosWallet } from "../../context/AptosWalletContext";
+import { useTwitterPostPoster } from "@/app/components/Chat/hooks/useTwitterPostBroadcast";
 
 interface ChatProps extends FlexProps {
   agent: Agent;
@@ -238,6 +239,16 @@ const Chat = ({
       agentId: agent.fa_id,
     });
 
+  const { handleTwitterPostConfirm, twitterPostInProgressIndex } =
+    useTwitterPostPoster({
+      wallet,
+      account,
+      isConnected,
+      setMessages,
+      setChatState,
+      agentId: agent.fa_id,
+    });
+
   const { handleChannelsDetected } = useTelegramChannelDetection({
     setMessages,
     inputMessage,
@@ -337,6 +348,8 @@ const Chat = ({
               emptyState={
                 showTabs && activeTab === "media" ? mediaEmptyState : undefined
               }
+              agentOwnerAddress={agent.wallet}
+              agentId={agent.id}
               showPredictionMarket={showTabs && activeTab === "media"}
               agentDisplayName={agent.agent_name ?? "Agent"}
               onSaveXAPI={handleXApiSaved}

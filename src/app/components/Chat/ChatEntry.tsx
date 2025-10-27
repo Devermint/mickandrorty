@@ -28,6 +28,7 @@ import { PredictionMarket } from "../Media/PredictionMarket";
 import { TelegramChannelDetector } from "../TelegramChannelDetector/TelegramChannelDetector";
 import { ConnectXApiInline } from "@/app/components/Chat/ConnectXApi";
 import { TwitterKeys } from "@/app/lib/utils/agentCreation";
+import { useAptosWallet } from "@/app/context/AptosWalletContext";
 
 interface ChatEntryComponentProps extends ChatEntryProps {
   job_id?: string;
@@ -38,6 +39,11 @@ interface ChatEntryComponentProps extends ChatEntryProps {
   isTelegramPostProcessing?: boolean;
   isTelegramPostBroadcasted?: boolean;
   onSaveXAPI: (data?: TwitterKeys) => void;
+  isTwitterPostProcessing?: boolean;
+  isTwitterPostPosted?: boolean;
+  onTwitterPostConfirm?: () => void | Promise<void>;
+  agentOwnerAddress?: string;
+  agentId?: string;
 }
 
 export const ChatEntry = ({
@@ -56,7 +62,14 @@ export const ChatEntry = ({
   onTelegramPostConfirm,
   isTelegramPostProcessing = false,
   isTelegramPostBroadcasted = false,
+  onTwitterPostConfirm,
+  isTwitterPostProcessing = false,
+  isTwitterPostPosted = false,
+  agentOwnerAddress,
+  agentId,
 }: ChatEntryComponentProps) => {
+  const { wallet, account, isConnected } = useAptosWallet();
+
   const isMyMessage = role === "user" && !data?.isGroupMessage;
   const isAgent = role === "assistant" || role == "info";
   const align = isAgent ? "flex-start" : "flex-end";
@@ -286,83 +299,75 @@ export const ChatEntry = ({
                 {content}
               </MarkdownView>
             )}
-            <Flex gap={2}>
-              {(() => {
-                const isActionDisabled =
+            <Flex gap={2} justify="flex-start">
+              <Button
+                size="sm"
+                borderWidth={1}
+                borderColor={colorTokens.gray.platinum}
+                onClick={() => {
+                  if (
+                    !isTelegramPostProcessing &&
+                    !isTelegramPostBroadcasted &&
+                    onTelegramPostConfirm
+                  ) {
+                    void onTelegramPostConfirm();
+                  }
+                }}
+                disabled={
                   !onTelegramPostConfirm ||
                   isTelegramPostProcessing ||
-                  isTelegramPostBroadcasted;
-                const borderColor = isActionDisabled
-                  ? "rgba(255,255,255,0.1)"
-                  : colorTokens.green.dark;
-                const accentColor = isActionDisabled
-                  ? colorTokens.gray.timberwolf
-                  : colorTokens.green.salad;
-                const pillHover = isActionDisabled
-                  ? {}
-                  : {
-                      borderColor: colorTokens.green.salad,
-                      boxShadow: "0 0 12px rgba(81, 254, 83, 0.25)",
-                    };
-
-                return (
-                  <Button
-                    size="md"
-                    borderRadius={25}
-                    borderWidth="1px"
-                    borderColor={borderColor}
-                    bg="transparent"
-                    h="auto"
-                    px="6px"
-                    py="6px"
-                    pr={3}
-                    display="flex"
-                    gap={2}
-                    fontFamily="sora"
-                    fontWeight={400}
-                    color={accentColor}
-                    disabled={isActionDisabled}
-                    loading={isTelegramPostProcessing}
-                    loadingText="Processing"
-                    spinnerPlacement="end"
-                    _focusVisible={{ boxShadow: "none" }}
-                    onClick={() => {
-                      if (!isActionDisabled && onTelegramPostConfirm) {
-                        void onTelegramPostConfirm();
-                      }
-                    }}
-                  >
-                    <Flex
-                      align="center"
-                      justify="center"
-                      w="25px"
-                      h="25px"
-                      borderRadius="full"
-                      bg={
-                        isActionDisabled
-                          ? colorTokens.gray.disabled
-                          : colorTokens.green.salad
-                      }
-                      transition="background 0.2s ease"
-                    >
-                      <Icon
-                        as={FiArrowRight}
-                        color={
-                          isActionDisabled
-                            ? colorTokens.gray.timberwolf
-                            : colorTokens.blackCustom.a0
-                        }
-                        boxSize={5}
-                      />
-                    </Flex>
-                    <Text fontSize="sm">
-                      {isTelegramPostBroadcasted
-                        ? "Broadcasted"
-                        : "Pay and post"}
-                    </Text>
-                  </Button>
-                );
-              })()}
+                  isTelegramPostBroadcasted
+                }
+                loading={isTelegramPostProcessing}
+              >
+                {isTelegramPostBroadcasted ? "Broadcasted" : "Pay and post"}
+              </Button>
+            </Flex>
+          </Stack>
+        )}
+        {type === "twitter_post" && (
+          <Stack gap={3} align="stretch">
+            {content && (
+              <MarkdownView
+                color={color}
+                lineHeight={1.5}
+                fontSize={14}
+                p={1}
+                isMyMessage={isMyMessage}
+              >
+                {content}
+              </MarkdownView>
+            )}
+            <Flex gap={2} justify="flex-start">
+              <Button
+                // size="sm"
+                // borderWidth={1}
+                // borderColor={colorTokens.gray.platinum}
+                // onClick={() => {
+                //   onGenerateVideo?.(data?.prompt ?? content);
+                // }}
+                // mt={2}
+                size="sm"
+                borderWidth={1}
+                borderColor={colorTokens.gray.platinum}
+                onClick={() => {
+                  if (
+                    !isTwitterPostProcessing &&
+                    !isTwitterPostPosted &&
+                    onTwitterPostConfirm
+                  ) {
+                    void onTwitterPostConfirm();
+                  }
+                }}
+                disabled={
+                  !onTwitterPostConfirm ||
+                  isTwitterPostProcessing ||
+                  isTwitterPostPosted
+                }
+                loading={isTwitterPostProcessing}
+              >
+                {isTwitterPostPosted ? "Posted" : "Pay and post"}
+              </Button>
             </Flex>
           </Stack>
         )}
@@ -509,7 +514,9 @@ export const ChatEntry = ({
                 {content}
               </MarkdownView>
             )}
-            <ConnectXApiInline onSaved={onSaveXAPI} />
+            {(!agentId || account?.address === agentOwnerAddress) && (
+              <ConnectXApiInline onSaved={onSaveXAPI} />
+            )}
           </Stack>
         )}
         {type === "signature-required" && (
