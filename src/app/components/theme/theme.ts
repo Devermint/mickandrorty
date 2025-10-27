@@ -5,7 +5,7 @@ import {
   defineRecipe,
 } from "@chakra-ui/react";
 import deepmerge from "deepmerge";
-import { sora } from "./fonts";
+import { sora, inter } from "./fonts";
 
 const buttonRecipe = defineRecipe({
   base: {
@@ -65,6 +65,9 @@ const customConfig = defineConfig({
       },
     },
     tokens: {
+      fonts: {
+        inter: { value: "var(--font-inter)" },
+      },
       colors: {
         textGray: {
           value: "#B1B3B9",

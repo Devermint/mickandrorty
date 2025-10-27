@@ -3,6 +3,7 @@ import "@fontsource/jetbrains-mono";
 // import "./lib/viewTransitionsPolyfill";
 import Providers from "./components/Providers";
 import "./global.css";
+import { inter } from "./components/theme/fonts";
 import { Suspense } from "react";
 import { Box } from "@chakra-ui/react";
 import type { Viewport } from "next";
@@ -50,7 +51,7 @@ export default function RootLayout({
         lang="en"
         suppressHydrationWarning={true}
       >
-        <body suppressHydrationWarning={true}>
+        <body className={inter.variable} suppressHydrationWarning={true}>
           <Suspense fallback={<Loading />}>
             <Providers>{children}</Providers>
           </Suspense>
