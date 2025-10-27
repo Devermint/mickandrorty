@@ -125,11 +125,11 @@ export const AgentInput = ({
 
   return (
     <AnimatedBorderBox
-      animationColor="rgba(0, 255, 109, 1)"
-      borderColor="rgba(42, 189, 105, 0.6)"
+      animationColor="rgba(42, 42, 42, 1)"
+      borderColor="rgba(42, 42, 42, 0.4)"
       borderWidth={1}
       borderRadius={13}
-      bgColor={colorTokens.blackCustom.a1}
+      bgColor="#212121"
       onKeyDown={(e) => onInputKeyDown(e)}
       {...rest}
     >
@@ -144,8 +144,9 @@ export const AgentInput = ({
           <Textarea
             h="100%"
             fontFamily="Jetbrains mono"
-            placeholder="Start generating..."
-            color={colorTokens.gray.platinum}
+            placeholder="Ask anything..."
+            color={colorTokens.gray.tertiary}
+            _placeholder={{ color: colorTokens.gray.tertiary }}
             transition="box-shadow 0.3s ease"
             border="none"
             borderRadius={13}
@@ -177,15 +178,15 @@ export const AgentInput = ({
 
         <Flex align="center" justify="flex-end" gap={3}>
           <Button
-            borderRadius={22}
-            maxH={35}
-            maxW={35}
+            maxH={6}
+            maxW={6}
             p={0}
             border="none"
             onClick={onButtonClick}
             disabled={inputValue.length === 0 || disabled}
+            minW={0}
           >
-            <ArrowUp h="full" w="full" />
+            <ArrowUp h="full" w="full" color={colorTokens.gray.disabled} />
           </Button>
         </Flex>
       </Flex>

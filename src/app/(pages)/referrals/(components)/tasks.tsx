@@ -26,12 +26,12 @@ export default function Tasks({ tasks }: TasksProps) {
             justify="space-between"
             borderRadius={27}
             bg={colorTokens.gray.tertiaryDark}
-            py={3}
+            py={{ base: 3, md: 2 }}
             px={2}
-            mb={1}
+            mb={{ base: 1, md: 2 }}
             overflow="hidden"
           >
-            <Flex align="center" gap={2} flex="1" minW={0}>
+            <Flex align="center" gap={{ base: 2, md: 3 }} flex="1" minW={0}>
               {task.socialMedia === "x" && (
                 <Image
                   src="/img/x-icon.webp"
@@ -76,7 +76,7 @@ export default function Tasks({ tasks }: TasksProps) {
             </Flex>
             <Button
               borderRadius={19}
-              px={{ base: 4, md: 6 }}
+              px={isConnectTask ? { base: 3, md: 5 } : { base: 4, md: 6 }}
               h={{ base: 35, md: 10 }}
               fontSize={{ base: 13, md: "sm" }}
               fontWeight="semibold"

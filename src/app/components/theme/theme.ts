@@ -80,6 +80,7 @@ const customConfig = defineConfig({
           erin: { value: "#51FE53" },
           darkErin: { value: "#349F35" },
           salad: { value: "#46DD0B" },
+          brightErin: { value: "#5DFF00" },
           700: { value: "#175200" },
         },
         gray: {
@@ -121,6 +122,7 @@ export const colorTokens = {
     darkErin: "green.darkErin",
     700: "green.700",
     salad: "green.salad",
+    brightErin: "green.brightErin",
   },
   gray: {
     timberwolf: "gray.timberwolf",

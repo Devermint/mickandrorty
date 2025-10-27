@@ -10,6 +10,8 @@ import {
   Text,
   Skeleton,
 } from "@chakra-ui/react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination } from "swiper/modules";
 import { useTransitionRouter } from "next-view-transitions";
 import { useSearchParams } from "next/navigation";
 import { Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
@@ -24,6 +26,9 @@ import {
   verifyPaymentTransaction,
   PaymentVerificationError,
 } from "@/app/lib/utils/verifyPaymentTransaction";
+import { Banner } from "@/app/components/Banner/Banner";
+import "swiper/css";
+import "swiper/css/pagination";
 
 function useDebounced<T>(value: T, ms = 350) {
   const [v, setV] = useState(value);
@@ -40,6 +45,28 @@ const TREASURY_ADDRESS =
   "0x24cc3a079fcecd1ec7d71bfc71639765a60cab04514b950728fb83285c271596";
 const DEFAULT_APTOS_NODE_URL =
   "https://ultra-withered-patina.aptos-mainnet.quiknode.pro/804be4e05ef290503e6020df7efd44fb2ad52b8c/v1";
+
+const BANNER_ITEMS = [
+  {
+    text: "Build your persona",
+    buttonText: "Create your AI agent in seconds",
+    image: "/img/new/banner1.webp",
+    href: "/",
+  },
+  {
+    text: "Invite & Earn",
+    buttonText:
+      "Share your link, complete tasks, and earn rewards with friends.",
+    image: "/img/new/banner2.webp",
+    href: "/referrals",
+  },
+  {
+    text: "Climb the ranks.",
+    buttonText: "Track your referrals and see who's leading the community.",
+    image: "/img/new/banner3.webp",
+    href: "/referrals",
+  },
+];
 
 const shortenHash = (hash: string) =>
   hash.length > 18 ? `${hash.slice(0, 10)}�${hash.slice(-6)}` : hash;
@@ -160,35 +187,100 @@ export default function AgentExplorerPage() {
 
   const openAgent = (faId: string) => router.push(`/agent/${faId}`);
   return (
-    <Box position="relative" overflowX="hidden" overflowY="scroll">
-      <Box
+    <Flex
+      flexDir="column"
+      position="relative"
+      overflowX="hidden"
+      overflowY="scroll"
+      px={{ base: 3, md: 6 }}
+      h="full"
+    >
+      {/* <Box
         position="absolute"
         inset={0}
         pointerEvents="none"
         bgSize="100% 100%, 24px 24px, 24px 24px"
         opacity={0.5}
       />
-      <Box position="absolute" inset={0} pointerEvents="none" />
+      <Box position="absolute" inset={0} pointerEvents="none" /> */}
 
       <Flex
         direction="column"
-        px={{ base: 3, md: 6 }}
         py={{ base: 4, md: 8 }}
-        gap={5}
+        gap={{ base: 2, md: 5 }}
         position="relative"
-        w="100%"
-        align="center"
+        w="full"
+        maxW={1620}
+        mx="auto"
       >
+        <Box
+          display={{ base: "block", md: "none" }}
+          css={{
+            "@keyframes dotPulse": {
+              "0%": {
+                boxShadow: "0 0 0 0 rgba(86, 240, 159, 0.35)",
+              },
+              "70%": {
+                boxShadow: "0 0 0 6px rgba(86, 240, 159, 0)",
+              },
+              "100%": {
+                boxShadow: "0 0 0 0 rgba(86, 240, 159, 0)",
+              },
+            },
+            "& .swiper-pagination": {
+              position: "static",
+              mt: 3,
+              display: "flex",
+              justifyContent: "center",
+              gap: "8px",
+            },
+            "& .swiper-pagination-bullet": {
+              background: "rgba(255, 255, 255, 0.28)",
+              opacity: 1,
+              width: "9px",
+              height: "9px",
+              borderRadius: "999px",
+              transition:
+                "width 220ms ease, background-color 220ms ease, transform 220ms ease",
+            },
+            "& .swiper-pagination-bullet-active": {
+              background: colorTokens.green.salad,
+              width: "26px",
+              borderRadius: "999px",
+              animation: "dotPulse 1.6s ease-out infinite",
+            },
+          }}
+        >
+          <Swiper
+            modules={[Pagination]}
+            pagination={{ clickable: true }}
+            spaceBetween={16}
+          >
+            {BANNER_ITEMS.map((banner) => (
+              <SwiperSlide key={banner.text}>
+                <Banner {...banner} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </Box>
+
+        <Flex gap={15} direction="row" display={{ base: "none", md: "flex" }}>
+          {BANNER_ITEMS.map((banner) => (
+            <Banner key={banner.text} {...banner} />
+          ))}
+        </Flex>
+        <Text color="white" fontFamily="inter" fontSize={16}>
+          Community Agents
+        </Text>
         {txHash && (
           <Flex
             w={{ base: "100%", md: "70%" }}
             bg="rgba(62, 255, 150, 0.08)"
             border={`1px solid ${neonSoft}`}
             borderRadius="lg"
-            px={4}
             py={3}
             align="center"
-            gap={3}
+            gap={{ base: 1, md: 3 }}
           >
             {verificationStatus === "checking" && (
               <Spinner size="sm" color={neon} />
@@ -204,8 +296,7 @@ export default function AgentExplorerPage() {
             </Text>
           </Flex>
         )}
-
-        {isLoading && !data && (
+        {/* {isLoading && !data && (
           <SimpleGrid
             columns={{ base: 2, sm: 2, md: 3, lg: 4, xl: 5 }}
             gap="2rem 2rem"
@@ -223,20 +314,18 @@ export default function AgentExplorerPage() {
               />
             ))}
           </SimpleGrid>
-        )}
-
+        )} */}
         {isError && (
           <Text color="red.400">Failed to load agents. Please try again.</Text>
         )}
         <SimpleGrid
-          w={{ base: "90%", md: "70%" }}
-          minChildWidth="220px"
+          w="full"
+          minChildWidth="350px"
           justifyItems="center"
           alignItems="start"
           flex={1}
-          maxW={{ base: "90%", md: "70%" }}
-          columns={{ base: 2, sm: 2, md: 3, lg: 4, xl: 5 }}
-          gap="2rem 2rem"
+          columns={{ base: 2, sm: 2, md: 4, lg: 4, xl: 5 }}
+          gap={{ base: 3, md: "2rem 2rem" }}
         >
           {agents.map((agent) => (
             <Box
@@ -244,21 +333,17 @@ export default function AgentExplorerPage() {
               role="button"
               onClick={() => agent.fa_id && openAgent(agent.fa_id)}
               cursor="pointer"
-              bg={cardBg}
-              border={`1px solid ${border}`}
-              borderRadius={20}
               _hover={{
                 transform: "translateY(-2px)",
-                boxShadow: `0 0 0 1px ${neonSoft}, 0 0 24px ${neonSoft}`,
               }}
               transition="all 160ms ease"
+              w="100%"
             >
               <AgentListCard agent={agent} />
             </Box>
           ))}
         </SimpleGrid>
-
-        <Flex justify="center" py={6}>
+        <Flex justify="center">
           {isFetchingNextPage ? (
             <Spinner color={neon} />
           ) : hasNextPage ? (
@@ -271,13 +356,10 @@ export default function AgentExplorerPage() {
             >
               Load more
             </Button>
-          ) : agents.length > 0 ? (
-            <Text color={colorTokens.green.darkErin}>No more agents</Text>
           ) : null}
         </Flex>
-
         <Box ref={sentinelRef} h="1px" />
       </Flex>
-    </Box>
+    </Flex>
   );
 }

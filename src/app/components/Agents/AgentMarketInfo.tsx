@@ -66,6 +66,7 @@ export const AgentMarketInfo = ({ agent, ...rest }: Props) => {
       />
       <AgentMarketCard
         title="LIQUIDITY"
+        valueColor={colorTokens.gray.timberwolf}
         value={
           <>
             <span>$</span>
@@ -75,6 +76,7 @@ export const AgentMarketInfo = ({ agent, ...rest }: Props) => {
       />
       <AgentMarketCard
         title="MKT CAP"
+        valueColor={colorTokens.gray.timberwolf}
         value={
           <>
             <span>$</span>

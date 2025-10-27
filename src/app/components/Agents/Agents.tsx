@@ -1,8 +1,7 @@
 "use client";
-import { AgentCarousel } from "@/app/components/Agents/AgentCarousel";
-import { Box, Flex, Spacer, Spinner, Text } from "@chakra-ui/react";
-import { useRef, useState, useEffect, SetStateAction } from "react";
-import { AgentInput } from "@/app/components/Agents/AgentInput";
+
+import { Box, Flex, Spacer, Spinner, Text, Image } from "@chakra-ui/react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAgents } from "@/app/hooks/useAgents";
 import { colorTokens } from "../theme/theme";
@@ -42,12 +41,14 @@ export default function Agents() {
     );
   };
 
+  const hasMessages = messages.length > 0;
   return (
     <Flex
       flexDirection="column"
       alignItems="center"
-      mt={{ base: 5, md: 5 }}
-      pb={{ base: 2, md: 10 }}
+      mt={{ base: 0, md: 5 }}
+      pb={{ base: 0, md: 10 }}
+      px={{ base: 0, md: 4 }}
       zIndex={1}
       overflow={{ base: "hidden", md: "visible" }}
       flex={1}
@@ -98,12 +99,30 @@ export default function Agents() {
           </>
         )} */}
       {!isLoading && (
-        <Flex direction="column" h="100%">
+        <Flex
+          direction="column"
+          h="100%"
+          align="center"
+          w={hasMessages ? "full" : "auto"}
+          maxW={1620}
+          mx={3}
+          mb={hasMessages ? 0 : 3}
+        >
+          {!hasMessages && (
+            <Image
+              src="/img/home-page.webp"
+              alt="Group photo"
+              width="100%"
+              maxW={{ base: 300, sm: 300, md: 350, lg: 410 }}
+              objectFit="contain"
+            />
+          )}
           <Text
             textAlign="center"
             fontFamily="Sora"
-            fontSize={{ base: "3rem", md: "5rem" }}
+            fontSize={{ base: "3rem", md: "4rem" }}
             lineHeight={1}
+            fontWeight={500}
             css={{
               background:
                 "linear-gradient(to bottom, #FFFFFF 0%, #646363ff 100%)",
@@ -111,52 +130,67 @@ export default function Agents() {
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}
+            display={hasMessages ? "none" : "block"}
           >
             CREATE AI AGENT
           </Text>
-          <Text textAlign="center" fontSize={{ base: "0.6rem", md: "1rem" }}>
+          <Text
+            textAlign="center"
+            fontSize={{ base: "0.6rem", md: "1rem" }}
+            display={hasMessages ? "none" : "block"}
+          >
             Chat with Agent to proceed creation of your own Ai agent
           </Text>
+          <Spacer display={{ base: " flex", md: "none" }} />
+
           <Chat
-            agent={{
-              wallet: undefined,
-              fa_id: undefined,
-              agent_symbol: undefined,
-              agent_name: undefined,
-              agent_icon_url: undefined,
-              decimals: undefined,
-              tx_hash: undefined,
-              status: undefined,
-              created: undefined,
-              updated: undefined,
-              id: undefined,
-              type: undefined,
-              tag: undefined,
-              liquidity_usd: undefined,
-              mcap_usd: undefined,
-              pair_address: undefined,
-              price_apt: undefined,
-              price_usd: undefined,
-              reserves: {
-                agent_decimals: undefined,
-                agent_raw: undefined,
-                apt_decimals: undefined,
-                apt_raw: undefined,
-              },
-              agent_type: AgentType.AgentCreator,
-            }}
+            agent={agentDummy}
             chatName="Aptos Agent"
             messages={messages}
             setMessages={setMessages}
             enableGroupChat={false}
             forceEnableAi
             showTabs={false}
-            mt={{ base: 4, md: 10 }}
+            mt={hasMessages ? { base: 0, md: 0 } : { base: 4, md: 10 }}
             overflow="hidden"
             pt={{ base: 5, md: 0 }}
+            showHeader={false}
+            showMessages={hasMessages}
+            w={hasMessages ? "full" : "auto"}
+            minW={hasMessages ? "full" : "auto"}
+            h={hasMessages ? "full" : "auto"}
           />
         </Flex>
       )}
     </Flex>
   );
 }
+
+const agentDummy = {
+  wallet: undefined,
+  fa_id: undefined,
+  agent_symbol: undefined,
+  agent_name: undefined,
+  agent_icon_url: undefined,
+  decimals: undefined,
+  tx_hash: undefined,
+  status: undefined,
+  created: undefined,
+  updated: undefined,
+  id: undefined,
+  type: undefined,
+  tag: undefined,
+  liquidity_usd: undefined,
+  mcap_usd: undefined,
+  pair_address: undefined,
+  price_apt: undefined,
+  price_usd: undefined,
+  reserves: {
+    agent_decimals: undefined,
+    agent_raw: undefined,
+    apt_decimals: undefined,
+    apt_raw: undefined,
+  },
+  agent_type: AgentType.AgentCreator,
+  twitter: null,
+};

@@ -18,7 +18,7 @@ import { AgentVideoLoader } from "../Agents/AgentVideoLoader";
 import { MarkdownView } from "../MarkdownView/MarkdownView";
 import { ImageUpload } from "../ImageUpload/ImageUpload";
 import { AiOutlineSignature } from "react-icons/ai";
-import { FiDownload } from "react-icons/fi";
+import { FiDownload, FiArrowRight } from "react-icons/fi";
 import { X as TwitterIcon } from "../icons/x";
 import { TelegramIcon } from "../icons/telegram";
 import { LuCopy, LuCheck } from "react-icons/lu";
@@ -26,9 +26,9 @@ import { ChatEntryProps } from "@/app/types/message";
 import type { UploadConstraints } from "@/app/types/file";
 import { PredictionMarket } from "../Media/PredictionMarket";
 import { TelegramChannelDetector } from "../TelegramChannelDetector/TelegramChannelDetector";
-import {ConnectXApiInline} from "@/app/components/Chat/ConnectXApi";
-import {TwitterKeys} from "@/app/lib/utils/agentCreation";
-import {useAptosWallet} from "@/app/context/AptosWalletContext";
+import { ConnectXApiInline } from "@/app/components/Chat/ConnectXApi";
+import { TwitterKeys } from "@/app/lib/utils/agentCreation";
+import { useAptosWallet } from "@/app/context/AptosWalletContext";
 
 interface ChatEntryComponentProps extends ChatEntryProps {
   job_id?: string;
@@ -39,9 +39,9 @@ interface ChatEntryComponentProps extends ChatEntryProps {
   isTelegramPostProcessing?: boolean;
   isTelegramPostBroadcasted?: boolean;
   onSaveXAPI: (data?: TwitterKeys) => void;
-  isTwitterPostProcessing?: boolean,
-  isTwitterPostPosted?: boolean,
-  onTwitterPostConfirm?: () => void | Promise<void>,
+  isTwitterPostProcessing?: boolean;
+  isTwitterPostPosted?: boolean;
+  onTwitterPostConfirm?: () => void | Promise<void>;
   agentOwnerAddress?: string;
   agentId?: string;
 }
@@ -66,12 +66,12 @@ export const ChatEntry = ({
   isTwitterPostProcessing = false,
   isTwitterPostPosted = false,
   agentOwnerAddress,
-  agentId
+  agentId,
 }: ChatEntryComponentProps) => {
   const { wallet, account, isConnected } = useAptosWallet();
 
   const isMyMessage = role === "user" && !data?.isGroupMessage;
-  const isAgent = role === "assistant";
+  const isAgent = role === "assistant" || role == "info";
   const align = isAgent ? "flex-start" : "flex-end";
   const videoId = data?.job_id ?? job_id ?? undefined;
   const rawUserId = useMemo(() => {
@@ -113,11 +113,7 @@ export const ChatEntry = ({
   };
 
   // Background colors
-  const bg = isMyMessage
-    ? colorTokens.blackCustom.a3
-    : isAgent
-    ? "transparent"
-    : colorTokens.blackCustom.a1; // Different bg for other users' messages
+  const bg = isMyMessage ? "#212121" : isAgent ? "transparent" : "#212121"; // Different bg for other users' messages
 
   // Text colors
   const color = isMyMessage
@@ -222,16 +218,15 @@ export const ChatEntry = ({
         px={3}
         py={1}
         bgColor={bg}
-        borderRadius={{ base: 16, md: 28 }}
+        borderRadius={{ base: 10, md: 22 }}
         maxW={messageMaxWidth}
         w={messageWidth}
-        textAlign={isAgent ? "left" : "right"}
+        // textAlign={isAgent ? "left" : "right"}
         overflow="hidden"
       >
         {type === "text" && (
           <MarkdownView
             color={color}
-            lineHeight={1.5}
             fontSize={14}
             p={1}
             isMyMessage={!isAgent}
@@ -331,50 +326,50 @@ export const ChatEntry = ({
           </Stack>
         )}
         {type === "twitter_post" && (
-            <Stack gap={3} align="stretch">
-              {content && (
-                  <MarkdownView
-                      color={color}
-                      lineHeight={1.5}
-                      fontSize={14}
-                      p={1}
-                      isMyMessage={isMyMessage}
-                  >
-                    {content}
-                  </MarkdownView>
-              )}
-              <Flex gap={2} justify="flex-start">
-                <Button
-                    // size="sm"
-                    // borderWidth={1}
-                    // borderColor={colorTokens.gray.platinum}
-                    // onClick={() => {
-                    //   onGenerateVideo?.(data?.prompt ?? content);
-                    // }}
-                    // mt={2}
-                    size="sm"
-                    borderWidth={1}
-                    borderColor={colorTokens.gray.platinum}
-                    onClick={() => {
-                      if (
-                          !isTwitterPostProcessing &&
-                          !isTwitterPostPosted &&
-                          onTwitterPostConfirm
-                      ) {
-                        void onTwitterPostConfirm();
-                      }
-                    }}
-                    disabled={
-                        !onTwitterPostConfirm ||
-                        isTwitterPostProcessing ||
-                        isTwitterPostPosted
-                    }
-                    loading={isTwitterPostProcessing}
-                >
-                  {isTwitterPostPosted ? "Posted" : "Pay and post"}
-                </Button>
-              </Flex>
-            </Stack>
+          <Stack gap={3} align="stretch">
+            {content && (
+              <MarkdownView
+                color={color}
+                lineHeight={1.5}
+                fontSize={14}
+                p={1}
+                isMyMessage={isMyMessage}
+              >
+                {content}
+              </MarkdownView>
+            )}
+            <Flex gap={2} justify="flex-start">
+              <Button
+                // size="sm"
+                // borderWidth={1}
+                // borderColor={colorTokens.gray.platinum}
+                // onClick={() => {
+                //   onGenerateVideo?.(data?.prompt ?? content);
+                // }}
+                // mt={2}
+                size="sm"
+                borderWidth={1}
+                borderColor={colorTokens.gray.platinum}
+                onClick={() => {
+                  if (
+                    !isTwitterPostProcessing &&
+                    !isTwitterPostPosted &&
+                    onTwitterPostConfirm
+                  ) {
+                    void onTwitterPostConfirm();
+                  }
+                }}
+                disabled={
+                  !onTwitterPostConfirm ||
+                  isTwitterPostProcessing ||
+                  isTwitterPostPosted
+                }
+                loading={isTwitterPostProcessing}
+              >
+                {isTwitterPostPosted ? "Posted" : "Pay and post"}
+              </Button>
+            </Flex>
+          </Stack>
         )}
         {type === "error" && (
           <Text lineHeight={1.5} fontSize={14} color="red">
@@ -383,7 +378,7 @@ export const ChatEntry = ({
         )}
         {type === "video" && content && (
           <>
-            <Box position="relative">
+            <Box position="relative" mb={4}>
               <video
                 src={content}
                 controls
@@ -513,17 +508,16 @@ export const ChatEntry = ({
           </Box>
         )}
         {type === "x_api_prompt" && (
-            <Stack gap={3} align="stretch">
-              {content && (
-                  <MarkdownView color={color} lineHeight={1.5} fontSize={14} p={1}>
-                    {content}
-                  </MarkdownView>
-              )}
-              {(!agentId || account?.address === agentOwnerAddress) && (
-                  <ConnectXApiInline onSaved={onSaveXAPI} />
-              )}
-
-            </Stack>
+          <Stack gap={3} align="stretch">
+            {content && (
+              <MarkdownView color={color} lineHeight={1.5} fontSize={14} p={1}>
+                {content}
+              </MarkdownView>
+            )}
+            {(!agentId || account?.address === agentOwnerAddress) && (
+              <ConnectXApiInline onSaved={onSaveXAPI} />
+            )}
+          </Stack>
         )}
         {type === "signature-required" && (
           <>
@@ -563,15 +557,15 @@ export const DemoVideoEntry = () => (
     role="assistant"
     content="https://www.w3schools.com/html/mov_bbb.mp4"
     type="video"
-    onSaveXAPI={()=>{}}
+    onSaveXAPI={() => {}}
   />
 );
 
 export const DefaultChatEntry = () => (
   <ChatEntry
-    role="assistant"
-    content="Chat with this AI agent and other users. Your messages and the agent's responses will be visible to everyone in this agent's chat room."
+    role="info"
+    content="Chat with this AI agent and other users."
     type="text"
-    onSaveXAPI={()=>{}}
+    onSaveXAPI={() => {}}
   />
 );

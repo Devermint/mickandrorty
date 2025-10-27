@@ -4,7 +4,11 @@ import { X } from "../icons/x";
 import { TelegramIcon } from "../icons/telegram";
 import { Agent } from "@/app/types/agent";
 import { colorTokens } from "../theme/theme";
-import { formatTinyPrice, isFiniteNum } from "@/app/lib/utils/formatters";
+import {
+  formatFinanceNumber,
+  formatTinyPrice,
+  isFiniteNum,
+} from "@/app/lib/utils/formatters";
 type AgentCardProps = {
   agent: Agent;
 };
@@ -20,78 +24,64 @@ export const AgentListCard = ({ agent }: AgentCardProps) => {
   });
   return (
     <Flex
-      direction="column"
-      align="center"
       position="relative"
-      width="fit-content"
-      overflow="visible"
+      w="100%"
+      bg={colorTokens.gray.tertiaryDark}
+      p={2}
+      gap={3}
+      borderRadius={7}
+      minW="100%"
     >
-      <Box position="relative" w={60} h={60} overflow="hidden" py={5} px={6}>
+      <Box position="relative" minW={100} w={100} h={100} overflow="hidden">
         <Image
           src={agent.agent_icon_url}
           alt="overlay icon"
           width="100%"
           height="100%"
           objectFit="cover"
+          objectPosition="center"
           pointerEvents="none"
-          borderRadius={10}
+          borderRadius={5}
         />
       </Box>
-
-      <Box w="full" px={6}>
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          zIndex={1}
-          overflow="visible"
-          w="100%"
-        >
+      <Flex
+        w="full"
+        minH="100%"
+        direction="column"
+        justifyContent="space-between"
+      >
+        <Flex justifyContent="space-between" zIndex={1} w="100%">
           <Box>
             <Text
-              fontSize="sm"
+              fontSize={14}
               fontWeight="normal"
-              color={colorTokens.gray.timberwolf}
+              color="white"
+              fontFamily="inter"
             >
               {agent.agent_name}
             </Text>
+            {agent.twitter?.meta?.username && (
+              <Text
+                fontSize={12}
+                fontWeight="normal"
+                color={colorTokens.gray.platinum}
+              >
+                @{agent.twitter?.meta?.username}
+              </Text>
+            )}
           </Box>
-
-          <Flex gap={2}>
-            <Button
-              borderRadius={22}
-              p={4}
-              h={11}
-              w={11}
-              border="none"
-              bgColor="#090A0B"
+        </Flex>
+        <Box w="full">
+          <Flex justify="space-between">
+            <Text
+              color={colorTokens.gray.tertiary}
+              fontSize={13}
+              fontFamily="inter"
             >
-              <X h={13} w={13} color={colorTokens.green.erin} />
-            </Button>
-            <Button
-              borderRadius={22}
-              p={4}
-              h={11}
-              w={11}
-              border="none"
-              bgColor="#090A0B"
-            >
-              <TelegramIcon
-                h={13}
-                w="14px"
-                mr={0.5}
-                color={colorTokens.green.erin}
-              />
-            </Button>
-          </Flex>
-        </Box>
-        <Box w="full" mt={6} pb={2}>
-          <Flex justify="space-between" mb={2}>
-            <Text color={colorTokens.gray.timberwolf} fontSize={13}>
-              Price
+              Price:
             </Text>
 
-            <Text color={colorTokens.green.erin} fontSize={13}>
+            <Text color="white" fontSize={13} fontFamily="inter">
               <>
                 {isFiniteNum(agent.price_usd) ? (
                   <>${formatTinyPrice(agent.price_usd!.toFixed(20))}</>
@@ -101,26 +91,50 @@ export const AgentListCard = ({ agent }: AgentCardProps) => {
               </>
             </Text>
           </Flex>
-          <Flex justify="space-between" mb={2}>
-            <Text color={colorTokens.gray.timberwolf} fontSize={13}>
-              Market CAP
+          <Flex justify="space-between">
+            <Text
+              color={colorTokens.gray.tertiary}
+              fontSize={13}
+              fontFamily="inter"
+            >
+              Liquidity:
             </Text>
 
-            <Text color={colorTokens.green.erin} fontSize={13}>
-              <>{isFiniteNum(agent.mcap_usd) ? <>${mktCap}</> : "—"}</>
+            <Text color="white" fontSize={13} fontFamily="inter">
+              <>
+                {isFiniteNum(agent.liquidity_usd) ? (
+                  <>${formatFinanceNumber(liquidity)}</>
+                ) : (
+                  "—"
+                )}
+              </>
             </Text>
           </Flex>
-          <Flex justify="space-between" mb={2}>
-            <Text color={colorTokens.gray.timberwolf} fontSize={13}>
-              Liquidity
+          <Flex justify="space-between">
+            <Text
+              color={colorTokens.gray.tertiary}
+              fontSize={13}
+              fontFamily="inter"
+            >
+              Mkt. cap.
             </Text>
 
-            <Text color={colorTokens.green.erin} fontSize={13}>
-              <>{isFiniteNum(agent.liquidity_usd) ? <>${liquidity}</> : "—"}</>
+            <Text
+              color={colorTokens.green.brightErin}
+              fontSize={13}
+              fontFamily="inter"
+            >
+              <>
+                {isFiniteNum(agent.mcap_usd) ? (
+                  <>${formatFinanceNumber(mktCap)}</>
+                ) : (
+                  "—"
+                )}
+              </>
             </Text>
           </Flex>
         </Box>
-      </Box>
+      </Flex>
     </Flex>
   );
 };

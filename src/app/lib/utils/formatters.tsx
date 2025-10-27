@@ -89,3 +89,44 @@ export const getEllipsisAddress = (
 
   return `0x${prefix}...${suffix}`;
 };
+
+// utils/formatFinanceNumber.ts
+export function formatFinanceNumber(
+  value: number | string | null | undefined,
+  decimals: number = 2,
+  trim: boolean = true
+): string {
+  if (value == null) return "—";
+
+  const num =
+    typeof value === "string" ? Number(value.replace(/,/g, "")) : value;
+  if (!Number.isFinite(num)) return "—";
+
+  const negative = num < 0;
+  const abs = Math.abs(num);
+
+  // finance-style suffixes
+  const suffixes = [
+    { v: 1e15, s: "Q" }, // Quadrillion
+    { v: 1e12, s: "T" }, // Trillion
+    { v: 1e9, s: "B" }, // Billion
+    { v: 1e6, s: "M" }, // Million
+    { v: 1e3, s: "K" }, // Thousand
+  ];
+
+  let scaled = abs;
+  let suffix = "";
+
+  for (const { v, s } of suffixes) {
+    if (abs >= v) {
+      scaled = abs / v;
+      suffix = s;
+      break;
+    }
+  }
+
+  let formatted = scaled.toFixed(decimals);
+  if (trim) formatted = formatted.replace(/\.?0+$/, ""); // strip trailing zeros
+
+  return `${negative ? "-" : ""}${formatted}${suffix}`;
+}

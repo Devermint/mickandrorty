@@ -630,26 +630,31 @@ export default function TokenSwapForm({
     : 0n;
 
   return (
-    <Box borderRadius={16} bg={colorTokens.blackCustom.a3} p={4} flexShrink={0}>
+    <Box
+      borderRadius={11}
+      bg={colorTokens.gray.tertiaryDark}
+      px={3}
+      py={2}
+      flexShrink={0}
+    >
       {/* Tabs */}
       <Tabs.Root
         value={tab}
         onValueChange={(v) => setTab(v.value as "buy" | "sell")}
       >
-        <Flex align="center" mb={3}>
+        <Flex align="center" mb={1}>
           {/* Tabs on the left */}
           <Tabs.List borderBottom="none" display="flex">
             <Tabs.Trigger
               value="buy"
-              mr={2}
-              color={colorTokens.gray.timberwolf}
+              color="white"
               _focus={{ boxShadow: "none" }}
             >
               Buy
             </Tabs.Trigger>
             <Tabs.Trigger
               value="sell"
-              color={colorTokens.gray.timberwolf}
+              color="white"
               _focus={{ boxShadow: "none" }}
             >
               Sell
@@ -735,9 +740,10 @@ export default function TokenSwapForm({
               <Button
                 size="xs"
                 onClick={onMax}
-                bg={colorTokens.green.erin}
-                color="rgba(31,125,32,1)"
+                bg={colorTokens.green.salad}
+                color="#1F7D20"
                 _hover={{ bg: colorTokens.green.erin }}
+                borderRadius={10}
               >
                 MAX
               </Button>
@@ -845,7 +851,7 @@ export default function TokenSwapForm({
       </Flex>
 
       {/* Market info */}
-      <Box mt={3}>
+      {/* <Box mt={3}>
         {renderTokenInfoField(
           "Spot price:",
           <>
@@ -917,7 +923,7 @@ export default function TokenSwapForm({
               : "—"}
           </>
         )}
-      </Box>
+      </Box> */}
 
       {/* CTA */}
       <Flex w="100%" gap="17px" mt={4}>
@@ -926,7 +932,7 @@ export default function TokenSwapForm({
             borderRadius={8}
             bg={colorTokens.green.erin}
             flex="1"
-            color="rgba(31, 125, 32, 1)"
+            color={colorTokens.green.salad}
             _hover={{ bg: colorTokens.green.erin }}
             onClick={() => connect?.()}
           >
@@ -935,12 +941,11 @@ export default function TokenSwapForm({
         ) : (
           <Button
             borderRadius={8}
-            bg={tab === "buy" ? colorTokens.green.erin : "rgba(231, 55, 55, 1)"}
+            bg={tab === "buy" ? colorTokens.green.salad : "#E73737"}
             flex="1"
-            color={tab === "buy" ? "rgba(31, 125, 32, 1)" : "white"}
+            color={tab === "buy" ? colorTokens.green[700] : "white"}
             _hover={{
-              bg:
-                tab === "buy" ? colorTokens.green.erin : "rgba(231, 55, 55, 1)",
+              bg: tab === "buy" ? colorTokens.green.erin : "#E73737)",
             }}
             onClick={onExecute}
             disabled={submitting || quoting || !!balanceError}

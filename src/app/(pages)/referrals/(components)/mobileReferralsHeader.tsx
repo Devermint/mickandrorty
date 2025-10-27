@@ -1,19 +1,26 @@
 import { PointsIcon } from "@/app/components/icons/points";
-import { Box, Image as ChakraImage, Flex, Text } from "@chakra-ui/react";
+import {
+  Box,
+  BoxProps,
+  Image as ChakraImage,
+  Flex,
+  Text,
+} from "@chakra-ui/react";
 
-interface MobileReferralsHeaderProps {
+interface ReferralsHeaderProps extends BoxProps {
   title: string;
   points: number;
   image: string;
 }
 
-export default function MobileReferralsHeader({
+export default function ReferralsHeader({
   title,
   points,
   image,
-}: MobileReferralsHeaderProps) {
+  ...rest
+}: ReferralsHeaderProps) {
   return (
-    <Box position="relative">
+    <Box position="relative" {...rest}>
       <ChakraImage src={image} w="full"></ChakraImage>
       <Flex
         position="absolute"
@@ -27,7 +34,7 @@ export default function MobileReferralsHeader({
         <Text maxW={215} fontSize={20} color="white">
           {title}
         </Text>
-        <Flex align="center" gap={2}>
+        <Flex align="center" gap={2} display={{ base: "flex", md: "none" }}>
           <PointsIcon w={4} h={4} />
           <Text fontSize={24} fontWeight="medium" color="white">
             {points}

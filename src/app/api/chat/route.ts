@@ -7,7 +7,8 @@ import {
   decisionSystemPrompt,
   tldrSystemPrompt,
   getAgentPrompt,
-  telegramPostSystemPrompt, twitterPostSystemPrompt,
+  telegramPostSystemPrompt,
+  twitterPostSystemPrompt,
 } from "./systemPrompts";
 
 type Message = {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     const hasPendingTelegramConfirmation =
       hasPendingTelegramPostConfirmation(messages);
     const hasPendingTwitterConfirmation =
-        hasPendingTwitterPostConfirmation(messages);
+      hasPendingTwitterPostConfirmation(messages);
     let action = agentAction.action;
 
     if (hasPendingTelegramConfirmation) {
@@ -85,7 +86,6 @@ export async function POST(request: NextRequest) {
           action: "TEXT",
         });
       }
-
       const telegramPost = await getTelegramPost(messages, latestVideoUrl);
 
       if (!telegramPost?.post) {
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       if (!latestVideoUrl) {
         return NextResponse.json({
           message:
-              "I couldn't find a generated video to reference for the X post. Please generate a video first or share the link you'd like me to use.",
+            "I couldn't find a generated video to reference for the X post. Please generate a video first or share the link you'd like me to use.",
           action: "TEXT",
         });
       }
@@ -116,8 +116,8 @@ export async function POST(request: NextRequest) {
       console.log(twitterPost);
       if (!twitterPost?.post) {
         return NextResponse.json(
-            { error: "Failed to craft X post content" },
-            { status: 500 }
+          { error: "Failed to craft X post content" },
+          { status: 500 }
         );
       }
 
@@ -254,7 +254,7 @@ async function getTelegramPost(
   latestVideoUrl: string
 ): Promise<{ post: string } | null> {
   const completion = await openai.chat.completions.create({
-    model: "gpt-5",
+    model: "gpt-5-mini",
     messages: [
       {
         role: "system",
@@ -263,7 +263,10 @@ async function getTelegramPost(
       ...messages,
     ],
     max_completion_tokens: 400,
-    response_format: zodResponseFormat(TelegramTwitterPostObject, "telegram_post"),
+    response_format: zodResponseFormat(
+      TelegramTwitterPostObject,
+      "telegram_post"
+    ),
   });
 
   const content = completion.choices[0]?.message?.content;
@@ -274,7 +277,7 @@ async function getTelegramPost(
   return JSON.parse(content);
 }
 async function getTwitterPost(
-    messages: Message[],
+  messages: Message[]
 ): Promise<{ post: string } | null> {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
@@ -286,7 +289,10 @@ async function getTwitterPost(
       ...messages,
     ],
     max_completion_tokens: 1000,
-    response_format: zodResponseFormat(TelegramTwitterPostObject, "twitter_post"),
+    response_format: zodResponseFormat(
+      TelegramTwitterPostObject,
+      "twitter_post"
+    ),
   });
   console.log(completion);
 
@@ -301,7 +307,7 @@ async function getTwitterPost(
 const TELEGRAM_POST_CONFIRMATION_PROMPT =
   "Is this Telegram post good enough, or would you like me to refine it?";
 const X_POST_CONFIRMATION_PROMPT =
-    "Is this X post good enough, or would you like me to refine it?";
+  "Is this X post good enough, or would you like me to refine it?";
 
 function hasPendingTelegramPostConfirmation(messages: Message[]): boolean {
   if (messages.length < 2) {
@@ -355,7 +361,10 @@ function isXPostRequest(messages: Message[]): boolean {
   }
 
   const text = lastMessage.content?.toLowerCase() ?? "";
-  return (text.includes("twitter") && text.includes("post")) || (text.includes("x") && text.includes("post"));
+  return (
+    (text.includes("twitter") && text.includes("post")) ||
+    (text.includes("x") && text.includes("post"))
+  );
 }
 
 function ensureTelegramPostQuestion(response: string | null): string {

@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/react";
+import { Flex, FlexProps } from "@chakra-ui/react";
 import React, { forwardRef } from "react";
 import { DefaultChatEntry, ChatEntry } from "./ChatEntry";
 import {
@@ -6,9 +6,9 @@ import {
   ChatState,
   TelegramChannelDetectionResult,
 } from "@/app/types/message";
-import {TwitterKeys} from "@/app/lib/utils/agentCreation";
+import { TwitterKeys } from "@/app/lib/utils/agentCreation";
 
-interface ChatMessageListProps {
+interface ChatMessageListProps extends FlexProps {
   messages: ChatEntryProps[];
   chatState: ChatState;
   onTokenImageUploaded?: ChatEntryProps["onTokenImageUploaded"];
@@ -22,9 +22,9 @@ interface ChatMessageListProps {
     messageIndex: number;
   }) => void | Promise<void>;
   onTwitterPostConfirm?: (payload: {
-      post: string;
-      videoUrl?: string;
-      messageIndex: number;
+    post: string;
+    videoUrl?: string;
+    messageIndex: number;
   }) => void | Promise<void>;
   telegramPostInProgressIndex?: number | null;
   twitterPostInProgressIndex?: number | null;
@@ -53,7 +53,8 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       agentDisplayName,
       agentOwnerAddress,
       agentId,
-      onSaveXAPI
+      onSaveXAPI,
+      ...rest
     },
     ref
   ) => {
@@ -62,7 +63,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
 
     return (
       <Flex
-        direction="column-reverse"
+        direction={hasMessages ? "column-reverse" : "column"}
         overflowY="auto"
         flex={1}
         px={4}
@@ -75,26 +76,39 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         maxH="100%"
         css={{
           "&::-webkit-scrollbar": { width: "4px" },
-          "&::-webkit-scrollbar-track": { width: "6px" },
+          "&::-webkit-scrollbar-track": {
+            width: "6px",
+            marginTop: "4px",
+            marginBottom: "4px",
+          },
           "&::-webkit-scrollbar-thumb": { borderRadius: "24px" },
         }}
+        {...rest}
       >
         {!hasMessages ? (
           emptyState ?? <DefaultChatEntry />
         ) : (
           <>
             {chatState === ChatState.PROCESSING && (
-              <ChatEntry onSaveXAPI={onSaveXAPI} type="loader" role="assistant" content="" />
+              <ChatEntry
+                onSaveXAPI={onSaveXAPI}
+                type="loader"
+                role="assistant"
+                content=""
+              />
             )}
             {reversedMessages.map((message, index) => {
               const originalIndex = messages.length - 1 - index;
               const isTelegramPost = message.type === "telegram_post";
               const isTwitterPost = message.type === "twitter_post";
               // todo
-              const isTwitterPosted = isTwitterPost && message.data?.posted === true;
-              const isTwitterProcessing = isTwitterPost && message.data?.posted === true &&
-                  twitterPostInProgressIndex !== null &&
-                  twitterPostInProgressIndex === originalIndex;
+              const isTwitterPosted =
+                isTwitterPost && message.data?.posted === true;
+              const isTwitterProcessing =
+                isTwitterPost &&
+                message.data?.posted === true &&
+                twitterPostInProgressIndex !== null &&
+                twitterPostInProgressIndex === originalIndex;
 
               const isBroadcasted =
                 isTelegramPost && message.data?.broadcasted === true;
@@ -105,7 +119,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
 
               return (
                 <ChatEntry
-                    onSaveXAPI={onSaveXAPI}
+                  onSaveXAPI={onSaveXAPI}
                   key={originalIndex}
                   role={message.role}
                   content={message.content}
@@ -153,21 +167,21 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                   isTwitterPostPosted={isTwitterPosted}
                   agentOwnerAddress={agentOwnerAddress}
                   onTwitterPostConfirm={
-                      isTwitterPost &&
-                      typeof message.content === "string" &&
-                      !isTwitterPosted &&
-                      onTwitterPostConfirm
-                          ? () => {
-                              onTwitterPostConfirm({
-                                  post: message.content,
-                                  videoUrl:
-                                      typeof message.data?.videoUrl === "string"
-                                          ? message.data.videoUrl
-                                          : undefined,
-                                  messageIndex: originalIndex,
-                              });
-                          }
-                          : undefined
+                    isTwitterPost &&
+                    typeof message.content === "string" &&
+                    !isTwitterPosted &&
+                    onTwitterPostConfirm
+                      ? () => {
+                          onTwitterPostConfirm({
+                            post: message.content,
+                            videoUrl:
+                              typeof message.data?.videoUrl === "string"
+                                ? message.data.videoUrl
+                                : undefined,
+                            messageIndex: originalIndex,
+                          });
+                        }
+                      : undefined
                   }
                   showPredictionMarket={
                     showPredictionMarket && message.type === "video"

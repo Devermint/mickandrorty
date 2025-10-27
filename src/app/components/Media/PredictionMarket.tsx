@@ -29,15 +29,6 @@ const CloseIcon = (props: IconProps) => (
 
 type PredictionDirection = "for" | "against";
 
-interface PredictionMarketProps {
-  videoId?: string;
-  onPredict?: (
-    direction: PredictionDirection,
-    videoId?: string,
-    stake?: number
-  ) => void;
-}
-
 interface MarketOutcome {
   id: string;
   name: string;
@@ -46,6 +37,22 @@ interface MarketOutcome {
     yes: number;
     no: number;
   };
+}
+
+export interface MarketDefinition {
+  title: string;
+  description: string;
+  outcomes: MarketOutcome[];
+}
+
+interface PredictionMarketProps {
+  videoId?: string;
+  onPredict?: (
+    direction: PredictionDirection,
+    videoId?: string,
+    stake?: number
+  ) => void;
+  definition?: MarketDefinition;
 }
 
 interface SelectedTrade {
@@ -65,7 +72,7 @@ const defaultPredictionHandler = (
   );
 };
 
-const MARKET_DEFINITION = {
+const DEFAULT_MARKET_DEFINITION: MarketDefinition = {
   title: "Will this video reach 100 likes?",
   description: "Predict whether engagement clears the 100-like milestone.",
   outcomes: [
@@ -114,7 +121,9 @@ const TEXT_MUTED = colorTokens.gray.platinum;
 export const PredictionMarket = ({
   videoId,
   onPredict,
+  definition: definitionProp,
 }: PredictionMarketProps) => {
+  const definition = definitionProp ?? DEFAULT_MARKET_DEFINITION;
   const [selectedTrade, setSelectedTrade] = useState<SelectedTrade | null>(
     null
   );
@@ -272,15 +281,15 @@ export const PredictionMarket = ({
     <Flex direction="column" gap={3}>
       <Flex direction="column" gap={1}>
         <Text fontSize="sm" fontWeight="semibold" color={TEXT_PRIMARY}>
-          {MARKET_DEFINITION.title}
+          {definition.title}
         </Text>
         <Text fontSize="xs" color={TEXT_MUTED}>
-          {MARKET_DEFINITION.description}
+          {definition.description}
         </Text>
       </Flex>
 
       <Flex gap={2} justify="space-between">
-        {MARKET_DEFINITION.outcomes.map((outcome) => {
+        {definition.outcomes.map((outcome) => {
           const isYesOutcome = outcome.id === "yes";
           const direction: PredictionDirection = isYesOutcome
             ? "for"
@@ -544,18 +553,42 @@ export const PredictionMarket = ({
     </Flex>
   );
 
+  const isExpanded = Boolean(selectedTrade);
+
   return (
     <Box
       w="full"
-      mt={4}
       px={{ base: 4, md: 5 }}
       py={{ base: 5, md: 6 }}
       borderRadius="2xl"
       bg={SURFACE_ALT_COLOR}
       borderWidth="1px"
       borderColor={BORDER_COLOR}
+      position="relative"
+      overflow="hidden"
     >
-      {selectedTrade ? expandedMarket : collapsedMarket}
+      <Box
+        css={{
+          transition: "opacity 0.35s ease, transform 0.35s ease",
+          opacity: isExpanded ? 0 : 1,
+          transform: isExpanded ? "translateY(-16px)" : "translateY(0)",
+          pointerEvents: isExpanded ? "none" : "auto",
+          position: isExpanded ? "absolute" : "relative",
+          inset: 0,
+        }}
+      >
+        {collapsedMarket}
+      </Box>
+      <Box
+        css={{
+          transition: "opacity 0.35s ease, transform 0.35s ease",
+          opacity: isExpanded ? 1 : 0,
+          transform: isExpanded ? "translateY(0)" : "translateY(16px)",
+          pointerEvents: isExpanded ? "auto" : "none",
+        }}
+      >
+        {expandedMarket}
+      </Box>
     </Box>
   );
 };

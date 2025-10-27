@@ -2,7 +2,7 @@
 import { colorTokens } from "@/app/components/theme/theme";
 import { Flex, Tabs } from "@chakra-ui/react";
 import { Task } from "../page";
-import MobileHeader from "./mobileHeader";
+import MobileHeader from "./mobileReferralsHeader";
 import Tasks from "./tasks";
 import Referrals from "./referrals";
 import { useState } from "react";

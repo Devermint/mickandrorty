@@ -11,7 +11,7 @@ import { Flex, FlexProps, Text } from "@chakra-ui/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Agent, AgentType } from "@/app/types/agent";
 import { ChatEntryProps, ChatState } from "@/app/types/message";
-import {TwitterKeys, useAgentCreation} from "@/app/lib/utils/agentCreation";
+import { TwitterKeys, useAgentCreation } from "@/app/lib/utils/agentCreation";
 import { useMessageHandler } from "@/app/hooks/useMessageHandler";
 import { useTokenImageUpload } from "@/app/hooks/useTokenImageUpload";
 import { useTelegramChannelDetection } from "@/app/hooks/useTelegramChannelDetection";
@@ -25,7 +25,7 @@ import { useVideoGeneration } from "./hooks/useVideoGeneration";
 import { useTelegramPostBroadcast } from "./hooks/useTelegramPostBroadcast";
 import { useChatGroupSync } from "./hooks/useChatGroupSync";
 import { useAptosWallet } from "../../context/AptosWalletContext";
-import {useTwitterPostPoster} from "@/app/components/Chat/hooks/useTwitterPostBroadcast";
+import { useTwitterPostPoster } from "@/app/components/Chat/hooks/useTwitterPostBroadcast";
 
 interface ChatProps extends FlexProps {
   agent: Agent;
@@ -36,6 +36,8 @@ interface ChatProps extends FlexProps {
   socketUrl?: string;
   chatName?: string;
   showTabs?: boolean;
+  showHeader?: boolean;
+  showMessages?: boolean;
 }
 
 const Chat = ({
@@ -47,6 +49,8 @@ const Chat = ({
   chatName,
   showTabs = true,
   forceEnableAi = false,
+  showHeader = true,
+  showMessages = true,
   ...rest
 }: ChatProps) => {
   const { wallet, account, isConnected, swapSDK } = useAgentCreation();
@@ -60,25 +64,28 @@ const Chat = ({
   const didInitialize = useRef(false);
   const [xApiData, setXApiData] = useState<TwitterKeys>({});
 
-  const handleXApiSaved = useCallback((data?: TwitterKeys) => {
-    if(data) setXApiData(data);
-    setMessages(prev => [
-      ...prev,
-      {
-        role: "assistant",
-        type: "text",
-        content: data?.isConnectAPISuccess
+  const handleXApiSaved = useCallback(
+    (data?: TwitterKeys) => {
+      if (data) setXApiData(data);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          type: "text",
+          content: data?.isConnectAPISuccess
             ? "X API connected successfully."
             : "X API linking skipped.",
-      },
-    ]);
-    if (inputMessage.current) {
-      inputMessage.current.value = data?.isConnectAPISuccess
+        },
+      ]);
+      if (inputMessage.current) {
+        inputMessage.current.value = data?.isConnectAPISuccess
           ? "x_api_done"
           : "x_api_skip";
-      onMessageSend(); // this calls your MessageHandler → /api/chat/create-agent again
-    }
-  }, [setMessages]);
+        onMessageSend(); // this calls your MessageHandler → /api/chat/create-agent again
+      }
+    },
+    [setMessages]
+  );
 
   const displayedMessages = useMemo(() => {
     if (showTabs && activeTab === "media") {
@@ -169,7 +176,7 @@ const Chat = ({
     agentId: agent.fa_id,
     userId,
     sendAgentMessage,
-    xApiData
+    xApiData,
   });
 
   const handleAiToggleChange = useCallback(
@@ -233,14 +240,14 @@ const Chat = ({
     });
 
   const { handleTwitterPostConfirm, twitterPostInProgressIndex } =
-      useTwitterPostPoster({
-        wallet,
-        account,
-        isConnected,
-        setMessages,
-        setChatState,
-        agentId: agent.fa_id,
-      });
+    useTwitterPostPoster({
+      wallet,
+      account,
+      isConnected,
+      setMessages,
+      setChatState,
+      agentId: agent.fa_id,
+    });
 
   const { handleChannelsDetected } = useTelegramChannelDetection({
     setMessages,
@@ -296,74 +303,96 @@ const Chat = ({
   }, [msg, onMessageSend, router]);
 
   return (
-    <Flex
-      bg={colorTokens.blackCustom.a1}
-      borderRadius={{ base: 0, md: 13 }}
-      maxW={800}
-      w={{ base: "100%", lg: 800 }}
-      flexDirection="column"
-      justify="space-between"
-      overflow="hidden"
-      maxH="100%"
-      h="100%"
-      {...rest}
-    >
-      <Flex flexDir="column" flex={1} overflowY="hidden">
-        <ChatHeader
-          chatName={chatName}
-          agentDisplayName={agent.agent_name ?? "Agent"}
-          enableGroupChat={enableGroupChat}
-          isGroupConnected={isGroupConnected}
-          activeTab={activeTab}
-          onTabChange={handleTabSelection}
-          showTabs={showTabs}
-        />
+    <>
+      {showMessages ? (
+        <Flex
+          bg={colorTokens.gray.tertiaryDark}
+          borderRadius={{ base: 0, md: 21 }}
+          maxW={800}
+          w={{ base: "100%", lg: 725 }}
+          flexDirection="column"
+          overflow="hidden"
+          maxH="100%"
+          h={agent.agent_name ? "100%" : "50%"}
+          {...rest}
+        >
+          <Flex flexDir="column" flex={1} overflowY="hidden">
+            {showHeader && (
+              <ChatHeader
+                chatName={chatName}
+                agentDisplayName={agent.agent_name ?? "Agent"}
+                enableGroupChat={enableGroupChat}
+                isGroupConnected={isGroupConnected}
+                activeTab={activeTab}
+                onTabChange={handleTabSelection}
+                showTabs={showTabs}
+              />
+            )}
 
-        {enableGroupChat && groupError && (
-          <ChatErrorBanner message={groupError} onDismiss={clearGroupError} />
-        )}
+            {enableGroupChat && groupError && (
+              <ChatErrorBanner
+                message={groupError}
+                onDismiss={clearGroupError}
+              />
+            )}
 
-        <ChatMessageList
-          ref={containerRef}
-          messages={displayedMessages}
-          chatState={chatState}
-          onTokenImageUploaded={handleTokenImageUploaded}
-          onChannelsDetected={handleChannelsDetected}
-          onGenerateVideo={handleVideoGenerationRequest}
-          onTelegramPostConfirm={handleTelegramPostConfirm}
-          onTwitterPostConfirm={handleTwitterPostConfirm}
-          telegramPostInProgressIndex={telegramPostInProgressIndex}
-          twitterPostInProgressIndex={twitterPostInProgressIndex}
-          emptyState={
-            showTabs && activeTab === "media" ? mediaEmptyState : undefined
-          }
-          showPredictionMarket={showTabs && activeTab === "media"}
-          agentDisplayName={agent.agent_name ?? "Agent"}
-          agentOwnerAddress={agent.wallet}
-          agentId={agent.id}
-          onSaveXAPI={handleXApiSaved}
-        />
-
-        {!showTabs || activeTab === "chat" ? (
-          <>
-            <ChatHelperPanel onSelect={handleHelperButtonClick} agent={agent}/>
-            <ChatInputBar
-              inputRef={inputMessage}
-              onSend={onMessageSend}
-              showAiToggle={
-                agent.agent_type !== AgentType.AgentCreator && enableGroupChat
+            <ChatMessageList
+              ref={containerRef}
+              messages={displayedMessages}
+              chatState={chatState}
+              onTokenImageUploaded={handleTokenImageUploaded}
+              onChannelsDetected={handleChannelsDetected}
+              onGenerateVideo={handleVideoGenerationRequest}
+              onTelegramPostConfirm={handleTelegramPostConfirm}
+              telegramPostInProgressIndex={telegramPostInProgressIndex}
+              emptyState={
+                showTabs && activeTab === "media" ? mediaEmptyState : undefined
               }
-              aiToggleChecked={askAiEnabled}
-              onAiToggleChange={handleAiToggleChange}
-              aiToggleDisabled={aiToggleDisabled}
-              aiToggleTooltip={aiToggleTooltip}
+              agentOwnerAddress={agent.wallet}
+              agentId={agent.id}
+              showPredictionMarket={showTabs && activeTab === "media"}
+              agentDisplayName={agent.agent_name ?? "Agent"}
+              onSaveXAPI={handleXApiSaved}
             />
-          </>
-        ) : (
-          <Flex h={6} />
-        )}
-      </Flex>
-    </Flex>
+
+            {!showTabs || activeTab === "chat" ? (
+              <>
+                {/* <ChatHelperPanel onSelect={handleHelperButtonClick} /> */}
+                <ChatInputBar
+                  inputRef={inputMessage}
+                  onSend={onMessageSend}
+                  showAiToggle={
+                    agent.agent_type !== AgentType.AgentCreator &&
+                    enableGroupChat
+                  }
+                  aiToggleChecked={askAiEnabled}
+                  onAiToggleChange={handleAiToggleChange}
+                  aiToggleDisabled={aiToggleDisabled}
+                  aiToggleTooltip={aiToggleTooltip}
+                />
+              </>
+            ) : (
+              <></>
+            )}
+          </Flex>
+        </Flex>
+      ) : (
+        <ChatInputBar
+          inputRef={inputMessage}
+          onSend={onMessageSend}
+          showAiToggle={
+            agent.agent_type !== AgentType.AgentCreator && enableGroupChat
+          }
+          aiToggleChecked={askAiEnabled}
+          onAiToggleChange={handleAiToggleChange}
+          aiToggleDisabled={aiToggleDisabled}
+          aiToggleTooltip={aiToggleTooltip}
+          w="100%"
+          maxH={100}
+          borderRadius={21}
+        />
+      )}
+    </>
   );
 };
 

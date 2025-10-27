@@ -63,23 +63,27 @@ export default function WalletMenu({
   };
 
   return (
-    <Menu.Root>
+    <Menu.Root positioning={{ sameWidth: true, placement: "bottom-end" }}>
       <MenuTrigger asChild>
         <Button
-          size={{ base: "sm", md: "xl" }}
           className="wallet-button"
-          borderRadius="10px"
-          borderColor={colorTokens.green.dark}
+          borderRadius={34}
+          background={colorTokens.gray.tertiaryDark}
+          w={{ base: "100%", md: "auto" }}
+          px={{ base: 6, md: 6 }}
+          py={{ base: 3, md: 3 }}
+          justifyContent="center"
         >
-          <Flex alignItems="center">
+          <Flex alignItems="center" justifyContent="center">
             <Text
               maxW="150px"
               overflow="hidden"
               textOverflow="ellipsis"
               whiteSpace="nowrap"
-              ml={2}
               color={colorTokens.gray.timberwolf}
-              fontSize={{ base: "2xs", md: "lg" }}
+              fontSize="md"
+              fontWeight={500}
+              fontFamily="inter"
             >
               {truncateAddress(account?.address?.toString() || "") || "Unknown"}
             </Text>
@@ -88,7 +92,13 @@ export default function WalletMenu({
       </MenuTrigger>
       <Portal>
         <MenuPositioner>
-          <MenuContent boxShadow="lg" bg={colorTokens.gray.platinum}>
+          <MenuContent
+            boxShadow="lg"
+            bg={colorTokens.gray.platinum}
+            borderRadius="xl"
+            w="100%"
+            py={2}
+          >
             <MenuItem
               value="copy"
               onClick={copyAddress}

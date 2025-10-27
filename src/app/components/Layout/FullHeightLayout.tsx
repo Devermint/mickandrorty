@@ -1,13 +1,20 @@
-import { Flex } from "@chakra-ui/react";
+"use client";
+
+import { Flex, Box } from "@chakra-ui/react";
 import { ReactNode } from "react";
 import Footer from "../Footer/Footer";
 import { NavBar } from "../NavBar/NavBar";
+import { MobileFooter } from "../NavBar/MobileFooter";
+import { usePathname } from "next/navigation";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default function FullHeightLayout({ children }: LayoutProps) {
+  const pathname = usePathname();
+  const showMobileFooter = Boolean(pathname && !pathname.startsWith("/agent/"));
+
   return (
     <Flex
       minH="100dvh"
@@ -19,8 +26,22 @@ export default function FullHeightLayout({ children }: LayoutProps) {
     >
       <NavBar />
 
-      {children}
+      <Box
+        flex="1"
+        w="100%"
+        minH={0}
+        pb={{
+          base: showMobileFooter ? "calc(56px + env(safe-area-inset-bottom))" : "0",
+          md: "0",
+        }}
+        display="flex"
+        flexDirection="column"
+        minWidth={0}
+      >
+        {children}
+      </Box>
       <Footer />
+      {showMobileFooter ? <MobileFooter /> : null}
     </Flex>
   );
 }
