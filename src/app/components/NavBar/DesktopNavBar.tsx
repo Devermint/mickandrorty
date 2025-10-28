@@ -40,6 +40,7 @@ export const DesktopNavBar = ({ navButtons, handleButtonClick }: Props) => (
           bg={colorTokens.gray.tertiaryDark}
           borderRadius={22}
           px={{ base: 10, md: 12, lg: 14, xl: 16 }}
+          justify="space-evenly"
         >
           {navButtons.map((button, index) => (
             <NavBarButton
