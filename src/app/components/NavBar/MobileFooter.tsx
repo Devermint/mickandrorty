@@ -12,7 +12,7 @@ import { PiRobot, PiCoins, PiTicket, PiSparkle } from "react-icons/pi";
 
 const footerItems = [
   { label: "Agents", href: "/agents", icon: PiRobot },
-  { label: "Predictions", href: "/predictions", icon: PiCoins },
+  // { label: "Predictions", href: "/predictions", icon: PiCoins },
   { label: "Earn", href: "/referrals", icon: PiTicket },
   { label: "Create", href: "/", icon: PiSparkle },
 ];
