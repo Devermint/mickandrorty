@@ -253,8 +253,8 @@ export default function ReferralsPage() {
 
   if (!isConnected) {
     return (
-      <Flex justify="center" align="center" h="100%">
-        <Text color="white">
+      <Flex justify="center" align="center" h="100%" mx={4}>
+        <Text color="white" textAlign="center">
           Please connect your wallet to see your referrals.
         </Text>
       </Flex>
