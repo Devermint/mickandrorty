@@ -17,6 +17,7 @@ export interface Props {
   referalLink: string;
   referrals: Referral[];
   leaderboard: LeaderboardResponse | null;
+  handleCompleteTask: (taskId: string) => void;
 }
 export default function DesktopReferralsView({
   tasks,
@@ -24,6 +25,7 @@ export default function DesktopReferralsView({
   referalLink,
   referrals,
   leaderboard,
+  handleCompleteTask,
 }: Props) {
   return (
     <Flex
@@ -67,7 +69,10 @@ export default function DesktopReferralsView({
             </Flex>
           </Flex>
           <Box flex="1" minH={0} overflowY="auto" pr={1}>
-            <Tasks tasks={tasks ?? []} />
+            <Tasks
+              tasks={tasks ?? []}
+              handleCompleteTask={handleCompleteTask}
+            />
           </Box>
           <Box mt={4}>
             <InfoBanner message="Earn points by completing daily tasks" />

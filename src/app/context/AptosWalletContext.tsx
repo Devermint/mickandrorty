@@ -54,6 +54,39 @@ const AptosWalletContext = createContext<AptosWalletContextType | undefined>(
 const aptosConfig = new AptosConfig({ network: Network.MAINNET });
 const aptos = new Aptos(aptosConfig);
 
+const normalizeUser = (raw: any): User => {
+  const referralSource = Array.isArray(raw?.referrals)
+    ? raw.referrals
+    : Array.isArray(raw?.friends)
+    ? raw.friends
+    : [];
+
+  const referrals =
+    referralSource.length > 0
+      ? referralSource.map((ref: any) => ({
+          wallet_address:
+            ref?.wallet_address ?? ref?.address ?? ref?.walletAddress ?? "",
+          score: ref?.score ?? ref?.points ?? 0,
+        }))
+      : [];
+
+  const normalized: User = {
+    ...(raw ?? {}),
+    wallet_address:
+      raw?.wallet_address ?? raw?.walletAddress ?? raw?.address ?? undefined,
+    points: raw?.points ?? raw?.score ?? 0,
+    referral_code: raw?.referral_code ?? raw?.referralCode ?? undefined,
+    referral_count:
+      raw?.referral_count ??
+      raw?.referrals_count ??
+      raw?.friends_count ??
+      referrals.length,
+    referrals,
+  };
+
+  return normalized;
+};
+
 /** Bridge adapter -> your context shape */
 function WalletBridge({ children }: { children: ReactNode }) {
   const {
@@ -121,6 +154,22 @@ function WalletBridge({ children }: { children: ReactNode }) {
     }
   }, [address]);
 
+  const fetchUserProfile = useCallback(async () => {
+    if (!jwt) {
+      setUser(null);
+      return;
+    }
+    try {
+      const { data: userData } = await api.get("/users/me");
+      setUser(normalizeUser(userData));
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      localStorage.removeItem("jwt");
+      setJwt(null);
+      setUser(null);
+    }
+  }, [jwt]);
+
   const login = useCallback(async () => {
     if (!address || !publicKey) return;
     try {
@@ -142,7 +191,7 @@ function WalletBridge({ children }: { children: ReactNode }) {
       const { token, user: userData } = data;
       localStorage.setItem("jwt", token);
       setJwt(token);
-      setUser(userData);
+      setUser(normalizeUser(userData));
     } catch (error) {
       console.error("Error signing message or logging in:", error);
     }
@@ -158,19 +207,6 @@ function WalletBridge({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchBalance();
   }, [fetchBalance]);
-
-  const fetchUserProfile = useCallback(async () => {
-    if (!jwt) return;
-    try {
-      const { data: userData } = await api.get("/users/me");
-      setUser(userData);
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      localStorage.removeItem("jwt");
-      setJwt(null);
-      setUser(null);
-    }
-  }, [jwt]);
 
   useEffect(() => {
     if (jwt && !user) {

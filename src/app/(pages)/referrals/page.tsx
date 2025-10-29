@@ -59,6 +59,7 @@ export default function ReferralsPage() {
     onClose: onCreatePostModalClose,
   } = useDisclosure();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isWaitingForWallet, setIsWaitingForWallet] = useState(false);
 
   const referralLink = user?.referral_code
     ? `https://dapp.aptoslayer.ai/?referralCode=${user.referral_code}`
@@ -145,8 +146,24 @@ export default function ReferralsPage() {
 
   useEffect(() => {
     fetchData();
+    refreshUser();
     fetchLeaderboard();
-  }, [fetchData, fetchLeaderboard]);
+  }, [fetchData, fetchLeaderboard, refreshUser]);
+
+  useEffect(() => {
+    if (jwt && !isConnected) {
+      setIsWaitingForWallet(true);
+      const timeoutId = window.setTimeout(() => {
+        setIsWaitingForWallet(false);
+      }, 1200);
+      return () => {
+        window.clearTimeout(timeoutId);
+      };
+    }
+
+    setIsWaitingForWallet(false);
+    return undefined;
+  }, [jwt, isConnected]);
 
   const handleCompleteTask = async (taskId: string) => {
     const task = tasks?.find((t) => t.task_id === taskId);
@@ -224,7 +241,9 @@ export default function ReferralsPage() {
     await Promise.all([fetchData(), fetchLeaderboard(), refreshUser()]);
   };
 
-  if (loading) {
+  const shouldShowLoader = loading || isWaitingForWallet;
+
+  if (shouldShowLoader) {
     return (
       <Flex justify="center" align="center" h="100%">
         <Spinner color={colorTokens.green.erin} size="xl" />
@@ -623,6 +642,7 @@ export default function ReferralsPage() {
           referalLink={referralLink}
           referrals={user?.referrals ?? []}
           leaderboard={leaderboard}
+          handleCompleteTask={handleCompleteTask}
         />
       </Flex>
       <Flex
@@ -639,6 +659,7 @@ export default function ReferralsPage() {
           referalLink={referralLink}
           referrals={user?.referrals ?? []}
           leaderboard={leaderboard}
+          handleCompleteTask={handleCompleteTask}
         />
       </Flex>
     </Flex>

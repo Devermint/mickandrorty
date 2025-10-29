@@ -5,9 +5,10 @@ import Image from "next/image";
 
 interface TasksProps {
   tasks: Task[];
+  handleCompleteTask: (taskId: string) => void;
 }
 
-export default function Tasks({ tasks }: TasksProps) {
+export default function Tasks({ tasks, handleCompleteTask }: TasksProps) {
   //   const sorted = [...tasks].sort((a, b) => {
   //     const statusOrder =
   //       (a.status === "completed" ? 1 : 0) - (b.status === "completed" ? 1 : 0);
@@ -82,7 +83,7 @@ export default function Tasks({ tasks }: TasksProps) {
               fontWeight="semibold"
               cursor={task.status === "completed" ? "default" : "pointer"}
               disabled={task.status === "completed"}
-              //   onClick={() => handleCompleteTask(task.task_id)}
+              onClick={() => handleCompleteTask(task.task_id)}
               color={
                 task.status === "completed"
                   ? colorTokens.gray[200]
