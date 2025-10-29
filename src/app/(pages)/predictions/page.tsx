@@ -51,6 +51,9 @@ export default function PredictionsPage() {
                     description:
                       prediction.description ??
                       "Place your prediction on this market.",
+                    avatar:"prediction-market/photo.png",
+                    backgroundImage:"prediction-market/trum.png",
+                    volumeLabel: "$200k vol.",
                     outcomes: [
                       {
                         id: "yes",

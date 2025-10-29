@@ -158,7 +158,9 @@ export const ChatEntry = ({
             typeof data.minHeight === "number" ? data.minHeight : undefined,
         }
       : undefined;
-
+console.log(                  onTwitterPostConfirm,
+    isTwitterPostProcessing,
+    isTwitterPostPosted)
   return (
     <Flex
       direction="column"

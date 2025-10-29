@@ -60,7 +60,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
   ) => {
     const hasMessages = messages.length > 0;
     const reversedMessages = [...messages].reverse();
-
+    console.log(reversedMessages)
     return (
       <Flex
         direction={hasMessages ? "column-reverse" : "column"}
@@ -116,7 +116,11 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                 isTelegramPost &&
                 telegramPostInProgressIndex !== null &&
                 telegramPostInProgressIndex === originalIndex;
-
+                // console.log(               isTwitterPost ,
+                //     typeof message.content === "string" ,
+                //     !isTwitterPosted ,
+                //     onTwitterPostConfirm)
+                // console.log(message);
               return (
                 <ChatEntry
                   onSaveXAPI={onSaveXAPI}

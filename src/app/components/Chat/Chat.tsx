@@ -345,6 +345,8 @@ const Chat = ({
               onGenerateVideo={handleVideoGenerationRequest}
               onTelegramPostConfirm={handleTelegramPostConfirm}
               telegramPostInProgressIndex={telegramPostInProgressIndex}
+              onTwitterPostConfirm={handleTwitterPostConfirm}
+              twitterPostInProgressIndex={twitterPostInProgressIndex}
               emptyState={
                 showTabs && activeTab === "media" ? mediaEmptyState : undefined
               }

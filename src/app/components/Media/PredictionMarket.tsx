@@ -6,7 +6,8 @@ import {
   NumberInput,
   Text,
   chakra,
-  type IconProps,
+  type IconProps, Image,
+  HStack,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
@@ -43,6 +44,9 @@ export interface MarketDefinition {
   title: string;
   description: string;
   outcomes: MarketOutcome[];
+  avatar: string;
+  backgroundImage: string;
+  volumeLabel: string;
 }
 
 interface PredictionMarketProps {
@@ -95,6 +99,9 @@ const DEFAULT_MARKET_DEFINITION: MarketDefinition = {
       },
     },
   ] satisfies MarketOutcome[],
+  avatar:"prediction-market/photo.png",
+  backgroundImage:"prediction-market/trum.png",
+  volumeLabel: "$200k vol."
 };
 
 const MIN_STAKE = 1;
@@ -107,7 +114,7 @@ const clampStake = (value: number) =>
 const YES_BUTTON_BG = "#84D89A";
 const YES_BUTTON_HOVER_BG = "#1C7A3A";
 const YES_BUTTON_TEXT = YES_BUTTON_HOVER_BG;
-const NO_BUTTON_BG = "#F48A9A";
+const NO_BUTTON_BG = "#EB0000";
 const NO_BUTTON_HOVER_BG = "#A61B2D";
 const NO_BUTTON_TEXT = NO_BUTTON_HOVER_BG;
 const FOR_COLOR = YES_BUTTON_HOVER_BG;
@@ -124,6 +131,7 @@ export const PredictionMarket = ({
   definition: definitionProp,
 }: PredictionMarketProps) => {
   const definition = definitionProp ?? DEFAULT_MARKET_DEFINITION;
+  console.log(definition);
   const [selectedTrade, setSelectedTrade] = useState<SelectedTrade | null>(
     null
   );
@@ -277,64 +285,171 @@ export const PredictionMarket = ({
     };
   }, []);
 
+// ── replace your collapsedMarket with this ─────────────────────────────────────
   const collapsedMarket = (
-    <Flex direction="column" gap={3}>
-      <Flex direction="column" gap={1}>
-        <Text fontSize="sm" fontWeight="semibold" color={TEXT_PRIMARY}>
-          {definition.title}
-        </Text>
-        <Text fontSize="xs" color={TEXT_MUTED}>
-          {definition.description}
-        </Text>
-      </Flex>
+      <Box position="relative" overflow="hidden" borderRadius="2xl">
+        {/* Hero image */}
+        <Image
+            src={definition.backgroundImage}
+            position="absolute"
+            inset={0}
+            w="full"
+            h="full"
+            objectFit="cover"
+        />
 
-      <Flex gap={2} justify="space-between">
-        {definition.outcomes.map((outcome) => {
-          const isYesOutcome = outcome.id === "yes";
-          const direction: PredictionDirection = isYesOutcome
-            ? "for"
-            : "against";
-          const isSelected =
-            selectedTrade?.outcome.id === outcome.id &&
-            selectedTrade.direction === direction;
-          const baseBg = isYesOutcome ? YES_BUTTON_BG : NO_BUTTON_BG;
-          const hoverBg = isYesOutcome
-            ? YES_BUTTON_HOVER_BG
-            : NO_BUTTON_HOVER_BG;
-          const baseText = isYesOutcome ? YES_BUTTON_TEXT : NO_BUTTON_TEXT;
+        {/* Darken image for contrast */}
+        <Box
+            position="absolute"
+            inset={0}
+            bg="linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.85) 100%)"
+        />
 
-          return (
-            <Button
-              key={outcome.id}
-              onClick={() => handleSelect(outcome, direction)}
-              justifyContent="space-between"
-              alignItems="center"
-              flex="1"
-              px={3}
-              py={3}
-              h="auto"
-              borderRadius="lg"
-              fontWeight="semibold"
-              fontSize="sm"
-              bg={isSelected ? hoverBg : baseBg}
-              color={isSelected ? "white" : baseText}
-              borderWidth="1px"
-              borderColor={isSelected ? hoverBg : baseBg}
-              _hover={{ bg: hoverBg, color: "white" }}
-              _active={{ bg: hoverBg, color: "white" }}
-              _focusVisible={{ boxShadow: "none" }}
+        {/* Foreground content */}
+        <Flex direction="column" gap={4} position="relative" align={"end"} zIndex={1} h="full">
+          {/* === TOP ROW: title and volume (above blur zone) === */}
+          <Flex align="center" gap={3} p={4}>
+
+
+            <Box
+                ml={3}
+                px={3}
+                py={1.5}
+                borderRadius="xl"
+                bg="blackAlpha.700"
+                color="white"
+                fontWeight="bold"
+                fontSize="sm"
+                borderWidth="1px"
+                borderColor="whiteAlpha.300"
+                whiteSpace="nowrap"
             >
-              <Text fontSize="sm" fontWeight="semibold" color="inherit">
-                {outcome.name}
+              {definition.volumeLabel ?? "$200k Vol."}
+            </Box>
+          </Flex>
+
+          {/* === BLURRED ZONE BELOW === */}
+          <Box position="relative" mt="auto">
+            {/* Backdrop blur zone (only under desc + buttons) */}
+            <Box
+                position="absolute"
+                left={0}
+                right={0}
+                bottom={0}
+                top={0}
+                pointerEvents="none"
+                style={{
+
+                  backdropFilter: "blur(2px)",
+                  background:
+                      "linear-gradient(0deg, #181818 0%, rgba(24, 24, 24, 0.80) 100%)",
+                }}
+            />
+
+            {/* Content inside blurred zone */}
+            <Box position="relative" zIndex={1} p={4}>
+              <Text
+                  fontSize={{ base: "md", md: "md" }}
+                  fontWeight="bold"
+                  color="white"
+                  pr={{ base: 0, md: 24 }}
+                  mb={3}
+                  flex="1"
+              >
+                {definition.title}
               </Text>
-              <Text fontSize="lg" fontWeight="semibold" color="inherit">
-                {Math.round(outcome.probability * 100)}%
-              </Text>
-            </Button>
-          );
-        })}
-      </Flex>
-    </Flex>
+              {/* Outcome buttons */}
+              <Flex gap={3} justify="space-between">
+                {definition.outcomes.map((outcome) => {
+                  const isYesOutcome = outcome.id === "yes";
+                  const direction: PredictionDirection = isYesOutcome ? "for" : "against";
+                  const isSelected =
+                      selectedTrade?.outcome.id === outcome.id &&
+                      selectedTrade.direction === direction;
+
+                  const pct = Math.round((outcome.probability ?? 0) * 100);
+                  const pctWidth = `${Math.min(Math.max(pct, 0), 100)}%`;
+
+                  const baseBg = isYesOutcome ? YES_BUTTON_BG : NO_BUTTON_BG;
+                  const hoverBg = isYesOutcome ? YES_BUTTON_HOVER_BG : NO_BUTTON_HOVER_BG;
+                  const baseText = isYesOutcome ? YES_BUTTON_TEXT : NO_BUTTON_TEXT;
+
+                  const innerStripBg = isYesOutcome ? "whiteAlpha.200" : "blackAlpha.200";
+                  const chipBg = isYesOutcome ? "green.300" : "red.300";
+                  const chipText = "black";
+
+                  return (
+                      <Button
+                          key={outcome.id}
+                          onClick={() => handleSelect(outcome, direction)}
+                          justifyContent="flex-start"
+                          alignItems="center"
+                          gap={3}
+                          flex="1"
+                          px={4}
+                          py={4}
+                          h="64px"
+                          borderRadius="lg"
+                          fontWeight="bold"
+                          fontSize="md"
+                          bg={isSelected ? hoverBg : baseBg}
+                          color={isSelected ? "white" : baseText}
+                          borderWidth="1px"
+                          borderColor={isSelected ? hoverBg : baseBg}
+                          position="relative"
+                          overflow="hidden"
+                          opacity={0.2}
+                          _hover={{ bg: hoverBg, color: "white" }}
+                          _active={{ bg: hoverBg, color: "white" }}
+                          _focusVisible={{ boxShadow: "none" }}
+                      >
+                        <Box
+                            position="absolute"
+                            left={0}
+                            top={0}
+                            opacity={1}
+                            bottom={0}
+                            w={pctWidth}
+                            bg={innerStripBg}
+                            pointerEvents="none"
+                        />
+
+                        <Flex
+                            position="relative"
+                            zIndex={1}
+                            opacity={1}
+
+                            w="full"
+                            align="center"
+                            justify="space-between"
+                        >
+                          <Text as="span" fontWeight="extrabold"                             opacity={1}
+                          >
+                            {outcome.name}
+                          </Text>
+                          <Box
+                              opacity={0.2}
+                              px={3}
+                              py={1}
+                              borderRadius="full"
+                              bg={chipBg}
+                              color={chipText}
+                              fontWeight="extrabold"
+                              lineHeight="1"
+                              borderWidth="1px"
+                              borderColor="whiteAlpha.400"
+                          >
+                            {pct}%
+                          </Box>
+                        </Flex>
+                      </Button>
+                  );
+                })}
+              </Flex>
+            </Box>
+          </Box>
+        </Flex>
+      </Box>
   );
 
   const expandedMarket = selectedTrade && (
