@@ -74,41 +74,49 @@ export const MobileNavBar = ({ navButtons, handleButtonClick }: Props) => {
             top={16}
             left={0}
             right={0}
-            bottom={0}
+            bottom="var(--mobile-footer-height, 0px)"
             zIndex={40}
             bg="black"
             flexDir="column"
-            gap={2}
             pt={2}
-            pb={2}
-            overflowY="auto"
+            overflow="hidden"
             borderTop="1px solid"
             borderTopColor="#333333"
           >
-            {navButtons.map((button, index) => (
-              <Box key={index} w="100%">
-                <NavBarButton
-                  text={button.text}
-                  onClick={handleButtonClick}
-                  textColor={
-                    button.active
-                      ? colorTokens.green.salad
-                      : colorTokens.gray.timberwolf
-                  }
-                  alignItems="start"
-                  ml={5}
-                />
-                <Box
-                  borderBottom="1px solid"
-                  borderColor={colorTokens.green.dark}
-                  mt={2}
-                />
-              </Box>
-            ))}
+            <Box flex="1" overflowY="auto" pr={0}>
+              {navButtons.map((button, index) => (
+                <Box key={index} w="100%" mb={2}>
+                  <NavBarButton
+                    text={button.text}
+                    onClick={handleButtonClick}
+                    textColor={
+                      button.active
+                        ? colorTokens.green.salad
+                        : colorTokens.gray.timberwolf
+                    }
+                    alignItems="start"
+                    ml={5}
+                  />
+                  <Box
+                    borderBottom="1px solid"
+                    borderColor={colorTokens.green.dark}
+                    mt={2}
+                  />
+                </Box>
+              ))}
+            </Box>
 
-            <Flex maxH="100%" flexGrow={1} justify="center" alignItems="end">
-              <ConnectWalletButton mb={6} />
-            </Flex>
+            <Box
+              position="sticky"
+              bottom="var(--mobile-footer-height, 0px)"
+              bg="black"
+              px={5}
+              py={4}
+            >
+              <Flex justify="center">
+                <ConnectWalletButton />
+              </Flex>
+            </Box>
           </Flex>
         </Portal>
       )}

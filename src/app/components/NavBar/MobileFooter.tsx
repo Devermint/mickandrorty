@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Flex, Icon } from "@chakra-ui/react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { colorTokens } from "../theme/theme";
@@ -27,6 +28,25 @@ const isActivePath = (pathname: string, href: string) => {
 
 export const MobileFooter = () => {
   const pathname = usePathname();
+  const footerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (!footerRef.current) return;
+      const height = footerRef.current.getBoundingClientRect().height;
+      document.documentElement.style.setProperty(
+        "--mobile-footer-height",
+        `${height}px`
+      );
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => {
+      window.removeEventListener("resize", updateHeight);
+      document.documentElement.style.removeProperty("--mobile-footer-height");
+    };
+  }, []);
 
   if (!pathname || pathname.startsWith("/agent/")) {
     return null;
@@ -34,15 +54,16 @@ export const MobileFooter = () => {
 
   return (
     <Flex
-      position="fixed"
+      ref={footerRef}
+      position="sticky"
       bottom={0}
-      left={0}
       w="100%"
       zIndex={30}
       bg={colorTokens.blackCustom.a1}
       borderTopWidth="1px"
       borderColor={colorTokens.green.dark}
       display={{ base: "flex", md: "none" }}
+      mt="auto"
       pb="env(safe-area-inset-bottom)"
       minH="56px"
     >

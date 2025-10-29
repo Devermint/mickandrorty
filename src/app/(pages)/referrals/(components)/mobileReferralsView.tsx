@@ -18,6 +18,7 @@ export interface MobileReferralsViewProps {
   referalLink: string;
   referrals: Referral[];
   leaderboard: LeaderboardResponse | null;
+  handleCompleteTask: (taskId: string) => void;
 }
 export default function MobileReferralsView({
   tasks,
@@ -25,6 +26,7 @@ export default function MobileReferralsView({
   referalLink,
   referrals,
   leaderboard,
+  handleCompleteTask,
 }: MobileReferralsViewProps) {
   const [value, setValue] = useState<string | null>("tasks");
   const tabStyles = {
@@ -96,7 +98,7 @@ export default function MobileReferralsView({
           </Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content value="tasks">
-          <Tasks tasks={tasks ?? []} />
+          <Tasks tasks={tasks ?? []} handleCompleteTask={handleCompleteTask} />
         </Tabs.Content>
         <Tabs.Content value="referrals">
           <Referrals referalLink={referalLink} referrals={referrals} />

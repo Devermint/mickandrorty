@@ -30,10 +30,6 @@ export default function FullHeightLayout({ children }: LayoutProps) {
         flex="1"
         w="100%"
         minH={0}
-        pb={{
-          base: showMobileFooter ? "calc(56px + env(safe-area-inset-bottom))" : "0",
-          md: "0",
-        }}
         display="flex"
         flexDirection="column"
         minWidth={0}

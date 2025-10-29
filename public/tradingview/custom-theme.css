@@ -1,0 +1,131 @@
+/* Root palette overrides  */
+:root {
+  --tv-color-pane-background: #101010;
+  --tv-color-popup-background: #101010;
+  --tv-color-toolbar-background: #101010;
+  --tv-color-platform-background: #101010;
+  --tv-color-toolbar-button-background-hover: #181818;
+  --tv-color-toolbar-button-background-active: #181818;
+  --tv-color-toolbar-button-text: #f3f4f6;
+  --tv-color-pane-background-secondary: #101010;
+  --tv-color-pane-background-gradient-start: #101010;
+  --tv-color-pane-background-gradient-end: #101010;
+  --tv-color-item-active-text: #22c55e;
+  --tv-color-selection-highlight-background: rgba(34, 197, 94, 0.15);
+  --tv-color-toolbar-border: #1a1a1a;
+  --tv-color-border: #1a1a1a;
+  --tv-color-pane-separator: #1a1a1a;
+  --tv-grid-color: #1a1a1a;
+  --tv-micro-table-background-odd-row: #101010;
+  --tv-micro-table-background-even-row: #101010;
+}
+
+body,
+body * {
+  background-color: transparent;
+}
+
+.chart-page {
+  background-color: #181818 !important;
+}
+
+.chart-page [class*="loading"],
+.chart-page [class*="Loading"],
+.chart-page [class*="spinner"],
+.chart-page [class*="Spinner"] {
+  background-color: #101010 !important;
+}
+
+.chart-page .chart-container {
+  background-color: #101010 !important;
+}
+
+.chart-page .chart-container.top-full-width-chart.active {
+  background-color: #101010 !important;
+}
+
+.chart-page .chart-markup-table {
+  background-color: #101010 !important;
+}
+
+.layout__area--top,
+.layout__area--left,
+.layout__area--right,
+.layout__area--bottom,
+.layout__area--center,
+.layout__area--top > .layout__area--top,
+.layout__area--bottom > .layout__area--bottom,
+.layout__area--left > .layout__area--left,
+.layout__area--right > .layout__area--right {
+  border-color: #1a1a1a !important;
+}
+
+/* Pane separators between toolbars and chart */
+.pane-separator,
+.chart-widget__pane-separator,
+.chart-widget__PaneSeparator,
+.chart-widget__paneSeparator,
+.chart-widget div[class*="pane-separator"],
+.chart-widget div[class*="PaneSeparator"],
+.layout__area--top div[class*="pane-separator"],
+.layout__area--center div[class*="pane-separator"],
+.layout__area--bottom div[class*="pane-separator"],
+.layout__area--left div[class*="pane-separator"],
+.layout__area--right div[class*="pane-separator"] {
+  background: #101010 !important;
+  background-color: #101010 !important;
+  border-color: #1a1a1a !important;
+  border-top: 1px solid #1a1a1a !important;
+  border-bottom: 1px solid #1a1a1a !important;
+  border-left: 1px solid #1a1a1a !important;
+  border-right: 1px solid #1a1a1a !important;
+}
+
+.tv-side-toolbar,
+.tv-floating-toolbar,
+.tv-header,
+.tv-controls-bar,
+.chart-controls-bar,
+.chart-toolbar,
+.main-visible-structure,
+.layout__area--top [class*="toolbar"],
+.layout__area--bottom [class*="toolbar"],
+.layout__area--left [class*="toolbar"],
+.layout__area--right [class*="toolbar"] {
+  background-color: #101010 !important;
+  border-color: #1a1a1a !important;
+  color: #e5e7eb !important;
+}
+
+.tv-side-toolbar button,
+.tv-floating-toolbar button,
+.layout__area--top button,
+.layout__area--bottom button,
+.layout__area--left button,
+.layout__area--right button {
+  color: #e5e7eb !important;
+}
+
+.tv-side-toolbar button:hover,
+.tv-floating-toolbar button:hover,
+.layout__area--top button:hover,
+.layout__area--bottom button:hover,
+.layout__area--left button:hover,
+.layout__area--right button:hover,
+.tv-side-toolbar button:focus,
+.tv-floating-toolbar button:focus {
+  background-color: #181818 !important;
+}
+.tradingview-widget-container,
+.tradingview-widget-container > div,
+.tradingview-widget-container__widget,
+[class*="tradingview"] {
+  background-color: #101010 !important;
+}
+
+/* Specifically target the state before chart loads */
+.tradingview-widget-container:empty,
+.tradingview-widget-container__widget:empty {
+  background-color: #101010 !important;
+  min-height: 400px; /* Set expected height */
+}
