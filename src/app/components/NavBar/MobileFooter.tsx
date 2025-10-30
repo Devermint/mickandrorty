@@ -5,15 +5,11 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { colorTokens } from "../theme/theme";
-import { FriendsIcon } from "../icons/FriendsIcon";
-import { ChartIcon } from "../icons/chart";
-import { TasksIcon } from "../icons/TasksIcon";
-import { HomeIcon } from "../icons/HomeIcon";
 import { PiRobot, PiCoins, PiTicket, PiSparkle } from "react-icons/pi";
 
 const footerItems = [
   { label: "Agents", href: "/agents", icon: PiRobot },
-  // { label: "Predictions", href: "/predictions", icon: PiCoins },
+  { label: "Predictions", href: "/predictions", icon: PiCoins },
   { label: "Earn", href: "/referrals", icon: PiTicket },
   { label: "Create", href: "/", icon: PiSparkle },
 ];

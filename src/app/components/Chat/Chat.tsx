@@ -322,7 +322,6 @@ const Chat = ({
               color={colorTokens.gray.timberwolf}
             >
               <Spinner size="sm" />
-              <Text>Loading markets…</Text>
             </Flex>
           ) : marketsError ? (
             <Stack

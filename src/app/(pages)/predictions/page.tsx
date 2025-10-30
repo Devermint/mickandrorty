@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Box, Flex, SimpleGrid, Text } from "@chakra-ui/react";
+import { Box, Flex, SimpleGrid, Spinner, Text } from "@chakra-ui/react";
 import { PredictionMarket } from "@/app/components/Media/PredictionMarket";
 import type { MarketDefinition } from "@/app/components/Media/PredictionMarket";
 import type { MarketDocument, MarketsResponse } from "@/app/types/market";
@@ -20,6 +20,7 @@ type MarketWithDefinition = {
 export default function PredictionsPage() {
   const [markets, setMarkets] = useState<MarketDocument[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [hasFetched, setHasFetched] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [placingMarketId, setPlacingMarketId] = useState<string | null>(null);
@@ -63,6 +64,7 @@ export default function PredictionsPage() {
       const payload = (await response.json()) as MarketsResponse;
       if (!isMountedRef.current) return;
       setMarkets(extractMarkets(payload));
+      setHasFetched(true);
     } catch (err) {
       if (!isMountedRef.current) return;
       setError(
@@ -169,13 +171,13 @@ export default function PredictionsPage() {
             </Text>
           ) : null}
 
-          {loading && marketsWithDefinitions.length === 0 ? (
-            <Text color="gray.300" fontSize="sm">
-              Loading markets...
-            </Text>
+          {loading ? (
+            <Flex align="center" justify="center" py={6}>
+              <Spinner color={colorTokens.gray.timberwolf} />
+            </Flex>
           ) : null}
 
-          {!loading && !error && marketsWithDefinitions.length === 0 ? (
+          {!loading && hasFetched && !error && marketsWithDefinitions.length === 0 ? (
             <Text color="gray.300" fontSize="sm">
               No markets available yet.
             </Text>
