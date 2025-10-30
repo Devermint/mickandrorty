@@ -5,7 +5,7 @@ import * as React from "react";
 import {useAptosWallet} from "@/app/context/AptosWalletContext";
 import {Signature} from "@aptos-labs/ts-sdk";
 
-const JWT_KEY = "jwt";
+const JWT_KEY = "_jwt";
 const ADDR_KEY = "wallet_address";
 
 export function useAuthToken() {
