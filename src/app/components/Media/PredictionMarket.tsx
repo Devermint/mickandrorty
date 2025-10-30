@@ -264,7 +264,7 @@ export const PredictionMarket = ({
     const handler = onPredict ?? defaultPredictionHandler;
     handler(
       selectedTrade.direction,
-      videoId ?? marketId,
+      marketId ?? videoId,
       Number.isFinite(parsedStake) ? parsedStake : 0
     );
     handleReset();
