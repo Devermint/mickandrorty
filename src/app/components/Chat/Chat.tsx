@@ -7,7 +7,14 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Flex, FlexProps, Text } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  FlexProps,
+  Spinner,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Agent, AgentType } from "@/app/types/agent";
 import { ChatEntryProps, ChatState } from "@/app/types/message";
@@ -26,6 +33,24 @@ import { useTelegramPostBroadcast } from "./hooks/useTelegramPostBroadcast";
 import { useChatGroupSync } from "./hooks/useChatGroupSync";
 import { useAptosWallet } from "../../context/AptosWalletContext";
 import { useTwitterPostPoster } from "@/app/components/Chat/hooks/useTwitterPostBroadcast";
+import { useAuthToken } from "@/app/hooks/useAuth";
+import { PredictionMarket } from "@/app/components/Media/PredictionMarket";
+import {
+  extractMarkets,
+  marketToDefinition,
+} from "@/app/lib/utils/predictionMarkets";
+import type { MarketDocument, MarketsResponse } from "@/app/types/market";
+
+const parseJson = (text: string): unknown => {
+  if (!text) {
+    return null;
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
 
 interface ChatProps extends FlexProps {
   agent: Agent;
@@ -63,6 +88,22 @@ const Chat = ({
   const [chatState, setChatState] = useState(ChatState.IDLE);
   const didInitialize = useRef(false);
   const [xApiData, setXApiData] = useState<TwitterKeys>({});
+  const { signIn, authHeader } = useAuthToken();
+  const predictionsMountedRef = useRef(true);
+  const [agentMarkets, setAgentMarkets] = useState<MarketDocument[]>([]);
+  const [marketsLoading, setMarketsLoading] = useState(false);
+  const [marketsError, setMarketsError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [placingMarketId, setPlacingMarketId] = useState<string | null>(null);
+
+  useEffect(() => {
+    predictionsMountedRef.current = true;
+    return () => {
+      predictionsMountedRef.current = false;
+    };
+  }, []);
+
+  const isPredictionsTab = showTabs && activeTab === "media";
 
   const handleXApiSaved = useCallback(
     (data?: TwitterKeys) => {
@@ -88,11 +129,20 @@ const Chat = ({
   );
 
   const displayedMessages = useMemo(() => {
-    if (showTabs && activeTab === "media") {
-      return messages.filter((message) => message.type === "video");
+    if (isPredictionsTab) {
+      return [];
     }
     return messages;
-  }, [activeTab, messages, showTabs]);
+  }, [isPredictionsTab, messages]);
+
+  const agentMarketsWithDefinitions = useMemo(
+    () =>
+      agentMarkets.map((market) => ({
+        market,
+        definition: marketToDefinition(market),
+      })),
+    [agentMarkets]
+  );
 
   const mediaEmptyState = (
     <Text
@@ -103,6 +153,226 @@ const Chat = ({
     >
       No videos yet.
     </Text>
+  );
+
+  const ensureAuthHeader = useCallback(async () => {
+    const header = authHeader();
+    if (header.Auth) {
+      return header;
+    }
+    await signIn();
+    const refreshed = authHeader();
+    if (!refreshed.Auth) {
+      throw new Error("Wallet authentication required to place a bet");
+    }
+    return refreshed;
+  }, [authHeader, signIn]);
+
+  const loadAgentMarkets = useCallback(async () => {
+    const faId = agent.fa_id?.trim();
+    if (!faId) {
+      if (predictionsMountedRef.current) {
+        setAgentMarkets([]);
+        setMarketsError(null);
+        setMarketsLoading(false);
+      }
+      return;
+    }
+
+    if (predictionsMountedRef.current) {
+      setMarketsLoading(true);
+      setMarketsError(null);
+    }
+
+    try {
+      const response = await fetch(
+        `/api/markets/fa/${encodeURIComponent(faId)}`,
+        { cache: "no-store" }
+      );
+      const rawBody = await response.text();
+      const parsedBody = parseJson(rawBody);
+
+      if (!response.ok) {
+        const message =
+          (parsedBody &&
+            typeof parsedBody === "object" &&
+            parsedBody !== null &&
+            typeof (parsedBody as { message?: string }).message === "string" &&
+            (parsedBody as { message?: string }).message) ||
+          `Request failed with status ${response.status}`;
+        throw new Error(message as any);
+      }
+
+      const items = extractMarkets(
+        (parsedBody ?? []) as MarketsResponse
+      ) as MarketDocument[];
+
+      if (predictionsMountedRef.current) {
+        setAgentMarkets(items);
+        setMarketsError(null);
+      }
+    } catch (error) {
+      if (!predictionsMountedRef.current) return;
+      setAgentMarkets([]);
+      setMarketsError(
+        error instanceof Error ? error.message : "Failed to load markets"
+      );
+    } finally {
+      if (predictionsMountedRef.current) {
+        setMarketsLoading(false);
+      }
+    }
+  }, [agent.fa_id]);
+
+  const handleRefreshPredictions = useCallback(() => {
+    setActionError(null);
+    void loadAgentMarkets();
+  }, [loadAgentMarkets]);
+
+  const handlePredict = useCallback(
+    async (direction: "for" | "against", marketId?: string, stake?: number) => {
+      if (!marketId) {
+        if (predictionsMountedRef.current) {
+          setActionError("Market identifier missing");
+        }
+        return;
+      }
+
+      const normalizedStake = Math.max(1, Math.round(Number(stake ?? 0)));
+      if (!Number.isFinite(normalizedStake) || normalizedStake <= 0) {
+        if (predictionsMountedRef.current) {
+          setActionError("Enter a stake greater than zero.");
+        }
+        return;
+      }
+
+      if (predictionsMountedRef.current) {
+        setPlacingMarketId(marketId);
+        setActionError(null);
+      }
+
+      const side = direction === "against" ? "no" : "yes";
+
+      try {
+        const headers = await ensureAuthHeader();
+        const response = await fetch("/api/bets", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...headers,
+          },
+          body: JSON.stringify({
+            market_id: marketId,
+            side,
+            amount: normalizedStake,
+          }),
+        });
+
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok || body?.ok === false) {
+          const message =
+            typeof body?.error === "string"
+              ? body.error
+              : typeof body?.message === "string"
+              ? body.message
+              : "Bet placement failed";
+          throw new Error(message);
+        }
+
+        if (predictionsMountedRef.current) {
+          setActionError(null);
+        }
+
+        await loadAgentMarkets();
+      } catch (error) {
+        if (!predictionsMountedRef.current) return;
+        setActionError(
+          error instanceof Error ? error.message : "Failed to place bet"
+        );
+      } finally {
+        if (predictionsMountedRef.current) {
+          setPlacingMarketId(null);
+        }
+      }
+    },
+    [ensureAuthHeader, loadAgentMarkets]
+  );
+
+  const predictionsContent = (
+    <Flex direction="column" flex={1} overflow="hidden">
+      <Flex
+        direction="column"
+        flex={1}
+        px={4}
+        py={4}
+        gap={4}
+        overflowY="auto"
+        css={{
+          "&::-webkit-scrollbar": { width: "4px" },
+          "&::-webkit-scrollbar-thumb": { borderRadius: "24px" },
+        }}
+      >
+        <Stack gap={3}>
+          {marketsLoading ? (
+            <Flex
+              align="center"
+              justify="center"
+              gap={3}
+              py={3}
+              color={colorTokens.gray.timberwolf}
+            >
+              <Spinner size="sm" />
+              <Text>Loading markets…</Text>
+            </Flex>
+          ) : marketsError ? (
+            <Stack
+              gap={3}
+              align="center"
+              justify="center"
+              py={6}
+              textAlign="center"
+            >
+              <Text color="red.300">{marketsError}</Text>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefreshPredictions}
+              >
+                Retry
+              </Button>
+            </Stack>
+          ) : agentMarketsWithDefinitions.length === 0 ? (
+            <Text
+              color={colorTokens.gray.timberwolf}
+              fontSize="sm"
+              textAlign="center"
+            >
+              No predictions for this agent yet.
+            </Text>
+          ) : (
+            <Stack gap={4}>
+              {agentMarketsWithDefinitions.map(({ market, definition }) => (
+                <PredictionMarket
+                  key={market.id}
+                  videoId={market.post_id ?? market.id}
+                  marketId={market.id}
+                  onPredict={(direction, _videoId, stake) =>
+                    handlePredict(direction, market.id, stake)
+                  }
+                  definition={definition}
+                  isSubmitting={placingMarketId === market.id}
+                />
+              ))}
+            </Stack>
+          )}
+          {actionError ? (
+            <Text color="red.300" fontSize="sm">
+              {actionError}
+            </Text>
+          ) : null}
+        </Stack>
+      </Flex>
+    </Flex>
   );
 
   const { handleVideoGenerationRequest } = useVideoGeneration({
@@ -273,6 +543,14 @@ const Chat = ({
     }
   }, [showTabs, activeTab]);
 
+  useEffect(() => {
+    if (!isPredictionsTab) {
+      return;
+    }
+    setActionError(null);
+    void loadAgentMarkets();
+  }, [isPredictionsTab, loadAgentMarkets]);
+
   const handleTabSelection = useCallback(
     (tab: "chat" | "media") => {
       if (!showTabs) return;
@@ -329,52 +607,58 @@ const Chat = ({
               />
             )}
 
-            {enableGroupChat && groupError && (
-              <ChatErrorBanner
-                message={groupError}
-                onDismiss={clearGroupError}
-              />
-            )}
-
-            <ChatMessageList
-              ref={containerRef}
-              messages={displayedMessages}
-              chatState={chatState}
-              onTokenImageUploaded={handleTokenImageUploaded}
-              onChannelsDetected={handleChannelsDetected}
-              onGenerateVideo={handleVideoGenerationRequest}
-              onTelegramPostConfirm={handleTelegramPostConfirm}
-              telegramPostInProgressIndex={telegramPostInProgressIndex}
-              onTwitterPostConfirm={handleTwitterPostConfirm}
-              twitterPostInProgressIndex={twitterPostInProgressIndex}
-              emptyState={
-                showTabs && activeTab === "media" ? mediaEmptyState : undefined
-              }
-              agentOwnerAddress={agent.wallet}
-              agentId={agent.id}
-              showPredictionMarket={showTabs && activeTab === "media"}
-              agentDisplayName={agent.agent_name ?? "Agent"}
-              onSaveXAPI={handleXApiSaved}
-            />
-
-            {!showTabs || activeTab === "chat" ? (
-              <>
-                {/* <ChatHelperPanel onSelect={handleHelperButtonClick} /> */}
-                <ChatInputBar
-                  inputRef={inputMessage}
-                  onSend={onMessageSend}
-                  showAiToggle={
-                    agent.agent_type !== AgentType.AgentCreator &&
-                    enableGroupChat
-                  }
-                  aiToggleChecked={askAiEnabled}
-                  onAiToggleChange={handleAiToggleChange}
-                  aiToggleDisabled={aiToggleDisabled}
-                  aiToggleTooltip={aiToggleTooltip}
-                />
-              </>
+            {isPredictionsTab ? (
+              predictionsContent
             ) : (
-              <></>
+              <>
+                {enableGroupChat && groupError && (
+                  <ChatErrorBanner
+                    message={groupError}
+                    onDismiss={clearGroupError}
+                  />
+                )}
+
+                <ChatMessageList
+                  ref={containerRef}
+                  messages={displayedMessages}
+                  chatState={chatState}
+                  onTokenImageUploaded={handleTokenImageUploaded}
+                  onChannelsDetected={handleChannelsDetected}
+                  onGenerateVideo={handleVideoGenerationRequest}
+                  onTelegramPostConfirm={handleTelegramPostConfirm}
+                  telegramPostInProgressIndex={telegramPostInProgressIndex}
+                  onTwitterPostConfirm={handleTwitterPostConfirm}
+                  twitterPostInProgressIndex={twitterPostInProgressIndex}
+                  emptyState={
+                    showTabs && activeTab === "media"
+                      ? mediaEmptyState
+                      : undefined
+                  }
+                  agentOwnerAddress={agent.wallet}
+                  agentId={agent.id}
+                  showPredictionMarket={false}
+                  agentDisplayName={agent.agent_name ?? "Agent"}
+                  onSaveXAPI={handleXApiSaved}
+                />
+
+                {!showTabs || activeTab === "chat" ? (
+                  <>
+                    {/* <ChatHelperPanel onSelect={handleHelperButtonClick} /> */}
+                    <ChatInputBar
+                      inputRef={inputMessage}
+                      onSend={onMessageSend}
+                      showAiToggle={
+                        agent.agent_type !== AgentType.AgentCreator &&
+                        enableGroupChat
+                      }
+                      aiToggleChecked={askAiEnabled}
+                      onAiToggleChange={handleAiToggleChange}
+                      aiToggleDisabled={aiToggleDisabled}
+                      aiToggleTooltip={aiToggleTooltip}
+                    />
+                  </>
+                ) : null}
+              </>
             )}
           </Flex>
         </Flex>

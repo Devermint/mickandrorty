@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { mantle } from "viem/chains";
 import { useQueryClient } from "@tanstack/react-query";
 
 import {
